@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "301441670206",
+    "firebase_url": "https://voiceinc-e945f.firebaseio.com",
+    "project_id": "voiceinc-e945f",
+    "storage_bucket": "voiceinc-e945f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:301441670206:android:200cc721b0c3767e55056f",
+        "android_client_info": {
+          "package_name": "com.oz.voice_inc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "301441670206-o1i33cu46vj9dglis39d5jfprrherj3d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq4LhvCIOpM5WqNhuIDbHrJ2FUd2zNuKc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "301441670206-o1i33cu46vj9dglis39d5jfprrherj3d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "301441670206-2n1lcu7rmja5tak5m2sj8d0n7ru0016o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.oz.voiceInc"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

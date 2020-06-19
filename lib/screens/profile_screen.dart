@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../widgets/profile_image.dart';
 
 class ProfileScreen extends StatelessWidget {
+  static const routeName = '/profile';
+  
   void _signOut() {
     FirebaseAuth.instance.signOut();
   }

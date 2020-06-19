@@ -33,6 +33,7 @@ dependencies:
   firebase_auth: ^0.16.1
   firebase_messaging: ^6.0.16
   firebase_storage: ^3.1.6
+  firebase_dynamic_links: ^0.5.1
 
   timeago: ^2.0.26
   intl: ^0.16.1
@@ -50,10 +51,8 @@ flutter_icons:
   android: true
   ios: true
   image_path: "dev_assets/voice_icon.png"
-  adaptive_icon_background: "#191919"
+  adaptive_icon_background: "#111122"
   adaptive_icon_foreground: "dev_assets/voice_icon_adaptative.png"
-  #adaptive_icon_background: "#191919"
-  #adaptive_icon_foreground: "dev_assets/voice-adaptive.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
