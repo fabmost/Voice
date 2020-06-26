@@ -2,11 +2,14 @@ import 'dart:ui' as ui;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import '../custom/my_flutter_app_icons.dart';
 
 import 'polls_screen.dart';
 import 'search_screen.dart';
-import 'challenges_screen.dart';
 import 'messages_screen.dart';
+import 'profile_screen.dart';
+import 'new_poll_screen.dart';
+import 'new_challenge_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   @override
@@ -22,21 +25,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   List<Widget> _pages = [
     PollsScreen(),
     SearchScreen(),
-    ChallengesScreen(),
     MessagesScreen(),
+    ProfileScreen(),
   ];
-  final List<FabMenuItem> items = [
-    FabMenuItem(
-      icon: Icon(Icons.home),
-      label: 'Encuesta',
-      ontap: () {},
-    ),
-    FabMenuItem(
-      icon: Icon(Icons.local_florist),
-      label: 'Reto',
-      ontap: () {},
-    ),
-  ];
+  List<FabMenuItem> items = [];
 
   void _selectPage(int index) {
     setState(() {
@@ -55,6 +47,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }
   }
 
+  void _newPoll() {
+    Navigator.of(context).pushNamed(NewPollScreen.routeName);
+  }
+
+  void _newChallenge() {
+    Navigator.of(context).pushNamed(NewChallengeScreen.routeName);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -66,7 +66,20 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       begin: 0.0,
       end: 1.0,
     ).animate(_iconAnimationCtrl);
-    
+
+    items = [
+      FabMenuItem(
+        icon: Icon(Icons.home),
+        label: 'Encuesta',
+        ontap: _newPoll,
+      ),
+      FabMenuItem(
+        icon: Icon(Icons.local_florist),
+        label: 'Reto',
+        ontap: _newChallenge,
+      )
+    ];
+
     final fm = FirebaseMessaging();
     fm.requestNotificationPermissions();
     fm.configure(onMessage: (msg) {
@@ -205,14 +218,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           children: <Widget>[
             IconButton(
               icon: Icon(
-                Icons.home,
+                MyFlutterApp.home_run,
                 color: _selectedPageIndex == 0 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(0),
             ),
             IconButton(
               icon: Icon(
-                Icons.search,
+                MyFlutterApp.trazado_710,
                 color: _selectedPageIndex == 1 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(1),
@@ -220,14 +233,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             Text(''),
             IconButton(
               icon: Icon(
-                Icons.local_florist,
+                MyFlutterApp.trazado_709,
                 color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(2),
             ),
             IconButton(
               icon: Icon(
-                Icons.message,
+                Icons.person,
                 color: _selectedPageIndex == 3 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(3),

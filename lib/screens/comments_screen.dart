@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../translations.dart';
 import '../widgets/comment.dart';
 import '../widgets/new_comment.dart';
 
@@ -14,7 +15,7 @@ class CommentsScreen extends StatelessWidget {
         ModalRoute.of(context).settings.arguments as DocumentReference;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Comentarios'),
+        title: Text(Translations.of(context).text('title_comments')),
       ),
       body: Column(
         children: <Widget>[
@@ -38,7 +39,7 @@ class CommentsScreen extends StatelessWidget {
                     final documents = snapshot.data.documents;
                     if (documents.isEmpty) {
                       return Center(
-                        child: Text('Sé el primero en comentar'),
+                        child: Text(Translations.of(context).text('empty_comments')),
                       );
                     }
                     return ListView.builder(

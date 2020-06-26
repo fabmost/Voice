@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../translations.dart';
+
 class NotificationsScreen extends StatelessWidget {
   static const routeName = '/notifications';
 
@@ -9,7 +11,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notificaciones'),
+        title: Text(Translations.of(context).text('title_notifications')),
       ),
       body: FutureBuilder(
         future: FirebaseAuth.instance.currentUser(),

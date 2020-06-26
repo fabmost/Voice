@@ -1,12 +1,18 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'translations.dart';
 
 import 'screens/menu_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
+
+import 'screens/new_poll_screen.dart';
+import 'screens/new_challenge_screen.dart';
 
 void main() => runApp(App());
 
@@ -46,17 +52,29 @@ class App extends StatelessWidget {
 
   Widget build(context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Voice Inc',
       theme: ThemeData(
         primarySwatch: generateMaterialColor(Color(0xFF111122)),
         accentColor: Color(0xFF6767CB),
       ),
+      localizationsDelegates: [
+        const TranslationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [
+          const Locale('en', ''),
+          const Locale('es', ''),
+      ],
       home: MenuScreen(),
       routes: {
         ProfileScreen.routeName: (ctx) => ProfileScreen(),
         NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
         CommentsScreen.routeName: (ctx) => CommentsScreen(),
         DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
+        NewPollScreen.routeName: (ctx) => NewPollScreen(),
+        NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
       },
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../screens/profile_screen.dart';
 import '../screens/notifications_screen.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -12,10 +11,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
-  void _toProfile(context) {
-    Navigator.of(context).pushNamed(ProfileScreen.routeName);
-  }
-
   void _toNotifications(context) {
     Navigator.of(context).pushNamed(NotificationsScreen.routeName);
   }
@@ -25,10 +20,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: _title,
       centerTitle: _isCentered,
-      leading: IconButton(
-        icon: Icon(Icons.account_circle),
-        onPressed: () => _toProfile(context),
-      ),
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.notifications),

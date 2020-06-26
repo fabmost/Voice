@@ -137,7 +137,7 @@ class _PollOptionsState extends State<PollOptions> {
       _isLoading = true;
     });
 
-    WriteBatch batch;
+    //WriteBatch batch;
   }
 
   @override

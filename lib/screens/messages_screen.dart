@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../translations.dart';
 import '../widgets/appbar.dart';
 
 class MessagesScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class MessagesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        Text('Mensajes'),
+        Text(Translations.of(context).text('title_messages')),
       ),
       body: FutureBuilder(
         future: FirebaseAuth.instance.currentUser(),
@@ -30,7 +31,7 @@ class MessagesScreen extends StatelessWidget {
               final documents = snapshot.data.documents;
               if (documents.isEmpty) {
                 return Center(
-                  child: Text('No tienes mensajes'),
+                  child: Text(Translations.of(context).text('empty_messages')),
                 );
               }
 

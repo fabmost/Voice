@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../translations.dart';
+
 class NewComment extends StatefulWidget {
   @override
   _NewCommentState createState() => _NewCommentState();
@@ -24,7 +26,7 @@ class _NewCommentState extends State<NewComment> {
               textCapitalization: TextCapitalization.sentences,
               autocorrect: true,
               enableSuggestions: true,
-              decoration: InputDecoration(hintText: 'Escribe un mensaje...'),
+              decoration: InputDecoration(hintText: Translations.of(context).text('hint_comment')),
               onChanged: (value) {
                 setState(() {
                   _enteredMessage = value;

@@ -1,0 +1,11 @@
+{
+    "title_messages": "Messages",
+    "title_profile": "Profile",
+    "title_notifications": "Notifications",
+    "title_comments": "Comments",
+    "empty_messages": "No messages",
+    "empty_comments": "Be the first to comment",
+    "hint_comment": "Write a message...",
+    "label_followers": "Followers",
+    "label_following": "Following"
+}
