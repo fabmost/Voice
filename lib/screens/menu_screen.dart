@@ -2,8 +2,12 @@ import 'dart:ui' as ui;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import '../custom/my_flutter_app_icons.dart';
+import 'package:provider/provider.dart';
 
+import '../custom/galup_font_icons.dart';
+import '../providers/preferences_provider.dart';
+
+import 'onboarding_screen.dart';
 import 'polls_screen.dart';
 import 'search_screen.dart';
 import 'messages_screen.dart';
@@ -17,6 +21,7 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
+  bool _triggeredOnboarding = false;
   bool _isOpen = false;
   Duration _duration = Duration(milliseconds: 300);
   AnimationController _iconAnimationCtrl;
@@ -69,12 +74,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
     items = [
       FabMenuItem(
-        icon: Icon(Icons.home),
+        icon: Icon(GalupFont.survey),
         label: 'Encuesta',
         ontap: _newPoll,
       ),
       FabMenuItem(
-        icon: Icon(Icons.local_florist),
+        icon: Icon(GalupFont.challenge),
         label: 'Reto',
         ontap: _newChallenge,
       )
@@ -187,8 +192,17 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _checkIfOnboarding() async {
+    final bool result = await Provider.of<Preferences>(context, listen: false).getFirstTime();
+    if(result && !_triggeredOnboarding){
+      _triggeredOnboarding = true;
+      Navigator.of(context).pushNamed(OnboardingScreen.routeName);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _checkIfOnboarding();
     return Scaffold(
       body: WillPopScope(
         child: Stack(
@@ -218,14 +232,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           children: <Widget>[
             IconButton(
               icon: Icon(
-                MyFlutterApp.home_run,
+                GalupFont.home,
                 color: _selectedPageIndex == 0 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(0),
             ),
             IconButton(
               icon: Icon(
-                MyFlutterApp.trazado_710,
+                GalupFont.search,
                 color: _selectedPageIndex == 1 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(1),
@@ -233,14 +247,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             Text(''),
             IconButton(
               icon: Icon(
-                MyFlutterApp.trazado_709,
+                GalupFont.message,
                 color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(2),
             ),
             IconButton(
               icon: Icon(
-                Icons.person,
+                GalupFont.profile,
                 color: _selectedPageIndex == 3 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(3),

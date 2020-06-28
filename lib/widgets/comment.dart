@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../custom/galup_font_icons.dart';
 import '../screens/detail_comment_screen.dart';
 
 class Comment extends StatelessWidget {
@@ -46,17 +47,17 @@ class Comment extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             FlatButton.icon(
-              icon: Icon(Icons.comment),
+              icon: Icon(GalupFont.message),
               label: Text(comments == 0 ? '' : '$comments'),
               onPressed: ()=> _toComment(context),
             ),
             FlatButton.icon(
-              icon: Icon(Icons.arrow_upward),
+              icon: Icon(GalupFont.like),
               label: Text(ups == 0 ? '' : '$ups'),
               onPressed: null,
             ),
             FlatButton.icon(
-              icon: Icon(Icons.arrow_downward),
+              icon: Icon(GalupFont.dislike),
               label: Text(downs == 0 ? '' : '$downs'),
               onPressed: null,
             ),

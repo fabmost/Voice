@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'poll_options.dart';
+import '../custom/galup_font_icons.dart';
 import '../screens/comments_screen.dart';
 
 class Poll extends StatelessWidget {
@@ -85,21 +86,21 @@ class Poll extends StatelessWidget {
               children: <Widget>[
                 FlatButton.icon(
                   onPressed: () => _toComments(context),
-                  icon: Icon(Icons.comment),
+                  icon: Icon(GalupFont.message),
                   label: Text(comments == 0 ? '' : '$comments'),
                 ),
                 FlatButton.icon(
                   onPressed: null,
-                  icon: Icon(Icons.arrow_upward),
+                  icon: Icon(GalupFont.like),
                   label: Text('15'),
                 ),
                 FlatButton.icon(
                   onPressed: null,
-                  icon: Icon(Icons.swap_vertical_circle),
+                  icon: Icon(GalupFont.repost),
                   label: Text('15'),
                 ),
                 IconButton(
-                  icon: Icon(Icons.share),
+                  icon: Icon(GalupFont.share),
                   onPressed: null,
                 ),
               ],

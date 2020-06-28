@@ -6,6 +6,10 @@
     "empty_messages": "No messages",
     "empty_comments": "Be the first to comment",
     "hint_comment": "Write a message...",
+    "button_skip": "Skip",
+    "button_continue": "Continue",
+    "label_preferences_title": "Choose your interests",
+    "label_preferences_subtitle": "Just so you can have more fun!",
     "label_followers": "Followers",
     "label_following": "Following"
 }

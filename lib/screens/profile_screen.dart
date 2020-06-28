@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'auth_screen.dart';
 import '../translations.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -15,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
 
   void _toFollowing() {}
 
-  void _toEdit(){}
+  void _toEdit() {}
 
   Widget _usersWidget(amount, type, action) {
     return Expanded(
@@ -35,6 +36,42 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Widget _anonymousView(context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            Icons.person,
+            color: Theme.of(context).accentColor,
+            size: 120,
+          ),
+          SizedBox(height: 22),
+          Text(
+            'Registrate para tener un perfil',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+            ),
+          ),
+          SizedBox(height: 22),
+          Container(
+            height: 42,
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: RaisedButton(
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.of(context).pushNamed(AuthScreen.routeName);
+              },
+              child: Text('Registrarse'),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,9 +86,12 @@ class ProfileScreen extends StatelessWidget {
       ),
       body: FutureBuilder(
         future: FirebaseAuth.instance.currentUser(),
-        builder: (ct, userSnap) {
+        builder: (ct, AsyncSnapshot<FirebaseUser> userSnap) {
           if (userSnap.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
+          }
+          if (userSnap.data.isAnonymous) {
+            return _anonymousView(context);
           }
           return StreamBuilder(
             stream: Firestore.instance

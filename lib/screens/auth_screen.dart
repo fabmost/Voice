@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../widgets/auth_form.dart';
 
 class AuthScreen extends StatefulWidget {
+  static const routeName = '/signup';
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
