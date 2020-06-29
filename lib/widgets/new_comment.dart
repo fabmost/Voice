@@ -1,8 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../translations.dart';
 
 class NewComment extends StatefulWidget {
+  final DocumentReference reference;
+
+  NewComment(this.reference);
+
   @override
   _NewCommentState createState() => _NewCommentState();
 }
@@ -11,7 +17,37 @@ class _NewCommentState extends State<NewComment> {
   final _controller = TextEditingController();
   var _enteredMessage = '';
 
-  void _sendComment() {}
+  void _sendComment() async {
+    FocusScope.of(context).unfocus();
+    final user = await FirebaseAuth.instance.currentUser();
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+    String commentId =
+        Firestore.instance.collection('chats').document().documentID;
+    WriteBatch batch = Firestore.instance.batch();
+
+    batch.setData(
+        Firestore.instance.collection('comments').document(commentId), {
+      'comments': 0,
+      'parent': widget.reference,
+      'text': _enteredMessage,
+      'createdAt': Timestamp.now(),
+      'userId': user.uid,
+      'userImage': userData['image'],
+      'username': userData['user_name']
+    });
+    batch.updateData(userData.reference, {
+      'comments': FieldValue.arrayUnion([commentId]),
+    });
+    batch.updateData(widget.reference, {
+      'comments': FieldValue.increment(1),
+    });
+    batch.commit();
+    setState(() {
+      _enteredMessage = '';
+      _controller.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +62,8 @@ class _NewCommentState extends State<NewComment> {
               textCapitalization: TextCapitalization.sentences,
               autocorrect: true,
               enableSuggestions: true,
-              decoration: InputDecoration(hintText: Translations.of(context).text('hint_comment')),
+              decoration: InputDecoration(
+                  hintText: Translations.of(context).text('hint_comment')),
               onChanged: (value) {
                 setState(() {
                   _enteredMessage = value;

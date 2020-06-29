@@ -46,6 +46,7 @@ dependencies:
   auto_size_text: ^2.1.0
   shared_preferences: ^0.5.7+3
   provider: ^4.0.5+1
+  image_cropper: ^1.2.3
 
 dev_dependencies:
   flutter_test:
@@ -75,13 +76,6 @@ flutter:
     - assets/locale/galup_es.json
     - assets/locale/galup_en.json
     - assets/logo.png
-    - assets/like.png
-    - assets/dislike.png
-    - assets/like_in.png
-    - assets/dislike_in.png
-    - assets/fb.png
-    - assets/twitter_icon.png
-    - assets/ig.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

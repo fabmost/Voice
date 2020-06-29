@@ -2,21 +2,53 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'auth_screen.dart';
-import 'edit_profile_screen.dart';
-import '../translations.dart';
+import 'chat_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
-  void _signOut() {
-    FirebaseAuth.instance.signOut();
+import '../translations.dart';
+import '../custom/galup_font_icons.dart';
+
+class ViewProfileScreen extends StatelessWidget {
+  static const routeName = '/profile';
+
+  void _toChat(context, userId) {
+    Navigator.of(context)
+        .pushNamed(ChatScreen.routeName, arguments: {'userId': userId});
   }
 
   void _toFollowers() {}
 
   void _toFollowing() {}
 
-  void _toEdit(context) {
-    Navigator.of(context).pushNamed(EditProfileScreen.routeName);
+  void _follow(userId, myId, isFollowing) {
+    WriteBatch batch = Firestore.instance.batch();
+    if (!isFollowing) {
+      batch.updateData(
+        Firestore.instance.collection('users').document(userId),
+        {
+          'followers': FieldValue.arrayUnion([myId])
+        },
+      );
+      batch.updateData(
+        Firestore.instance.collection('users').document(myId),
+        {
+          'following': FieldValue.arrayUnion([userId])
+        },
+      );
+    } else {
+      batch.updateData(
+        Firestore.instance.collection('users').document(userId),
+        {
+          'followers': FieldValue.arrayRemove([myId])
+        },
+      );
+      batch.updateData(
+        Firestore.instance.collection('users').document(myId),
+        {
+          'following': FieldValue.arrayRemove([userId])
+        },
+      );
+    }
+    batch.commit();
   }
 
   Widget _usersWidget(amount, type, action) {
@@ -37,51 +69,36 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _anonymousView(context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Icon(
-            Icons.person,
-            color: Theme.of(context).accentColor,
-            size: 120,
-          ),
-          SizedBox(height: 22),
-          Text(
-            'Registrate para tener un perfil',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-            ),
-          ),
-          SizedBox(height: 22),
-          Container(
-            height: 42,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 22),
-            child: RaisedButton(
-              textColor: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pushNamed(AuthScreen.routeName);
-              },
-              child: Text('Registrarse'),
-            ),
-          )
-        ],
+  Widget _followButton(userId, myId, followers) {
+    if (followers == null || !followers.contains(myId)) {
+      return Expanded(
+        flex: 1,
+        child: RaisedButton(
+          onPressed: () => _follow(userId, myId, false),
+          textColor: Colors.white,
+          child: Text('Seguir'),
+        ),
+      );
+    }
+    return Expanded(
+      flex: 1,
+      child: OutlineButton(
+        onPressed: () => _follow(userId, myId, true),
+        child: Text('Siguiendo'),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileId = ModalRoute.of(context).settings.arguments as String;
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_profile')),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () => _toEdit(context),
+            icon: Icon(GalupFont.message),
+            onPressed: () => _toChat(context, profileId),
           )
         ],
       ),
@@ -94,14 +111,11 @@ class ProfileScreen extends StatelessWidget {
           return StreamBuilder(
             stream: Firestore.instance
                 .collection('users')
-                .document(userSnap.data.uid)
+                .document(profileId)
                 .snapshots(),
             builder: (ctx, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
-              }
-              if (userSnap.data.isAnonymous) {
-                return _anonymousView(context);
               }
               final document = snapshot.data;
               return SingleChildScrollView(
@@ -154,6 +168,9 @@ class ProfileScreen extends StatelessWidget {
                           Translations.of(context).text('label_followers'),
                           _toFollowers,
                         ),
+                        _followButton(profileId, userSnap.data.uid,
+                            document['followers']),
+                        SizedBox(width: 16)
                       ],
                     ),
                   ],

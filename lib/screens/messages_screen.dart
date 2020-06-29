@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'chat_screen.dart';
+
 import '../translations.dart';
 import '../widgets/appbar.dart';
 
@@ -20,8 +22,8 @@ class MessagesScreen extends StatelessWidget {
           }
           return StreamBuilder(
             stream: Firestore.instance
-                .collection('messages')
-                //.where('users', arrayContains: userSnap.data.uid)
+                .collection('chats')
+                .where('participant_ids', arrayContains: userSnap.data.uid)
                 .orderBy('updatedAt', descending: true)
                 .snapshots(),
             builder: (ctx, snapshot) {
@@ -35,21 +37,27 @@ class MessagesScreen extends StatelessWidget {
                 );
               }
 
-              return ListView.builder(
+              return ListView.separated(
+                separatorBuilder: (context, index) => Divider(),
                 itemCount: documents.length,
-                itemBuilder: (ctx, i) => Column(
-                  children: <Widget>[
-                    ListTile(
-                      leading: Icon(
-                        Icons.notifications,
-                        color: Colors.black,
-                      ),
-                      title: Text(documents[i]['title']),
-                      subtitle: Text(documents[i]['content']),
+                itemBuilder: (ctx, i) {
+                  List ids = documents[i]['participant_ids'];
+                  ids.remove(userSnap.data.uid);
+                  Map userMap = documents[i]['participants'][ids[0]];
+                  
+                  return ListTile(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(ChatScreen.routeName,
+                          arguments: {'chatId': documents[i].documentID});
+                    },
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(userMap['user_image'] ?? ''),
                     ),
-                    Divider(),
-                  ],
-                ),
+                    title: Text(userMap['user_name']),
+                    subtitle: Text(documents[i]['last_message']),
+                    trailing: Text('Hace 5m'),
+                  );
+                },
               );
             },
           );

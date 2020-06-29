@@ -38,16 +38,21 @@ class DetailCommentScreen extends StatelessWidget {
                       return Center(child: CircularProgressIndicator());
                     }
                     final documents = snapshot.data.documents;
-                    if (documents.isEmpty) {
-                      return Center(
-                        child: Text(Translations.of(context).text('empty_comments')),
-                      );
-                    }
+
                     return ListView.builder(
-                      itemCount: documents.length + 1,
+                      itemCount: documents.isEmpty ? 2 : documents.length + 1,
                       itemBuilder: (context, i) {
                         if (i == 0) {
                           return HeaderComment(reference, userSnap.data.uid);
+                        }
+                        if (documents.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Center(
+                              child: Text(Translations.of(context)
+                                  .text('empty_comments')),
+                            ),
+                          );
                         }
                         final doc = documents[i - 1];
                         int ups = 0;
@@ -71,7 +76,7 @@ class DetailCommentScreen extends StatelessWidget {
                           comments: doc['comments'],
                           date: doc['createdAt'].toDate(),
                           userName: doc['username'],
-                          userImage: doc['userImage'],
+                          userImage: doc['userImage'] ?? '',
                           ups: ups,
                           hasUp: hasUp,
                           downs: downs,
@@ -84,7 +89,7 @@ class DetailCommentScreen extends StatelessWidget {
               },
             ),
           ),
-          NewComment(),
+          NewComment(reference),
         ],
       ),
     );

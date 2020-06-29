@@ -1,4 +1,10 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../custom/galup_font_icons.dart';
 
@@ -10,7 +16,91 @@ class NewPollScreen extends StatefulWidget {
 }
 
 class _NewPollScreenState extends State<NewPollScreen> {
+  bool _isLoading = false;
+  TextEditingController _titleController = TextEditingController();
+  TextEditingController _firstController = TextEditingController();
+  TextEditingController _secondController = TextEditingController();
+  TextEditingController _thirdController = TextEditingController();
+
   bool moreOptions = false;
+  File _option1, _option2, _option3;
+
+  void _imageOptions(file) {
+    FocusScope.of(context).requestFocus(FocusNode());
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return new Container(
+          color: Colors.transparent,
+          child: new Wrap(
+            children: <Widget>[
+              new ListTile(
+                onTap: ()=> _openCamera(file),
+                leading: new Icon(
+                  Icons.camera_alt,
+                ),
+                title: Text("Cámara"),
+              ),
+              new ListTile(
+                onTap: ()=> _openGallery(file),
+                leading: new Icon(
+                  Icons.image,
+                ),
+                title: Text("Galería"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _openCamera(file) {
+    Navigator.of(context).pop();
+    _takePicture(file);
+  }
+
+  void _openGallery(file) {
+    Navigator.of(context).pop();
+    _getPicture(file);
+  }
+
+  Future<void> _takePicture(file) async {
+    final imageFile = await ImagePicker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 600,
+    );
+    if (imageFile != null) {
+      /*
+      final appDir = await provider.getApplicationDocumentsDirectory();
+      final fileName = path.basename(imageFile.path);
+      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+      */
+      _cropImage(file, imageFile.path);
+    }
+  }
+
+  Future<void> _getPicture(file) async {
+    final imageFile = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+    if (imageFile != null) {
+      _cropImage(file,imageFile.path);
+    }
+  }
+
+  void _cropImage(file, pathFile) async {
+    File cropped = await ImageCropper.cropImage(
+      sourcePath: pathFile,
+      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+    );
+    if (cropped != null) {
+      setState(() {
+        file = cropped;
+      });
+    }
+  }
 
   void _addOption() {
     setState(() {
@@ -63,6 +153,73 @@ class _NewPollScreenState extends State<NewPollScreen> {
     Navigator.of(context).pop();
   }
 
+  void _validate() {
+    if (_titleController.text.isNotEmpty &&
+        _firstController.text.isNotEmpty &&
+        _secondController.text.isNotEmpty) {
+      if (!moreOptions || (moreOptions && _thirdController.text.isNotEmpty)) {
+        _savePoll();
+        return;
+      }
+    }
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Debes llenar todos los campos'),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Ok'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _savePoll() async {
+    FocusScope.of(context).unfocus();
+    final user = await FirebaseAuth.instance.currentUser();
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+    WriteBatch batch = Firestore.instance.batch();
+    String pollId =
+        Firestore.instance.collection('content').document().documentID;
+    batch.updateData(
+      Firestore.instance.collection('users').document(user.uid),
+      {
+        'created': FieldValue.arrayUnion([pollId])
+      },
+    );
+    var pollOptions = [];
+    var results = [];
+    pollOptions.add({'text': _firstController.text});
+    results.add({'votes': 0});
+    pollOptions.add({'text': _secondController.text});
+    results.add({'votes': 0});
+    if (moreOptions) {
+      pollOptions.add({'text': _thirdController.text});
+      results.add({'votes': 0});
+    }
+    batch.setData(Firestore.instance.collection('content').document(pollId), {
+      'type': 'poll',
+      'title': _titleController.text,
+      'user_name': userData['user_name'],
+      'user_id': user.uid,
+      'user_image': userData['image'],
+      'createdAt': Timestamp.now(),
+      'options': pollOptions,
+      'results': results,
+      'comments': 0,
+      'endDate': Timestamp.now(),
+      'category': 'Política',
+      'tags': ['test', 'politica', 'algomas'],
+    });
+    await batch.commit();
+    Navigator.of(context).pop();
+  }
+
   Widget _title(text) {
     return Text(
       text,
@@ -74,8 +231,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
     );
   }
 
-  Widget _optionField(text) {
+  Widget _optionField(controller, text) {
     return TextField(
+      controller: controller,
       maxLength: 25,
       decoration: InputDecoration(
         hintText: text,
@@ -90,14 +248,14 @@ class _NewPollScreenState extends State<NewPollScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(child: _optionField('Opción 1')),
+        Expanded(child: _optionField(_firstController, 'Opción 1')),
         const SizedBox(width: 8),
         Container(
           width: 42,
           height: 42,
           margin: EdgeInsets.only(top: 10),
           child: RawMaterialButton(
-            onPressed: () {},
+            onPressed: ()=> _imageOptions(_option1),
             child: Icon(
               Icons.camera_alt,
             ),
@@ -114,14 +272,14 @@ class _NewPollScreenState extends State<NewPollScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(child: _optionField('Opción 2')),
+        Expanded(child: _optionField(_secondController, 'Opción 2')),
         const SizedBox(width: 8),
         Container(
           width: 42,
           height: 42,
           margin: EdgeInsets.only(top: 10),
           child: RawMaterialButton(
-            onPressed: () {},
+            onPressed: ()=> _imageOptions(_option2),
             child: Icon(
               Icons.camera_alt,
             ),
@@ -138,14 +296,14 @@ class _NewPollScreenState extends State<NewPollScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(child: _optionField('Opción 3')),
+        Expanded(child: _optionField(_thirdController, 'Opción 3')),
         const SizedBox(width: 8),
         Container(
           width: 42,
           height: 42,
           margin: EdgeInsets.only(top: 10),
           child: RawMaterialButton(
-            onPressed: () {},
+            onPressed: ()=> _imageOptions(_option3),
             child: Icon(
               Icons.camera_alt,
             ),
@@ -182,15 +340,19 @@ class _NewPollScreenState extends State<NewPollScreen> {
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextField(
+                controller: _titleController,
+                autofocus: true,
                 maxLines: null,
+                maxLength: 120,
                 decoration: InputDecoration(
+                  counterText: '',
                   border: InputBorder.none,
                   hintText: 'Has una pregunta',
                 ),
@@ -205,7 +367,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                     width: 72,
                     height: 72,
                     child: RawMaterialButton(
-                      onPressed: () {},
+                      onPressed: ()=> _imageOptions(null),
                       child: Icon(
                         Icons.camera_alt,
                       ),
@@ -236,6 +398,18 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 onTap: _selectDuration,
                 title: Text('Infinito'),
               ),
+              SizedBox(height: 16),
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : Container(
+                      width: double.infinity,
+                      height: 42,
+                      child: RaisedButton(
+                        textColor: Colors.white,
+                        child: Text('Guardar'),
+                        onPressed: () => _validate(),
+                      ),
+                    ),
             ],
           ),
         ),

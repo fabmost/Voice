@@ -67,7 +67,7 @@ class CommentsScreen extends StatelessWidget {
                           comments: doc['comments'],
                           date: doc['createdAt'].toDate(),
                           userName: doc['username'],
-                          userImage: doc['userImage'],
+                          userImage: doc['userImage'] ?? '',
                           ups: ups,
                           hasUp: hasUp,
                           downs: downs,
@@ -80,7 +80,7 @@ class CommentsScreen extends StatelessWidget {
               },
             ),
           ),
-          NewComment(),
+          NewComment(reference),
         ],
       ),
     );

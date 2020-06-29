@@ -31,15 +31,49 @@ class Comment extends StatelessWidget {
     this.hasDown,
   });
 
-  void _toComment(context){
-    Navigator.of(context).pushNamed(DetailCommentScreen.routeName, arguments: reference);
+  void _toComment(context) {
+    Navigator.of(context)
+        .pushNamed(DetailCommentScreen.routeName, arguments: reference);
   }
+
+  void _upVote() {
+    WriteBatch batch = Firestore.instance.batch();
+    if (hasUp) {
+      batch.updateData(reference, {
+        'up': FieldValue.arrayRemove([myId]),
+      });
+    } else {
+      batch.updateData(reference, {
+        'up': FieldValue.arrayUnion([myId]),
+        'down': FieldValue.arrayRemove([myId])
+      });
+    }
+    batch.commit();
+  }
+
+  void _downVote() {
+    WriteBatch batch = Firestore.instance.batch();
+    if (hasDown) {
+      batch.updateData(reference, {
+        'down': FieldValue.arrayRemove([myId]),
+      });
+    } else {
+      batch.updateData(reference, {
+        'down': FieldValue.arrayUnion([myId]),
+        'up': FieldValue.arrayRemove([myId])
+      });
+    }
+    batch.commit();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         ListTile(
-          leading: CircleAvatar(backgroundImage: NetworkImage(userImage),),
+          leading: CircleAvatar(
+            backgroundImage: NetworkImage(userImage),
+          ),
           title: Text(userName),
           subtitle: Text(title),
         ),
@@ -49,17 +83,23 @@ class Comment extends StatelessWidget {
             FlatButton.icon(
               icon: Icon(GalupFont.message),
               label: Text(comments == 0 ? '' : '$comments'),
-              onPressed: ()=> _toComment(context),
+              onPressed: () => _toComment(context),
             ),
             FlatButton.icon(
-              icon: Icon(GalupFont.like),
+              icon: Icon(
+                GalupFont.like,
+                color: hasUp ? Theme.of(context).accentColor : Colors.black,
+              ),
               label: Text(ups == 0 ? '' : '$ups'),
-              onPressed: null,
+              onPressed: _upVote,
             ),
             FlatButton.icon(
-              icon: Icon(GalupFont.dislike),
+              icon: Icon(
+                GalupFont.dislike,
+                color: hasDown ? Theme.of(context).accentColor : Colors.black,
+              ),
               label: Text(downs == 0 ? '' : '$downs'),
-              onPressed: null,
+              onPressed: _downVote,
             ),
           ],
         ),

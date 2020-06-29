@@ -12,7 +12,12 @@ import 'screens/preferences_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/menu_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/countries_screen.dart';
+import 'screens/edit_profile_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/view_profile_screen.dart';
+import 'screens/chat_screen.dart';
 import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
 
@@ -64,7 +69,7 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Voice Inc',
+        title: 'Galup',
         theme: ThemeData(
           primarySwatch: generateMaterialColor(Color(0xFF111122)),
           accentColor: Color(0xFF6767CB),
@@ -99,7 +104,12 @@ class App extends StatelessWidget {
         routes: {
           OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
           AuthScreen.routeName: (ctx) => AuthScreen(),
+          LoginScreen.routeName: (ctx) => LoginScreen(),
+          CountriesScreen.routeName: (ctx) => CountriesScreen(),
+          EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
           NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
+          ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
+          ChatScreen.routeName: (ctx) => ChatScreen(),
           CommentsScreen.routeName: (ctx) => CommentsScreen(),
           DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
           NewPollScreen.routeName: (ctx) => NewPollScreen(),

@@ -1,11 +1,43 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../custom/galup_font_icons.dart';
+
 class HeaderComment extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
 
   HeaderComment(this.reference, this.userId);
+
+  void _upVote(hasUp) {
+    WriteBatch batch = Firestore.instance.batch();
+    if (hasUp) {
+      batch.updateData(reference, {
+        'up': FieldValue.arrayRemove([userId]),
+      });
+    } else {
+      batch.updateData(reference, {
+        'up': FieldValue.arrayUnion([userId]),
+        'down': FieldValue.arrayRemove([userId])
+      });
+    }
+    batch.commit();
+  }
+
+  void _downVote(hasDown) {
+    WriteBatch batch = Firestore.instance.batch();
+    if (hasDown) {
+      batch.updateData(reference, {
+        'down': FieldValue.arrayRemove([userId]),
+      });
+    } else {
+      batch.updateData(reference, {
+        'down': FieldValue.arrayUnion([userId]),
+        'up': FieldValue.arrayRemove([userId])
+      });
+    }
+    batch.commit();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +67,7 @@ class HeaderComment extends StatelessWidget {
           children: <Widget>[
             ListTile(
               leading: CircleAvatar(
-                backgroundImage: NetworkImage(document['userImage']),
+                backgroundImage: NetworkImage(document['userImage'] ?? ''),
               ),
               title: Text(document['username']),
               subtitle: Text(document['text']),
@@ -44,14 +76,20 @@ class HeaderComment extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 FlatButton.icon(
-                  icon: Icon(Icons.arrow_upward),
+                  icon: Icon(
+                    GalupFont.like,
+                    color: hasUp ? Theme.of(context).accentColor : Colors.black,
+                  ),
                   label: Text(ups == 0 ? '' : '$ups'),
-                  onPressed: null,
+                  onPressed: () => _upVote(hasUp),
                 ),
                 FlatButton.icon(
-                  icon: Icon(Icons.arrow_downward),
+                  icon: Icon(
+                    GalupFont.dislike,
+                    color: hasDown ? Theme.of(context).accentColor : Colors.black,
+                  ),
                   label: Text(downs == 0 ? '' : '$downs'),
-                  onPressed: null,
+                  onPressed: () => _downVote(hasDown),
                 ),
               ],
             ),
