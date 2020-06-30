@@ -20,11 +20,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     '¡Lo retos nunca fueron tan divertidos!',
     'Únete a miles de personas que ya están compartiendo encuestas, retos y videos'
   ];
+  final imgs = [
+    'assets/onboarding_1.png',
+    'assets/onboarding_2.png',
+    'assets/onboarding_3.png',
+    'assets/onboarding_4.png',
+  ];
   final contents = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    '¡De eso de trata esta original App! En este espacio podrás seleccionar tus intereses y así comenzar a generar y responder encuestas adaptadas a tus preferencias para hacer valer tu opinión como nunca antes.',
+    'Si te gusta debatir e intercambiar ideas, Galup es tu mejor opción porque te ofrece la posibilidad de ir más allá a la hora de dar tus puntos de vista y de compartirlos con otros, escribiendo y opinando sobre los distintos contenidos.',
+    'Dale emoción a tu opinión creando retos de forma divertida para ti y tus amigos. Llegando a 1000 likes podrás descubrir sorpresas con variedad de contenidos que podrás disfrutar al alcance de un “click”.',
+    '¡Diviértete debatiendo con tus amigos y conocidos! Busca integrar a muchas más personas a la comunidad Galup compartiendo e invitándolos a dar su valiosa opinión en esta increíble y única aplicación.',
   ];
 
   @override
@@ -74,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           controller: _pageController,
           itemCount: titles.length,
           itemBuilder: (ctx, i) =>
-              OnBoarding(titles[i], contents[i], _next, _skip),
+              OnBoarding(titles[i], imgs[i], contents[i], _next, _skip),
         ),
       ),
     );

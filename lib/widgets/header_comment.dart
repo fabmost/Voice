@@ -69,8 +69,17 @@ class HeaderComment extends StatelessWidget {
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(document['userImage'] ?? ''),
               ),
-              title: Text(document['username']),
-              subtitle: Text(document['text']),
+              title: Text(
+                document['username'],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                document['text'],
+                style: TextStyle(fontSize: 16),
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,7 +95,8 @@ class HeaderComment extends StatelessWidget {
                 FlatButton.icon(
                   icon: Icon(
                     GalupFont.dislike,
-                    color: hasDown ? Theme.of(context).accentColor : Colors.black,
+                    color:
+                        hasDown ? Theme.of(context).accentColor : Colors.black,
                   ),
                   label: Text(downs == 0 ? '' : '$downs'),
                   onPressed: () => _downVote(hasDown),

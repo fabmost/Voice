@@ -10,3 +10,4 @@ export "FLUTTER_FRAMEWORK_DIR=/Volumes/Storage/Documents/workspaceFlutter/flutte
 export "FLUTTER_BUILD_NAME=0.0.6"
 export "FLUTTER_BUILD_NUMBER=6"
 export "TRACK_WIDGET_CREATION=true"
+export "DART_DEFINES=flutter.inspector.structuredErrors=true"

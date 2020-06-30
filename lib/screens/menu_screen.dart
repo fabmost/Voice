@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -63,6 +64,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    this.initDynamicLinks();
     _iconAnimationCtrl = AnimationController(
       vsync: this,
       duration: _duration,
@@ -200,6 +202,29 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }
   }
 
+  void initDynamicLinks() async {
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+
+    if (deepLink != null) {
+      Navigator.pushNamed(context, deepLink.path);
+    }
+
+    FirebaseDynamicLinks.instance.onLink(
+      onSuccess: (PendingDynamicLinkData dynamicLink) async {
+        final Uri deepLink = dynamicLink?.link;
+
+        if (deepLink != null) {
+          Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}');
+        }
+      },
+      onError: (OnLinkErrorException e) async {
+        print('onLinkError');
+        print(e.message);
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _checkIfOnboarding();
@@ -247,7 +272,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             Text(''),
             IconButton(
               icon: Icon(
-                GalupFont.message,
+                GalupFont.message_select,
                 color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
               ),
               onPressed: () => _selectPage(2),

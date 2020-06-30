@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../custom/search_delegate.dart';
 import '../widgets/appbar.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -24,23 +25,33 @@ class _SearchScreenState extends State<SearchScreen>
     super.dispose();
   }
 
+  void _startSearch(ct) {
+    showSearch(
+      context: ct,
+      delegate: CustomSearchDelegate(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        Container(
-          height: 42,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Color(0xFF8E8EAB),
-          ),
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Buscar',
-              style: TextStyle(fontSize: 16, color: Colors.black26),
+        GestureDetector(
+          onTap: ()=> _startSearch(context),
+          child: Container(
+            height: 42,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Color(0xFF8E8EAB),
+            ),
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Buscar',
+                style: TextStyle(fontSize: 16, color: Colors.black26),
+              ),
             ),
           ),
         ),

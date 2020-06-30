@@ -41,6 +41,7 @@ class _NewCommentState extends State<NewComment> {
     });
     batch.updateData(widget.reference, {
       'comments': FieldValue.increment(1),
+      'interactions': FieldValue.increment(1)
     });
     batch.commit();
     setState(() {

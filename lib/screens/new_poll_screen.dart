@@ -215,6 +215,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'endDate': Timestamp.now(),
       'category': 'Política',
       'tags': ['test', 'politica', 'algomas'],
+      'interactions': 0,
     });
     await batch.commit();
     Navigator.of(context).pop();

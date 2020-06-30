@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../widgets/appbar.dart';
 import '../widgets/poll.dart';
 import '../widgets/challenge.dart';
+import '../widgets/cause.dart';
 
 class PollsScreen extends StatelessWidget {
   Widget _pollWidget(doc, userId) {
@@ -84,6 +85,30 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
+  Widget _causeWidget(doc, userId) {
+    int likes = 0;
+    bool hasLiked = false;
+    if (doc['likes'] != null) {
+      likes = doc['likes'].length;
+      hasLiked = (doc['likes'] as List).contains(userId);
+    }
+    int reposts = 0;
+    bool hasReposted = false;
+    if (doc['reposts'] != null) {
+      reposts = doc['reposts'].length;
+      hasReposted = (doc['reposts'] as List).contains(userId);
+    }
+    return Cause(
+      reference: doc.reference,
+      myId: userId,
+      title: doc['title'],
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasReposted: hasReposted,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,6 +145,8 @@ class PollsScreen extends StatelessWidget {
                       return _pollWidget(doc, userSnap.data.uid);
                     case 'challenge':
                       return _challengeWidget(doc, userSnap.data.uid);
+                    case 'cause':
+                      return _causeWidget(doc, userSnap.data.uid);
                     default:
                       return SizedBox();
                   }

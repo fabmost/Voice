@@ -9,3 +9,4 @@ FLUTTER_FRAMEWORK_DIR=/Volumes/Storage/Documents/workspaceFlutter/flutter/bin/ca
 FLUTTER_BUILD_NAME=0.0.6
 FLUTTER_BUILD_NUMBER=6
 TRACK_WIDGET_CREATION=true
+DART_DEFINES=flutter.inspector.structuredErrors=true

@@ -202,6 +202,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       'endDate': Timestamp.now(),
       'category': 'Política',
       'tags': ['test', 'politica', 'algomas'],
+      'interactions': 0,
     });
     await batch.commit();
     Navigator.of(context).pop();

@@ -153,7 +153,8 @@ class _AuthScreenState extends State<AuthScreen> {
         merge: true,
       );
 
-      Navigator.of(context).pop();
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {
@@ -376,7 +377,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: RaisedButton(
                           textColor: Colors.white,
                           child: Text('Registrar'),
-                          onPressed: ()=> _validate(context),
+                          onPressed: () => _validate(context),
                         ),
                       ),
                 ListTile(

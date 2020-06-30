@@ -35,7 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email: email,
         password: password,
       );
-      Navigator.of(context).pop();
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {
@@ -111,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Pattern pattern =
                         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                     RegExp regex = new RegExp(pattern);
-                    if(!regex.hasMatch(value)){
+                    if (!regex.hasMatch(value)) {
                       return 'Ingresa un correo válido';
                     }
                     return null;

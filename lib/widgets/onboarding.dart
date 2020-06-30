@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 
 class OnBoarding extends StatelessWidget {
   final String title;
+  final String img;
   final String content;
   final Function next;
   final Function skip;
 
-  OnBoarding(this.title, this.content, this.next, this.skip);
+  OnBoarding(this.title, this.img, this.content, this.next, this.skip);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         FractionallySizedBox(
-          heightFactor: 0.5,
+          heightFactor: 0.65,
           child: Container(
             width: double.infinity,
-            child: Image.network(
-              'https://elearningindustry.com/wp-content/uploads/2019/08/Dos-and-Donts-When-Designing-an-Employee-Onboarding-Program.jpg',
+            child: Image.asset(
+              img,
               fit: BoxFit.cover,
             ),
           ),
@@ -44,14 +45,14 @@ class OnBoarding extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 22,
+                      fontSize: 20,
                     ),
                   ),
                   SizedBox(height: 22),
                   Expanded(
                     child: AutoSizeText(
                       content,
-                      style: TextStyle(fontSize: 52),
+                      style: TextStyle(fontSize:42),
                     ),
                   ),
                   SizedBox(height: 22),

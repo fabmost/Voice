@@ -6,51 +6,33 @@ import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 
 import '../custom/galup_font_icons.dart';
-import '../screens/comments_screen.dart';
-import '../screens/view_profile_screen.dart';
 
-class Challenge extends StatelessWidget {
+class Cause extends StatelessWidget {
   final DocumentReference reference;
-  final String userId;
+  //final String userId;
   final String myId;
-  final String userName;
-  final String userImage;
+  //final String userName;
+  //final String userImage;
   final String title;
-  final String metric;
-  final double goal;
-  final int comments;
   final bool hasLiked;
   final int likes;
   final bool hasReposted;
   final int reposts;
 
-  final Color color = Color(0xFFFFF5FB);
+  final Color color = Color(0xFFF0F0F0);
 
-  Challenge({
+  Cause({
     this.reference,
-    this.userName,
+    //this.userName,
     this.myId,
-    this.userImage,
+    //this.userImage,
     this.title,
-    this.metric,
-    this.goal,
-    this.comments,
-    this.userId,
+    //this.userId,
     this.likes,
     this.hasLiked,
     this.reposts,
     this.hasReposted,
   });
-
-  void _toProfile(context) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-  }
-
-  void _toComments(context) {
-    Navigator.of(context)
-        .pushNamed(CommentsScreen.routeName, arguments: reference);
-  }
 
   void _like() {
     WriteBatch batch = Firestore.instance.batch();
@@ -79,8 +61,7 @@ class Challenge extends StatelessWidget {
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
-      link:
-          Uri.parse('https://app.galup.app/challenge/${reference.documentID}'),
+      link: Uri.parse('https://app.galup.app/cause/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.oz.voice_inc',
         minimumVersion: 0,
@@ -97,7 +78,7 @@ class Challenge extends StatelessWidget {
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
     Uri url = shortLink.shortUrl;
 
-    Share.share('Te comparto este Reto de Galup $url');
+    Share.share('Te comparto esta Causa de Galup $url');
   }
 
   void _flag(context) {
@@ -131,33 +112,19 @@ class Challenge extends StatelessWidget {
     );
   }
 
-  Widget _challengeGoal() {
-    bool goalReached = false;
-    switch (metric) {
-      case 'likes':
-        if (likes >= goal) {
-          goalReached = true;
-        }
-        break;
-      case 'comentarios':
-        if (comments >= goal) {
-          goalReached = true;
-        }
-        break;
-      case 'regalups':
-        if (reposts >= goal) {
-          goalReached = true;
-        }
-        break;
-    }
+  Widget _causeButton() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
       width: double.infinity,
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
-        onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : 'Faltan $metric'),
+        borderSide: BorderSide(
+          color: Colors.black,
+          width: 2,
+        ),
+        onPressed: _like,
+        child: Text(hasLiked ? 'Ya no a favor' : 'A favor'),
       ),
     );
   }
@@ -169,7 +136,7 @@ class Challenge extends StatelessWidget {
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: Color(0xFFA4175D), width: 0.5),
+          side: BorderSide(color: Colors.black, width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -178,17 +145,16 @@ class Challenge extends StatelessWidget {
             Container(
               color: color,
               child: ListTile(
-                onTap: myId == userId ? null : () => _toProfile(context),
                 leading: CircleAvatar(
                   radius: 18,
-                  backgroundColor: Color(0xFFA4175D),
-                  backgroundImage: NetworkImage(userImage),
+                  backgroundColor: Colors.black,
+                  backgroundImage: AssetImage('assets/logo.png'),
                 ),
                 title: Text(
-                  userName,
+                  'Defiende tu causa',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                subtitle: Text('Hace 5 días'),
+                subtitle: Text('Por: Galup'),
                 trailing: Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(
@@ -210,24 +176,12 @@ class Challenge extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            _challengeGoal(),
+            _causeButton(),
             SizedBox(height: 16),
             Container(
               color: color,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: () => _toComments(context),
-                    icon: Icon(GalupFont.message),
-                    label: Text(comments == 0 ? '' : '$comments'),
-                  ),
-                  FlatButton.icon(
-                    onPressed: _like,
-                    icon: Icon(GalupFont.like,
-                        color: hasLiked ? Color(0xFFA4175D) : Colors.black),
-                    label: Text(likes == 0 ? '' : '$likes'),
-                  ),
                   FlatButton.icon(
                     onPressed: _repost,
                     icon: Icon(GalupFont.repost,
@@ -238,6 +192,9 @@ class Challenge extends StatelessWidget {
                     icon: Icon(GalupFont.share),
                     onPressed: _share,
                   ),
+                  Expanded(child: SizedBox(height: 1)),
+                  Text(likes == 0 ? '' : '$likes Votos'),
+                  SizedBox(width: 16),
                 ],
               ),
             )

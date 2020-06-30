@@ -20,6 +20,11 @@ import 'screens/view_profile_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
+import 'screens/followers_screen.dart';
+import 'screens/following_screen.dart';
+import 'screens/detail_poll_screen.dart';
+import 'screens/detail_challenge_screen.dart';
+import 'screens/detail_cause.dart';
 
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
@@ -114,6 +119,11 @@ class App extends StatelessWidget {
           DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
           NewPollScreen.routeName: (ctx) => NewPollScreen(),
           NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
+          FollowersScreen.routeName: (ctx) => FollowersScreen(),
+          FollowingScreen.routeName: (ctx) => FollowingScreen(),
+          DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
+          DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
+          DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
         },
       ),
     );

@@ -74,8 +74,14 @@ class Comment extends StatelessWidget {
           leading: CircleAvatar(
             backgroundImage: NetworkImage(userImage),
           ),
-          title: Text(userName),
-          subtitle: Text(title),
+          title: Text(
+            userName,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          subtitle: Text(
+            title,
+            style: TextStyle(fontSize: 16),
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>301441670206-6tdcaelghbjqrlqq5jq6nfe82cglittf.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.301441670206-6tdcaelghbjqrlqq5jq6nfe82cglittf</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>301441670206-oo27sdgdti5pcbc6p33dlkkdglmprk6k.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyB4Cvmyt_zOweIymcNuqapAiApFaNdJIjQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>301441670206</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.galup.app</string>
+	<key>PROJECT_ID</key>
+	<string>voiceinc-e945f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>voiceinc-e945f.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:301441670206:ios:fed1026ce4def4c255056f</string>
+	<key>DATABASE_URL</key>
+	<string>https://voiceinc-e945f.firebaseio.com</string>
+</dict>
+</plist>
