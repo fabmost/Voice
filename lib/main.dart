@@ -24,7 +24,7 @@ import 'screens/followers_screen.dart';
 import 'screens/following_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
-import 'screens/detail_cause.dart';
+import 'screens/detail_cause_screen.dart';
 
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';

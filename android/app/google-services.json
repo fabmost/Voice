@@ -8,12 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:301441670206:android:200cc721b0c3767e55056f",
+        "mobilesdk_app_id": "1:301441670206:android:b21ced40b492f54855056f",
         "android_client_info": {
-          "package_name": "com.oz.voice_inc"
+          "package_name": "com.galup.app"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "301441670206-90rt26cjaojdnu3vtso82pcdb9tgp589.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.galup.app",
+            "certificate_hash": "0d451555e0b1376bb15fd375912c4fd501fe8aad"
+          }
+        },
         {
           "client_id": "301441670206-o1i33cu46vj9dglis39d5jfprrherj3d.apps.googleusercontent.com",
           "client_type": 3
@@ -32,10 +40,54 @@
               "client_type": 3
             },
             {
-              "client_id": "301441670206-2n1lcu7rmja5tak5m2sj8d0n7ru0016o.apps.googleusercontent.com",
+              "client_id": "301441670206-6tdcaelghbjqrlqq5jq6nfe82cglittf.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.oz.voiceInc"
+                "bundle_id": "com.galup.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:301441670206:android:200cc721b0c3767e55056f",
+        "android_client_info": {
+          "package_name": "com.oz.voice_inc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "301441670206-oo27sdgdti5pcbc6p33dlkkdglmprk6k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oz.voice_inc",
+            "certificate_hash": "0d451555e0b1376bb15fd375912c4fd501fe8aad"
+          }
+        },
+        {
+          "client_id": "301441670206-o1i33cu46vj9dglis39d5jfprrherj3d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq4LhvCIOpM5WqNhuIDbHrJ2FUd2zNuKc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "301441670206-o1i33cu46vj9dglis39d5jfprrherj3d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "301441670206-6tdcaelghbjqrlqq5jq6nfe82cglittf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.galup.app"
               }
             }
           ]

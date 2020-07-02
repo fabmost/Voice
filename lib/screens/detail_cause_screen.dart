@@ -8,38 +8,16 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 import '../translations.dart';
-import '../screens/auth_screen.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
+import '../screens/auth_screen.dart';
 
-class Cause extends StatelessWidget {
-  final DocumentReference reference;
-  final String myId;
-  final String creator;
-  final String title;
-  final bool hasLiked;
-  final int likes;
-  final bool hasReposted;
-  final int reposts;
-  final bool hasSaved;
-  final String info;
+class DetailCauseScreen extends StatelessWidget {
+  static const routeName = '/cause';
 
   final Color color = Color(0xFFF0F0F0);
 
-  Cause({
-    this.reference,
-    this.myId,
-    this.creator,
-    this.title,
-    this.likes,
-    this.hasLiked,
-    this.reposts,
-    this.hasReposted,
-    this.hasSaved,
-    this.info,
-  });
-
-  void _infoAlert(context) {
+  void _infoAlert(context, info) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -82,7 +60,7 @@ class Cause extends StatelessWidget {
     );
   }
 
-  void _like(context) async {
+  void _like(context, reference, myId, hasLiked) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       final interactions =
@@ -119,86 +97,21 @@ class Cause extends StatelessWidget {
     batch.commit();
   }
 
-  void _repost(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
+  void _repost() {}
 
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-    
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-        Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-cause',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'info': info,
-        'creator': creator,
-        'originalDate': Timestamp.now(),
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
-  void _share() async {
+  void _share(reference) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse('https://voiceinc.page.link/cause/${reference.documentID}'),
+      link: Uri.parse('https://app.galup.app/cause/${reference.documentID}'),
       androidParameters: AndroidParameters(
-        packageName: 'com.galup.app',
+        packageName: 'com.oz.voice_inc',
         minimumVersion: 0,
       ),
       dynamicLinkParametersOptions: DynamicLinkParametersOptions(
         shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
       ),
       iosParameters: IosParameters(
-        bundleId: 'com.galup.app',
+        bundleId: 'com.oz.voiceInc',
         minimumVersion: '0',
       ),
     );
@@ -213,7 +126,7 @@ class Cause extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
-  void _save(context) async {
+  void _save(context, reference, myId, hasSaved) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -245,7 +158,7 @@ class Cause extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
-  void _options(context) {
+  void _options(context, reference, myId, hasSaved) {
     FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
@@ -255,7 +168,7 @@ class Cause extends StatelessWidget {
           child: Wrap(
             children: <Widget>[
               ListTile(
-                onTap: () => _save(context),
+                onTap: () => _save(context, reference, myId, hasSaved),
                 leading: Icon(
                   GalupFont.saved,
                 ),
@@ -279,7 +192,7 @@ class Cause extends StatelessWidget {
     );
   }
 
-  Widget _causeButton(context) {
+  Widget _causeButton(context, reference, myId, hasLiked) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
@@ -290,7 +203,7 @@ class Cause extends StatelessWidget {
           color: Colors.black,
           width: 2,
         ),
-        onPressed: () => _like(context),
+        onPressed: () => _like(context, reference, myId, hasLiked),
         child: Text(hasLiked ? 'No apoyo esta causa' : 'Apoyo esta causa'),
       ),
     );
@@ -298,85 +211,132 @@ class Cause extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.black, width: 0.5),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              color: color,
-              child: ListTile(
-                leading: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.black,
-                  backgroundImage: AssetImage('assets/logo.png'),
-                ),
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      creator,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.add_circle),
-                      onPressed: ()=> _infoAlert(context),
-                    )
-                  ],
-                ),
-                subtitle: Text('Por: Galup'),
-                trailing: Transform.rotate(
-                  angle: 270 * pi / 180,
-                  child: IconButton(
-                    icon: Icon(Icons.chevron_left),
-                    onPressed: () => _options(context),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            _causeButton(context),
-            SizedBox(height: 16),
-            Container(
-              color: color,
-              child: Row(
+    final id = ModalRoute.of(context).settings.arguments;
+    final DocumentReference reference =
+        Firestore.instance.collection('content').document(id);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(Translations.of(context).text('title_cause')),
+      ),
+      body: FutureBuilder(
+        future: FirebaseAuth.instance.currentUser(),
+        builder: (ctx, userSnap) {
+          if (userSnap.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return StreamBuilder(
+            stream: reference.snapshots(),
+            builder: (ct, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              final document = snapshot.data;
+
+              int likes = 0;
+              bool hasLiked = false;
+              if (document['likes'] != null) {
+                likes = document['likes'].length;
+                hasLiked =
+                    (document['likes'] as List).contains(userSnap.data.uid);
+              }
+              int reposts = 0;
+              bool hasReposted = false;
+              if (document['reposts'] != null) {
+                reposts = document['reposts'].length;
+                hasReposted =
+                    (document['reposts'] as List).contains(userSnap.data.uid);
+              }
+              bool hasSaved = false;
+              if (document['saved'] != null) {
+                hasSaved =
+                    (document['saved'] as List).contains(userSnap.data.uid);
+              }
+
+              return Column(
                 children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: ()=> _repost(context),
-                    icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Colors.grey : Colors.black),
-                    label: Text(reposts == 0 ? '' : '$reposts'),
+                  Container(
+                    color: color,
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Colors.black,
+                        backgroundImage: AssetImage('assets/logo.png'),
+                      ),
+                      title: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            document['creator'],
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add_circle),
+                            onPressed: () =>
+                                _infoAlert(context, document['info']),
+                          )
+                        ],
+                      ),
+                      subtitle: Text('Por: Galup'),
+                      trailing: Transform.rotate(
+                        angle: 270 * pi / 180,
+                        child: IconButton(
+                            icon: Icon(Icons.chevron_left),
+                            onPressed: () => _options(
+                                  context,
+                                  reference,
+                                  userSnap.data.uid,
+                                  hasSaved,
+                                )),
+                      ),
+                    ),
                   ),
-                  IconButton(
-                    icon: Icon(GalupFont.share),
-                    onPressed: _share,
+                  SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      document['title'],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  Expanded(child: SizedBox(height: 1)),
-                  Text(likes == 0 ? '' : '$likes Votos'),
-                  SizedBox(width: 16),
+                  SizedBox(height: 16),
+                  _causeButton(
+                    context,
+                    reference,
+                    userSnap.data.uid,
+                    hasLiked,
+                  ),
+                  SizedBox(height: 16),
+                  Container(
+                    color: color,
+                    child: Row(
+                      children: <Widget>[
+                        FlatButton.icon(
+                          onPressed: _repost,
+                          icon: Icon(GalupFont.repost,
+                              color: hasReposted
+                                  ? Color(0xFFA4175D)
+                                  : Colors.black),
+                          label: Text(reposts == 0 ? '' : '$reposts'),
+                        ),
+                        IconButton(
+                          icon: Icon(GalupFont.share),
+                          onPressed: () => _share(reference),
+                        ),
+                        Expanded(child: SizedBox(height: 1)),
+                        Text(likes == 0 ? '' : '$likes Votos'),
+                        SizedBox(width: 16),
+                      ],
+                    ),
+                  )
                 ],
-              ),
-            )
-          ],
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }

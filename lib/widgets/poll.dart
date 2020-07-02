@@ -138,21 +138,78 @@ class Poll extends StatelessWidget {
       );
       return;
     }
+
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+    WriteBatch batch = Firestore.instance.batch();
+    
+    if (hasReposted) {
+      String repostId;
+      final item = (userData['reposted'] as List).firstWhere(
+        (element) => (element as Map).containsKey(reference.documentID),
+        orElse: () => null,
+      );
+      if (item != null) {
+        repostId = item[reference.documentID];
+      }
+      batch.delete(Firestore.instance.collection('content').document(repostId));
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayRemove([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayRemove([myId]),
+        'interactions': FieldValue.increment(-1)
+      });
+    } else {
+      String repostId =
+        Firestore.instance.collection('content').document().documentID;
+
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayUnion([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.setData(
+          Firestore.instance.collection('content').document(repostId), {
+        'type': 'repost-poll',
+        'user_name': userData['user_name'],
+        'user_id': user.uid,
+        'createdAt': Timestamp.now(),
+        'title': title,
+        'creator_name': userName,
+        'creator_image': userImage,
+        'options': options,
+        'originalDate': Timestamp.now(),
+      });
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayUnion([myId]),
+        'interactions': FieldValue.increment(1)
+      });
+    }
+    batch.commit();
   }
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse('https://app.galup.app/poll/${reference.documentID}'),
+      link: Uri.parse('https://voiceinc.page.link/poll/${reference.documentID}'),
       androidParameters: AndroidParameters(
-        packageName: 'com.oz.voice_inc',
+        packageName: 'com.galup.app',
         minimumVersion: 0,
       ),
       dynamicLinkParametersOptions: DynamicLinkParametersOptions(
         shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
       ),
       iosParameters: IosParameters(
-        bundleId: 'com.oz.voiceInc',
+        bundleId: 'com.galup.app',
         minimumVersion: '0',
       ),
     );
@@ -298,13 +355,16 @@ class Poll extends StatelessWidget {
                 voters: voters,
               ),
             ),
-            if(voters > 0) Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                bottom: 16,
+            if (voters > 0)
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  bottom: 16,
+                ),
+                child: Text(voters == 1
+                    ? '$voters participante'
+                    : '$voters participantes'),
               ),
-              child: Text(voters == 1 ? '$voters participante' : '$voters participantes'),
-            ),
             Container(
               color: color,
               child: Row(
@@ -328,7 +388,7 @@ class Poll extends StatelessWidget {
                   FlatButton.icon(
                     onPressed: () => _repost(context),
                     icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Color(0xFFA4175D) : Colors.black),
+                        color: hasReposted ? Theme.of(context).accentColor : Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(

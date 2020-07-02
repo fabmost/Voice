@@ -117,6 +117,7 @@ class _PollOptionsState extends State<PollOptions> {
         }
         transaction.update(widget.reference, {
           "results": results,
+          'interactions': FieldValue.increment(1),
           "voters": FieldValue.arrayUnion([
             {widget.userId: position}
           ])

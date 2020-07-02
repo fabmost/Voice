@@ -7,6 +7,10 @@ import '../widgets/poll.dart';
 import '../widgets/challenge.dart';
 import '../widgets/cause.dart';
 
+import '../widgets/repost_poll.dart';
+import '../widgets/repost_challenge.dart';
+import '../widgets/repost_cause.dart';
+
 class PollsScreen extends StatelessWidget {
   Widget _pollWidget(doc, userId) {
     int vote = -1;
@@ -121,6 +125,45 @@ class PollsScreen extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      creator: doc['creator'],
+      info: doc['info'],
+    );
+  }
+
+  Widget _repostPollWidget(doc, userId) {
+    return RepostPoll(
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      title: doc['title'],
+      options: doc['options'],
+      creatorName: doc['creator_name'],
+      creatorImage: doc['creator_image'] ?? '',
+    );
+  }
+
+  Widget _repostChallengeWidget(doc, userId) {
+    return RepostChallenge(
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      title: doc['title'],
+      creatorName: doc['creator_name'],
+      creatorImage: doc['creator_image'] ?? '',
+      metric: doc['metric_type'],
+    );
+  }
+
+  Widget _repostCauseWidget(doc, userId) {
+    return RespostCause(
+      reference: doc.reference,
+      myId: userId,
+      userName: doc['user_name'],
+      title: doc['title'],
+      creator: doc['creator'],
+      info: doc['info'],
     );
   }
 
@@ -162,6 +205,12 @@ class PollsScreen extends StatelessWidget {
                       return _challengeWidget(doc, userSnap.data.uid);
                     case 'cause':
                       return _causeWidget(doc, userSnap.data.uid);
+                    case 'repost-poll':
+                      return _repostPollWidget(doc, userSnap.data.uid);
+                    case 'repost-challenge':
+                      return _repostChallengeWidget(doc, userSnap.data.uid);
+                    case 'repost-cause':
+                      return _repostCauseWidget(doc, userSnap.data.uid);
                     default:
                       return SizedBox();
                   }

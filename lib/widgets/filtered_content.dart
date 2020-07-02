@@ -109,6 +109,8 @@ class FilteredContent extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      creator: doc['creator'],
+      info: doc['info'],
     );
   }
 

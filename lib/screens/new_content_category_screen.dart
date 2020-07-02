@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/category.dart';
-import '../widgets/category_tile.dart';
 
 class NewContentCategoryScreen extends StatelessWidget {
   static const routeName = '/content-category';

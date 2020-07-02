@@ -1,62 +1,29 @@
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
+import 'poll_options.dart';
 import '../translations.dart';
-import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
-import '../screens/auth_screen.dart';
-import '../screens/comments_screen.dart';
+import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/auth_screen.dart';
 
-class Challenge extends StatelessWidget {
+class HeaderPoll extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
-  final String myId;
-  final String userName;
-  final String userImage;
-  final String title;
-  final String metric;
-  final double goal;
-  final int comments;
-  final bool hasLiked;
-  final int likes;
-  final bool hasReposted;
-  final int reposts;
-  final bool hasSaved;
+  final Color color = Color(0xFFF8F8FF);
 
-  final Color color = Color(0xFFFFF5FB);
+  HeaderPoll(this.reference, this.userId);
 
-  Challenge({
-    this.reference,
-    this.userName,
-    this.myId,
-    this.userImage,
-    this.title,
-    this.metric,
-    this.goal,
-    this.comments,
-    this.userId,
-    this.likes,
-    this.hasLiked,
-    this.reposts,
-    this.hasReposted,
-    this.hasSaved,
-  });
-
-  void _toProfile(context) {
+void _toProfile(context) {
     Navigator.of(context)
         .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-  }
-
-  void _toComments(context) {
-    Navigator.of(context)
-        .pushNamed(CommentsScreen.routeName, arguments: reference);
   }
 
   void _anonymousAlert(context, text) {
@@ -85,7 +52,7 @@ class Challenge extends StatelessWidget {
     );
   }
 
-  void _like(context) async {
+  void _like(context, hasLiked) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       final interactions =
@@ -102,20 +69,20 @@ class Challenge extends StatelessWidget {
     WriteBatch batch = Firestore.instance.batch();
     if (hasLiked) {
       Provider.of<Preferences>(context, listen: false).removeInteractions();
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
+      batch.updateData(Firestore.instance.collection('users').document(userId), {
         'liked': FieldValue.arrayRemove([reference.documentID]),
       });
       batch.updateData(reference, {
-        'likes': FieldValue.arrayRemove([myId]),
+        'likes': FieldValue.arrayRemove([userId]),
         'interactions': FieldValue.increment(-1)
       });
     } else {
       Provider.of<Preferences>(context, listen: false).setInteractions();
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
+      batch.updateData(Firestore.instance.collection('users').document(userId), {
         'liked': FieldValue.arrayUnion([reference.documentID]),
       });
       batch.updateData(reference, {
-        'likes': FieldValue.arrayUnion([myId]),
+        'likes': FieldValue.arrayUnion([userId]),
         'interactions': FieldValue.increment(1)
       });
     }
@@ -131,80 +98,21 @@ class Challenge extends StatelessWidget {
       );
       return;
     }
-
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-    
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-        Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-challenge',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'creator_name': userName,
-        'creator_image': userImage,
-        'metric_type': metric,
-        'metric_goal': goal,
-        'originalDate': Timestamp.now(),
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
   }
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
-      link:
-          Uri.parse('https://voiceinc.page.link/challenge/${reference.documentID}'),
+      link: Uri.parse('https://app.galup.app/poll/${reference.documentID}'),
       androidParameters: AndroidParameters(
-        packageName: 'com.galup.app',
+        packageName: 'com.oz.voice_inc',
         minimumVersion: 0,
       ),
       dynamicLinkParametersOptions: DynamicLinkParametersOptions(
         shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
       ),
       iosParameters: IosParameters(
-        bundleId: 'com.galup.app',
+        bundleId: 'com.oz.voiceInc',
         minimumVersion: '0',
       ),
     );
@@ -212,14 +120,14 @@ class Challenge extends StatelessWidget {
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
     Uri url = shortLink.shortUrl;
 
-    Share.share('Te comparto este Reto de Galup $url');
+    Share.share('Te comparto esta encuesta de Galup $url');
   }
 
   void _flag(context) {
     Navigator.of(context).pop();
   }
 
-  void _save(context) async {
+  void _save(context, hasSaved) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -230,19 +138,19 @@ class Challenge extends StatelessWidget {
     }
     WriteBatch batch = Firestore.instance.batch();
     if (hasSaved) {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
+      batch.updateData(Firestore.instance.collection('users').document(userId), {
         'saved': FieldValue.arrayRemove([reference.documentID]),
       });
       batch.updateData(reference, {
-        'saved': FieldValue.arrayRemove([myId]),
+        'saved': FieldValue.arrayRemove([userId]),
         'interactions': FieldValue.increment(-1)
       });
     } else {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
+      batch.updateData(Firestore.instance.collection('users').document(userId), {
         'saved': FieldValue.arrayUnion([reference.documentID]),
       });
       batch.updateData(reference, {
-        'saved': FieldValue.arrayUnion([myId]),
+        'saved': FieldValue.arrayUnion([userId]),
         'interactions': FieldValue.increment(1)
       });
     }
@@ -251,7 +159,7 @@ class Challenge extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
-  void _options(context) {
+  void _options(context, creatorId, hasSaved) {
     FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
@@ -260,9 +168,9 @@ class Challenge extends StatelessWidget {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
-              if (myId != userId)
+              if (creatorId != userId)
                 ListTile(
-                  onTap: () => _save(context),
+                  onTap: () => _save(context, hasSaved),
                   leading: Icon(
                     GalupFont.saved,
                   ),
@@ -270,7 +178,7 @@ class Challenge extends StatelessWidget {
                 ),
               ListTile(
                 onTap: () => _flag(context),
-                leading: new Icon(
+                leading: Icon(
                   Icons.flag,
                   color: Colors.red,
                 ),
@@ -285,62 +193,65 @@ class Challenge extends StatelessWidget {
       },
     );
   }
-
-  Widget _challengeGoal() {
-    bool goalReached = false;
-    switch (metric) {
-      case 'likes':
-        if (likes >= goal) {
-          goalReached = true;
-        }
-        break;
-      case 'comentarios':
-        if (comments >= goal) {
-          goalReached = true;
-        }
-        break;
-      case 'regalups':
-        if (reposts >= goal) {
-          goalReached = true;
-        }
-        break;
-    }
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      height: 42,
-      width: double.infinity,
-      child: OutlineButton(
-        highlightColor: Color(0xFFA4175D),
-        onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : 'Faltan $metric'),
-      ),
-    );
-  }
-
+  
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Color(0xFFA4175D), width: 0.5),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
+    return StreamBuilder(
+        stream: reference.snapshots(),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          final document = snapshot.data;
+
+          int vote = -1;
+          bool hasVoted = false;
+          int voters = 0;
+          if (document['voters'] != null) {
+            voters = document['voters'].length;
+            final item = (document['voters'] as List).firstWhere(
+              (element) => (element as Map).containsKey(userId),
+              orElse: () => null,
+            );
+            if (item != null) {
+              hasVoted = true;
+              vote = item[userId];
+            }
+          }
+          int likes = 0;
+          bool hasLiked = false;
+          if (document['likes'] != null) {
+            likes = document['likes'].length;
+            hasLiked = (document['likes'] as List).contains(userId);
+          }
+          int reposts = 0;
+          bool hasReposted = false;
+          if (document['reposts'] != null) {
+            reposts = document['reposts'].length;
+            hasReposted = (document['reposts'] as List).contains(userId);
+          }
+          bool hasSaved = false;
+          if (document['saved'] != null) {
+            hasSaved = (document['saved'] as List).contains(userId);
+          }
+
+          final creatorId = document['user_id'];
+          final userImage = document['user_image'] ?? '';
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
               color: color,
               child: ListTile(
-                onTap: myId == userId ? null : () => _toProfile(context),
+                onTap: creatorId == userId ? null : () => _toProfile(context),
                 leading: CircleAvatar(
                   radius: 18,
-                  backgroundColor: Color(0xFFA4175D),
+                  backgroundColor: Theme.of(context).accentColor,
                   backgroundImage: NetworkImage(userImage),
                 ),
                 title: Text(
-                  userName,
+                  document['user_name'],
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 subtitle: Text('Hace 5 días'),
@@ -348,7 +259,7 @@ class Challenge extends StatelessWidget {
                   angle: 270 * pi / 180,
                   child: IconButton(
                     icon: Icon(Icons.chevron_left),
-                    onPressed: () => _options(context),
+                    onPressed: () => _options(context, creatorId, hasSaved),
                   ),
                 ),
               ),
@@ -357,30 +268,50 @@ class Challenge extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                title,
+                document['title'],
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            SizedBox(height: 16),
-            _challengeGoal(),
-            SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 8,
+              ),
+              child: PollOptions(
+                reference: reference,
+                userId: userId,
+                votes: document['results'],
+                options: document['options'],
+                hasVoted: hasVoted,
+                vote: vote,
+                voters: voters,
+              ),
+            ),
+            if(voters > 0) Padding(
+              padding: const EdgeInsets.only(
+                left: 16,
+                bottom: 16,
+              ),
+              child: Text(voters == 1 ? '$voters participante' : '$voters participantes'),
+            ),
             Container(
               color: color,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
                   FlatButton.icon(
-                    onPressed: () => _toComments(context),
-                    icon: Icon(GalupFont.message),
-                    label: Text(comments == 0 ? '' : '$comments'),
-                  ),
-                  FlatButton.icon(
-                    onPressed: () => _like(context),
-                    icon: Icon(GalupFont.like,
-                        color: hasLiked ? Color(0xFFA4175D) : Colors.black),
+                    onPressed: () => _like(context, hasLiked),
+                    icon: Icon(
+                      GalupFont.like,
+                      color: hasLiked
+                          ? Theme.of(context).accentColor
+                          : Colors.black,
+                    ),
                     label: Text(likes == 0 ? '' : '$likes'),
                   ),
                   FlatButton.icon(
@@ -395,10 +326,9 @@ class Challenge extends StatelessWidget {
                   ),
                 ],
               ),
-            )
-          ],
-        ),
-      ),
-    );
+            ),
+            ],
+          );
+        });
   }
 }

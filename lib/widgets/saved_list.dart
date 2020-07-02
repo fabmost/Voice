@@ -120,6 +120,8 @@ class SavedList extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      creator: doc['creator'],
+      info: doc['info'],
     );
   }
 

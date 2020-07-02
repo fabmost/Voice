@@ -112,7 +112,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     );
     _iconAnimationTween = Tween(
       begin: 0.0,
-      end: 1.0,
+      end: 0.875,
     ).animate(_iconAnimationCtrl);
 
     items = [
@@ -125,6 +125,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         icon: Icon(GalupFont.challenge),
         label: 'Reto',
         ontap: _newChallenge,
+        color: Color(0xFFA4175D),
       )
     ];
 
@@ -225,6 +226,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             child: Text(item.label),
           ),
           FloatingActionButton(
+            backgroundColor: item.color,
             onPressed: onTap,
             mini: true,
             child: item.icon,
@@ -236,34 +238,36 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _checkIfOnboarding() async {
-    final bool result = await Provider.of<Preferences>(context, listen: false).getFirstTime();
-    if(result && !_triggeredOnboarding){
+    final bool result =
+        await Provider.of<Preferences>(context, listen: false).getFirstTime();
+    if (result && !_triggeredOnboarding) {
       _triggeredOnboarding = true;
       Navigator.of(context).pushNamed(OnboardingScreen.routeName);
     }
   }
 
   void initDynamicLinks() async {
-    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
     final Uri deepLink = data?.link;
 
     if (deepLink != null) {
-      Navigator.pushNamed(context, deepLink.path);
+      Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}',
+          arguments: deepLink.pathSegments[1]);
     }
 
     FirebaseDynamicLinks.instance.onLink(
-      onSuccess: (PendingDynamicLinkData dynamicLink) async {
-        final Uri deepLink = dynamicLink?.link;
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
 
-        if (deepLink != null) {
-          Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}');
-        }
-      },
-      onError: (OnLinkErrorException e) async {
-        print('onLinkError');
-        print(e.message);
+      if (deepLink != null) {
+        Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}',
+            arguments: deepLink.pathSegments[1]);
       }
-    );
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
   }
 
   @override
@@ -281,9 +285,9 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         onWillPop: _preventPopIfOpen,
       ),
       floatingActionButton: FloatingActionButton(
-        child: AnimatedIcon(
-          icon: AnimatedIcons.menu_close,
-          progress: _iconAnimationTween,
+        child: RotationTransition(
+          turns: _iconAnimationTween,
+          child: Icon(Icons.add),
         ),
         mini: true,
         elevation: 0,
@@ -335,10 +339,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 class FabMenuItem {
   String label;
   Icon icon;
+  Color color;
   Function ontap;
   FabMenuItem({
     @required this.label,
     @required this.ontap,
     @required this.icon,
+    this.color,
   });
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'auth_screen.dart';
 import 'chat_screen.dart';
@@ -94,6 +95,14 @@ class ViewProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _launchURL(url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   Widget _usersWidget(amount, type, action) {
@@ -194,32 +203,41 @@ class ViewProfileScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       if ((document['tiktok'] ?? '').toString().isNotEmpty)
-                        CircleAvatar(
-                          backgroundColor: Colors.black,
-                          child: Icon(
-                            GalupFont.tik_tok,
-                            color: Colors.white,
-                            size: 20,
+                        GestureDetector(
+                          onTap: () => _launchURL('https://www.tiktok.com/${document['tiktok']}'),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black,
+                            child: Icon(
+                              GalupFont.tik_tok,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       SizedBox(width: 8),
                       if ((document['facebook'] ?? '').toString().isNotEmpty)
-                        CircleAvatar(
-                          backgroundColor: Colors.black,
-                          child: Icon(
-                            GalupFont.facebook,
-                            color: Colors.white,
-                            size: 20,
+                        GestureDetector(
+                          onTap: () => _launchURL('https://www.facebook.com/${document['facebook']}'),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black,
+                            child: Icon(
+                              GalupFont.facebook,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       SizedBox(width: 8),
                       if ((document['instagram'] ?? '').toString().isNotEmpty)
-                        CircleAvatar(
-                          backgroundColor: Colors.black,
-                          child: Icon(
-                            GalupFont.instagram,
-                            color: Colors.white,
-                            size: 20,
+                        GestureDetector(
+                          onTap: () => _launchURL('https://www.instagram.com/${document['instagram']}'),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black,
+                            child: Icon(
+                              GalupFont.instagram,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                     ],
