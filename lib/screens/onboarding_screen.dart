@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../translations.dart';
 import '../providers/preferences_provider.dart';
 import '../widgets/onboarding.dart';
 
@@ -14,23 +15,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool canPop = false;
   PageController _pageController;
 
-  final titles = [
-    '¡Encuestas, retos y diversión!',
-    'Crea cientos de encuestas para sabe que opinan tus amigos',
-    '¡Lo retos nunca fueron tan divertidos!',
-    'Únete a miles de personas que ya están compartiendo encuestas, retos y videos'
-  ];
   final imgs = [
     'assets/onboarding_1.png',
     'assets/onboarding_2.png',
     'assets/onboarding_3.png',
     'assets/onboarding_4.png',
-  ];
-  final contents = [
-    '¡De eso de trata esta original App! En este espacio podrás seleccionar tus intereses y así comenzar a generar y responder encuestas adaptadas a tus preferencias para hacer valer tu opinión como nunca antes.',
-    'Si te gusta debatir e intercambiar ideas, Galup es tu mejor opción porque te ofrece la posibilidad de ir más allá a la hora de dar tus puntos de vista y de compartirlos con otros, escribiendo y opinando sobre los distintos contenidos.',
-    'Dale emoción a tu opinión creando retos de forma divertida para ti y tus amigos. Llegando a 1000 likes podrás descubrir sorpresas con variedad de contenidos que podrás disfrutar al alcance de un “click”.',
-    '¡Diviértete debatiendo con tus amigos y conocidos! Busca integrar a muchas más personas a la comunidad Galup compartiendo e invitándolos a dar su valiosa opinión en esta increíble y única aplicación.',
   ];
 
   @override
@@ -72,6 +61,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final titles = [
+    Translations.of(context).text('onboarding_title_1'),
+    Translations.of(context).text('onboarding_title_2'),
+    Translations.of(context).text('onboarding_title_3'),
+    Translations.of(context).text('onboarding_title_4'),
+  ];
+  
+  final contents = [
+    Translations.of(context).text('onboarding_subtitle_1'),
+    Translations.of(context).text('onboarding_subtitle_2'),
+    Translations.of(context).text('onboarding_subtitle_3'),
+    Translations.of(context).text('onboarding_subtitle_4'),
+  ];
     return Scaffold(
       body: WillPopScope(
         onWillPop: _preventPopIfOpen,

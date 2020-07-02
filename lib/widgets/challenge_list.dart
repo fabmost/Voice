@@ -22,6 +22,10 @@ class ChallengeList extends StatelessWidget {
       reposts = doc['reposts'].length;
       hasReposted = (doc['reposts'] as List).contains(userId);
     }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
     return Challenge(
       reference: doc.reference,
       myId: userId,
@@ -36,6 +40,7 @@ class ChallengeList extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      hasSaved: hasSaved,
     );
   }
 

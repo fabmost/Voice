@@ -28,6 +28,11 @@ import 'screens/detail_cause.dart';
 
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
+import 'screens/new_content_category_screen.dart';
+
+import 'screens/verify_type_screen.dart';
+import 'screens/verify_category_screen.dart';
+import 'screens/verify_id_screen.dart';
 
 import 'providers/preferences_provider.dart';
 
@@ -107,6 +112,7 @@ class App extends StatelessWidget {
           },
         ),
         routes: {
+          MenuScreen.routeName: (ctx) => MenuScreen(),
           OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
           AuthScreen.routeName: (ctx) => AuthScreen(),
           LoginScreen.routeName: (ctx) => LoginScreen(),
@@ -119,11 +125,15 @@ class App extends StatelessWidget {
           DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
           NewPollScreen.routeName: (ctx) => NewPollScreen(),
           NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
+          NewContentCategoryScreen.routeName: (ctx) => NewContentCategoryScreen(),
           FollowersScreen.routeName: (ctx) => FollowersScreen(),
           FollowingScreen.routeName: (ctx) => FollowingScreen(),
           DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
           DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
           DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
+          VerifyTypeScreen.routeName: (ctx) => VerifyTypeScreen(),
+          VerifyCategoryScreen.routeName: (ctx) => VerifyCategoryScreen(),
+          VerifyIdScreen.routeName: (ctx) => VerifyIdScreen(),
         },
       ),
     );

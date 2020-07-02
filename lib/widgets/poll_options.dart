@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/preferences_provider.dart';
+import '../screens/auth_screen.dart';
 
 class PollOptions extends StatefulWidget {
   final DocumentReference reference;
@@ -28,6 +33,101 @@ class PollOptions extends StatefulWidget {
 class _PollOptionsState extends State<PollOptions> {
   bool _isLoading = false;
 
+  void _anonymousAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Para seguir utilizando Galup debes crear una cuenta'),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text('Cancelar'),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text('Crear cuenta'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _setVote(position) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      final interactions =
+          await Provider.of<Preferences>(context, listen: false)
+              .getInteractions();
+      if (interactions >= 5) {
+        _anonymousAlert();
+        return;
+      }
+    }
+    setState(() {
+      _isLoading = true;
+    });
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+
+    await Firestore.instance.runTransaction((transaction) {
+      return transaction.get(widget.reference).then((value) {
+        List results = value.data['results'];
+        Map result = results[position];
+        result['votes']++;
+        if (userData.data['country'] != null) {
+          if (result['countries'].containsKey(userData.data['country'])) {
+            result['countries'][userData.data['country']]++;
+          } else {
+            result['countries'][userData.data['country']] = 1;
+          }
+        }
+        if (userData.data['gender'] != null) {
+          if (result['gender'].containsKey(userData.data['gender'])) {
+            result['gender'][userData.data['gender']]++;
+          } else {
+            result['gender'][userData.data['gender']] = 1;
+          }
+        }
+        if (userData.data['birthday'] != null) {
+          DateTime userDate =
+              DateFormat('yyy-MM-dd').parse(userData.data['birthday']);
+          int years = ((DateTime.now().difference(userDate).inDays)/365).floor();
+          String yearsString;
+          if(years <= 18){
+            yearsString = '-18';
+          }else if(years > 18 && years <= 30){
+            yearsString = '18-30';
+          }else if(years > 30 && years <= 40){
+            yearsString = '30-40';
+          }else{
+            yearsString = '40+';
+          }
+          if (result['age'].containsKey(yearsString)) {
+            result['age'][yearsString]++;
+          } else {
+            result['age'][yearsString] = 1;
+          }
+        }
+        transaction.update(widget.reference, {
+          "results": results,
+          "voters": FieldValue.arrayUnion([
+            {widget.userId: position}
+          ])
+        });
+      });
+    });
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   Widget _getOptions() {
     int pos = -1;
     return Column(
@@ -40,7 +140,9 @@ class _PollOptionsState extends State<PollOptions> {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      CircleAvatar(backgroundImage: NetworkImage(option['image']),),
+                      CircleAvatar(
+                        backgroundImage: NetworkImage(option['image']),
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: widget.hasVoted
@@ -60,7 +162,8 @@ class _PollOptionsState extends State<PollOptions> {
                   child: widget.hasVoted
                       ? _voted(option['text'], pos)
                       : _poll(
-                          option['text'], pos,
+                          option['text'],
+                          pos,
                         ),
                 ),
                 SizedBox(height: 8),
@@ -73,11 +176,10 @@ class _PollOptionsState extends State<PollOptions> {
   Widget _poll(option, position) {
     return FlatButton(
       child: Text(option),
-      onPressed: ()=> _setVote(position),
+      onPressed: () => _setVote(position),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(color: Theme.of(context).primaryColor)
-      ),
+          borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(color: Theme.of(context).primaryColor)),
     );
   }
 
@@ -93,7 +195,7 @@ class _PollOptionsState extends State<PollOptions> {
             widthFactor: totalPercentage,
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).accentColor,
+                color: Color(0xAA6767CB),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
@@ -121,8 +223,18 @@ class _PollOptionsState extends State<PollOptions> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text(option),
-                  Text('${format.format(totalPercentage * 100)}%')
+                  Text(
+                    option,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${format.format(totalPercentage * 100)}%',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -130,14 +242,6 @@ class _PollOptionsState extends State<PollOptions> {
         ],
       ),
     );
-  }
-
-  void _setVote(position){
-    setState(() {
-      _isLoading = true;
-    });
-
-    //WriteBatch batch;
   }
 
   @override

@@ -19,7 +19,13 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     setState(() {
       _isLoading = true;
     });
-    await FirebaseAuth.instance.signInAnonymously();
+    final authResult = await FirebaseAuth.instance.signInAnonymously();
+    await Firestore.instance
+        .collection('users')
+        .document(authResult.user.uid)
+        .setData({
+      'categories': [],
+    });
   }
 
   void _setSelected(value) {
@@ -93,7 +99,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       itemCount: categoryList.length,
                       itemBuilder: (ctx, i) => CategoryTile(
                         categoryList[i].name,
-                        categoryList[i].icon,
                         _categories.contains(categoryList[i].name),
                         _setSelected,
                       ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import 'menu_screen.dart';
 import 'login_screen.dart';
 import 'countries_screen.dart';
 import '../translations.dart';
@@ -15,6 +16,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   var _isLoading = false;
@@ -35,7 +37,7 @@ class _AuthScreenState extends State<AuthScreen> {
         context: context,
         builder: (context) {
           return SimpleDialog(
-            title: Text('Selecciona tu genero'),
+            title: Text(Translations.of(context).text('dialog_gender')),
             children: <Widget>[
               SimpleDialogOption(
                 child: Text(
@@ -96,17 +98,17 @@ class _AuthScreenState extends State<AuthScreen> {
     _genderController.text = value;
   }
 
-  void _validate(ctx) {
+  void _validate() {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
     if (isValid) {
       _formKey.currentState.save();
-      _validateUserName(ctx);
+      _validateUserName();
     }
   }
 
-  void _validateUserName(ctx) async {
+  void _validateUserName() async {
     setState(() {
       _isLoading = true;
     });
@@ -118,18 +120,18 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _isLoading = false;
       });
-      Scaffold.of(ctx).showSnackBar(
+      _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           content: Text('Ese username ya existe'),
           backgroundColor: Theme.of(context).errorColor,
         ),
       );
     } else {
-      _submitForm(ctx);
+      _submitForm();
     }
   }
 
-  void _submitForm(ctx) async {
+  void _submitForm() async {
     try {
       setState(() {
         _isLoading = true;
@@ -140,7 +142,10 @@ class _AuthScreenState extends State<AuthScreen> {
       final user = await _auth.currentUser();
       await user.linkWithCredential(credential);
 
-      await Firestore.instance.collection('users').document(user.uid).setData(
+      WriteBatch batch = Firestore.instance.batch();
+
+      batch.setData(
+        Firestore.instance.collection('users').document(user.uid),
         {
           'name': _name,
           'last_name': _last,
@@ -152,15 +157,25 @@ class _AuthScreenState extends State<AuthScreen> {
         },
         merge: true,
       );
+      batch.setData(
+        Firestore.instance.collection('hash').document(user.uid),
+        {
+          'name': _userName,
+          'user_name': '$_name $_last',
+        },
+        merge: true,
+      );
 
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+      await batch.commit();
+
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          MenuScreen.routeName, (Route<dynamic> route) => false);
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {
         message = err.message;
       }
-      Scaffold.of(ctx).showSnackBar(
+      _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           content: Text(message),
           backgroundColor: Theme.of(context).errorColor,
@@ -189,6 +204,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
@@ -209,7 +225,7 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Column(
               children: <Widget>[
                 Text(
-                  'Regístrate en Galup',
+                  Translations.of(context).text('label_signup_title'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
@@ -217,7 +233,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  '¡Crea un perfil, sigue otras cuentas, crea tus propias encuestas y retos!',
+                  Translations.of(context).text('label_signup_subtitle'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey,
@@ -234,7 +250,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu nombre';
+                      return Translations.of(context)
+                          .text('error_missing_name');
                     }
                     return null;
                   },
@@ -251,7 +268,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu apellido';
+                      return Translations.of(context)
+                          .text('error_missing_last_name');
                     }
                     return null;
                   },
@@ -268,7 +286,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu nombre de usuario';
+                      return Translations.of(context)
+                          .text('error_mising_username');
                     }
                     return null;
                   },
@@ -285,7 +304,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu fecha de nacimiento';
+                      return Translations.of(context)
+                          .text('error_missing_birth');
                     }
                     return null;
                   },
@@ -299,7 +319,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu genero';
+                      return Translations.of(context)
+                          .text('error_missing_gender');
                     }
                     return null;
                   },
@@ -313,7 +334,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu país';
+                      return Translations.of(context)
+                          .text('error_missing_country');
                     }
                     return null;
                   },
@@ -326,13 +348,15 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa tu correo';
+                      return Translations.of(context)
+                          .text('error_missing_email');
                     }
                     Pattern pattern =
                         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                     RegExp regex = new RegExp(pattern);
                     if (!regex.hasMatch(value)) {
-                      return 'Ingresa un correo válido';
+                      return Translations.of(context)
+                          .text('error_invalid_email');
                     }
                     return null;
                   },
@@ -349,7 +373,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty || value.length < 7) {
-                      return 'Tu contraseña debe tener al menos 7 caracteres';
+                      return Translations.of(context)
+                          .text('error_password_length');
                     }
                     return null;
                   },
@@ -363,7 +388,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty || _passwordController.text != value) {
-                      return 'Las contraseñas deben coincidir';
+                      return Translations.of(context)
+                          .text('error_password_mismatch');
                     }
                     return null;
                   },
@@ -376,8 +402,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         height: 42,
                         child: RaisedButton(
                           textColor: Colors.white,
-                          child: Text('Registrar'),
-                          onPressed: () => _validate(context),
+                          child: Text(
+                              Translations.of(context).text('button_signup')),
+                          onPressed: _validate,
                         ),
                       ),
                 ListTile(
@@ -388,10 +415,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Text('¿Ya tienes cuenta?'),
+                      Text(Translations.of(context).text('label_have_account')),
                       SizedBox(width: 8),
                       Text(
-                        'Ingresa',
+                        Translations.of(context).text('button_login'),
                         style: TextStyle(
                           color: Theme.of(context).accentColor,
                         ),

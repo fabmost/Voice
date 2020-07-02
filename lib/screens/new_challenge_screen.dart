@@ -8,6 +8,9 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'new_content_category_screen.dart';
+import '../translations.dart';
+
 class NewChallengeScreen extends StatefulWidget {
   static const routeName = '/new-challenge';
 
@@ -20,7 +23,36 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
   String metric = 'Likes';
   double goal = 0;
   TextEditingController _titleController = TextEditingController();
+  TextEditingController _hashController = TextEditingController();
   File _imageFile;
+
+  String category;
+  List<String> chips = [];
+
+  Iterable<Widget> get chipWidgets sync* {
+    for (final String actor in chips) {
+      yield Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Chip(
+          backgroundColor: Color(0xFFA4175D),
+          label: Text(
+            actor,
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+          deleteIconColor: Colors.white,
+          onDeleted: () {
+            setState(() {
+              chips.removeWhere((entry) {
+                return entry == actor;
+              });
+            });
+          },
+        ),
+      );
+    }
+  }
 
   void _imageOptions() {
     FocusScope.of(context).requestFocus(FocusNode());
@@ -138,15 +170,42 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     });
   }
 
+  void _selectCategory() {
+    Navigator.of(context)
+        .pushNamed(NewContentCategoryScreen.routeName)
+        .then((value) {
+      if (value != null) {
+        setState(() {
+          category = value;
+        });
+      }
+    });
+  }
+
+  void _getChip() {
+    if (_hashController.text.contains(' ') &&
+        _hashController.text.trim().isNotEmpty) {
+      setState(() {
+        chips.add(_hashController.text.trim());
+
+        _hashController.text = '';
+      });
+    }
+  }
+
   void _validate() {
-    if (_titleController.text.isNotEmpty && _imageFile != null && goal > 0) {
+    if (_titleController.text.isNotEmpty &&
+        _imageFile != null &&
+        goal > 0 &&
+        category != null &&
+        chips.isNotEmpty) {
       _saveChallenge();
       return;
     }
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Debes llenar todos los campos'),
+        title: Text(Translations.of(context).text('error_missing')),
         actions: <Widget>[
           FlatButton(
             onPressed: () {
@@ -157,6 +216,25 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
         ],
       ),
     );
+  }
+
+  void _showAlert() async {
+    await showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Tu reto se ha creado correctamente'),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
+    );
+    Navigator.of(context).pop();
   }
 
   void _saveChallenge() async {
@@ -200,12 +278,15 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       'metric_goal': goal,
       'comments': 0,
       'endDate': Timestamp.now(),
-      'category': 'Política',
-      'tags': ['test', 'politica', 'algomas'],
+      'category': category,
+      'tags': chips,
       'interactions': 0,
     });
     await batch.commit();
-    Navigator.of(context).pop();
+    setState(() {
+      _isLoading = false;
+    });
+    _showAlert();
   }
 
   Widget _title(text) {
@@ -217,6 +298,14 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
         color: Colors.grey,
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    _hashController.addListener(_getChip);
   }
 
   @override
@@ -250,7 +339,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 decoration: InputDecoration(
                   counterText: '',
                   border: InputBorder.none,
-                  hintText: 'Has tu reto',
+                  hintText:
+                      Translations.of(context).text('hint_challenge_title'),
                 ),
                 style: TextStyle(fontSize: 22),
               ),
@@ -313,6 +403,19 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 ],
               ),
               SizedBox(height: 16),
+              _title('Categoría'),
+              ListTile(
+                onTap: _selectCategory,
+                title: Text('${category ?? 'Selecciona una categoría'}'),
+              ),
+              TextField(
+                controller: _hashController,
+                decoration: InputDecoration(labelText: 'Hashtags'),
+              ),
+              Wrap(
+                children: chipWidgets.toList(),
+              ),
+              SizedBox(height: 16),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : Container(
@@ -321,10 +424,12 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                       child: RaisedButton(
                         color: Color(0xFFA4175D),
                         textColor: Colors.white,
-                        child: Text('Guardar'),
+                        child:
+                            Text(Translations.of(context).text('button_save')),
                         onPressed: () => _validate(),
                       ),
                     ),
+              SizedBox(height: 16),
             ],
           ),
         ),

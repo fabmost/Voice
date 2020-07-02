@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 
+import 'auth_screen.dart';
 import 'onboarding_screen.dart';
 import 'polls_screen.dart';
 import 'search_screen.dart';
@@ -17,6 +19,8 @@ import 'new_poll_screen.dart';
 import 'new_challenge_screen.dart';
 
 class MenuScreen extends StatefulWidget {
+  static const routeName = '/home';
+
   @override
   _MenuScreenState createState() => _MenuScreenState();
 }
@@ -53,12 +57,49 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _newPoll() {
+  void _newPoll() async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert();
+      return;
+    }
     Navigator.of(context).pushNamed(NewPollScreen.routeName);
   }
 
-  void _newChallenge() {
+  void _newChallenge() async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert();
+      return;
+    }
     Navigator.of(context).pushNamed(NewChallengeScreen.routeName);
+  }
+
+  void _anonymousAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title:
+            Text('Para realizar esta acción debes tener una cuenta en Galup'),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text('Cancelar'),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text('Crear cuenta'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

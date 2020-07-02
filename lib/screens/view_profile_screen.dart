@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'auth_screen.dart';
 import 'chat_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
@@ -14,7 +15,12 @@ import '../custom/galup_font_icons.dart';
 class ViewProfileScreen extends StatelessWidget {
   static const routeName = '/profile';
 
-  void _toChat(context, userId) {
+  void _toChat(context, userId) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert(context);
+      return;
+    }
     Navigator.of(context)
         .pushNamed(ChatScreen.routeName, arguments: {'userId': userId});
   }
@@ -27,7 +33,12 @@ class ViewProfileScreen extends StatelessWidget {
     Navigator.of(context).pushNamed(FollowingScreen.routeName, arguments: id);
   }
 
-  void _follow(userId, myId, isFollowing) {
+  void _follow(context, userId, myId, isFollowing) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert(context);
+      return;
+    }
     WriteBatch batch = Firestore.instance.batch();
     if (!isFollowing) {
       batch.updateData(
@@ -59,6 +70,32 @@ class ViewProfileScreen extends StatelessWidget {
     batch.commit();
   }
 
+  void _anonymousAlert(context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_need_account')),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_cancel')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text(Translations.of(context).text('button_create_account')),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _usersWidget(amount, type, action) {
     return Expanded(
       flex: 1,
@@ -68,7 +105,10 @@ class ViewProfileScreen extends StatelessWidget {
           children: <Widget>[
             Text(
               '$amount',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
             Text(type),
           ],
@@ -77,12 +117,12 @@ class ViewProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _followButton(userId, myId, followers) {
+  Widget _followButton(context, userId, myId, followers) {
     if (followers == null || !followers.contains(myId)) {
       return Expanded(
         flex: 1,
         child: RaisedButton(
-          onPressed: () => _follow(userId, myId, false),
+          onPressed: () => _follow(context, userId, myId, false),
           textColor: Colors.white,
           child: Text('Seguir'),
         ),
@@ -91,7 +131,7 @@ class ViewProfileScreen extends StatelessWidget {
     return Expanded(
       flex: 1,
       child: OutlineButton(
-        onPressed: () => _follow(userId, myId, true),
+        onPressed: () => _follow(context, userId, myId, true),
         child: Text('Siguiendo'),
       ),
     );
@@ -130,7 +170,7 @@ class ViewProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
-                      fontSize: 22,
+                      fontSize: 18,
                     ),
                   ),
                   Text(
@@ -138,6 +178,7 @@ class ViewProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       color: Theme.of(context).accentColor,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                   SizedBox(height: 16),
@@ -150,7 +191,41 @@ class ViewProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 16),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      if ((document['tiktok'] ?? '').toString().isNotEmpty)
+                        CircleAvatar(
+                          backgroundColor: Colors.black,
+                          child: Icon(
+                            GalupFont.tik_tok,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      SizedBox(width: 8),
+                      if ((document['facebook'] ?? '').toString().isNotEmpty)
+                        CircleAvatar(
+                          backgroundColor: Colors.black,
+                          child: Icon(
+                            GalupFont.facebook,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      SizedBox(width: 8),
+                      if ((document['instagram'] ?? '').toString().isNotEmpty)
+                        CircleAvatar(
+                          backgroundColor: Colors.black,
+                          child: Icon(
+                            GalupFont.instagram,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Row(
                     children: <Widget>[
                       _usersWidget(
                         document['following'] != null
@@ -158,6 +233,11 @@ class ViewProfileScreen extends StatelessWidget {
                             : 0,
                         Translations.of(context).text('label_following'),
                         () => _toFollowing(context, profileId),
+                      ),
+                      Container(
+                        width: 1,
+                        color: Colors.grey,
+                        height: 32,
                       ),
                       _usersWidget(
                         document['followers'] != null
@@ -167,7 +247,11 @@ class ViewProfileScreen extends StatelessWidget {
                         () => _toFollowers(context, profileId),
                       ),
                       _followButton(
-                          profileId, userSnap.data.uid, document['followers']),
+                        context,
+                        profileId,
+                        userSnap.data.uid,
+                        document['followers'],
+                      ),
                       SizedBox(width: 16)
                     ],
                   ),
@@ -206,8 +290,8 @@ class ViewProfileScreen extends StatelessWidget {
               SliverPersistentHeader(
                 pinned: false,
                 delegate: _SliverHeaderDelegate(
-                  350,
-                  350,
+                  360,
+                  360,
                   _newHeader(context, profileId),
                 ),
               ),
@@ -216,6 +300,7 @@ class ViewProfileScreen extends StatelessWidget {
                   TabBar(
                     labelColor: Theme.of(context).accentColor,
                     unselectedLabelColor: Colors.grey,
+                    indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
                     tabs: [
                       Tab(icon: Icon(GalupFont.survey)),
                       Tab(icon: Icon(GalupFont.challenge)),
@@ -272,16 +357,26 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height;
+  double get minExtent => _tabBar.preferredSize.height + 1;
   @override
-  double get maxExtent => _tabBar.preferredSize.height;
+  double get maxExtent => _tabBar.preferredSize.height + 1;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Colors.white,
-      child: _tabBar,
+      child: Column(
+        children: <Widget>[
+          Divider(
+            indent: 0,
+            endIndent: 0,
+            height: 1,
+            color: Colors.grey,
+          ),
+          _tabBar,
+        ],
+      ),
     );
   }
 

@@ -1,11 +1,16 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
+import '../translations.dart';
+import '../screens/auth_screen.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/preferences_provider.dart';
 
 class Cause extends StatelessWidget {
   final DocumentReference reference;
@@ -18,6 +23,7 @@ class Cause extends StatelessWidget {
   final int likes;
   final bool hasReposted;
   final int reposts;
+  final bool hasSaved;
 
   final Color color = Color(0xFFF0F0F0);
 
@@ -32,11 +38,52 @@ class Cause extends StatelessWidget {
     this.hasLiked,
     this.reposts,
     this.hasReposted,
+    this.hasSaved,
   });
 
-  void _like() {
+  void _anonymousAlert(context, text) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: text,
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_cancel')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text(Translations.of(context).text('button_create_account')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _like(context) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      final interactions =
+          await Provider.of<Preferences>(context, listen: false)
+              .getInteractions();
+      if (interactions >= 5) {
+        _anonymousAlert(
+          context,
+          Text(Translations.of(context).text('dialog_interactions_done')),
+        );
+        return;
+      }
+    }
     WriteBatch batch = Firestore.instance.batch();
     if (hasLiked) {
+      Provider.of<Preferences>(context, listen: false).removeInteractions();
       batch.updateData(Firestore.instance.collection('users').document(myId), {
         'liked': FieldValue.arrayRemove([reference.documentID]),
       });
@@ -45,6 +92,7 @@ class Cause extends StatelessWidget {
         'interactions': FieldValue.increment(-1)
       });
     } else {
+      Provider.of<Preferences>(context, listen: false).setInteractions();
       batch.updateData(Firestore.instance.collection('users').document(myId), {
         'liked': FieldValue.arrayUnion([reference.documentID]),
       });
@@ -85,6 +133,38 @@ class Cause extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
+  void _save(context) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert(
+        context,
+        Translations.of(context).text('dialog_need_account'),
+      );
+      return;
+    }
+    WriteBatch batch = Firestore.instance.batch();
+    if (hasSaved) {
+      batch.updateData(Firestore.instance.collection('users').document(myId), {
+        'saved': FieldValue.arrayRemove([reference.documentID]),
+      });
+      batch.updateData(reference, {
+        'saved': FieldValue.arrayRemove([myId]),
+        'interactions': FieldValue.increment(-1)
+      });
+    } else {
+      batch.updateData(Firestore.instance.collection('users').document(myId), {
+        'saved': FieldValue.arrayUnion([reference.documentID]),
+      });
+      batch.updateData(reference, {
+        'saved': FieldValue.arrayUnion([myId]),
+        'interactions': FieldValue.increment(1)
+      });
+    }
+    batch.commit();
+
+    Navigator.of(context).pop();
+  }
+
   void _options(context) {
     FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
@@ -94,6 +174,13 @@ class Cause extends StatelessWidget {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
+              ListTile(
+                onTap: () => _save(context),
+                leading: Icon(
+                  GalupFont.saved,
+                ),
+                title: Text(hasSaved ? 'Borrar' : 'Guardar'),
+              ),
               ListTile(
                 onTap: () => _flag(context),
                 leading: new Icon(
@@ -112,7 +199,7 @@ class Cause extends StatelessWidget {
     );
   }
 
-  Widget _causeButton() {
+  Widget _causeButton(context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
@@ -123,8 +210,8 @@ class Cause extends StatelessWidget {
           color: Colors.black,
           width: 2,
         ),
-        onPressed: _like,
-        child: Text(hasLiked ? 'Ya no a favor' : 'A favor'),
+        onPressed: () => _like(context),
+        child: Text(hasLiked ? 'No apoyo esta causa' : 'Apoyo esta causa'),
       ),
     );
   }
@@ -150,9 +237,19 @@ class Cause extends StatelessWidget {
                   backgroundColor: Colors.black,
                   backgroundImage: AssetImage('assets/logo.png'),
                 ),
-                title: Text(
-                  'Defiende tu causa',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'Defiende tu causa',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.add_circle),
+                      onPressed: () {},
+                    )
+                  ],
                 ),
                 subtitle: Text('Por: Galup'),
                 trailing: Transform.rotate(
@@ -176,7 +273,7 @@ class Cause extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            _causeButton(),
+            _causeButton(context),
             SizedBox(height: 16),
             Container(
               color: color,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../translations.dart';
+
 class CountriesScreen extends StatelessWidget {
   static const routeName = '/countries';
 
@@ -13,7 +15,7 @@ class CountriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Selecciona un país'),
+        title: Text(Translations.of(context).text('title_countries')),
       ),
       body: ListView.builder(
         itemCount: countries.length,

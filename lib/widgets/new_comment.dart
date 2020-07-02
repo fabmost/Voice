@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../screens/auth_screen.dart';
 import '../translations.dart';
 
 class NewComment extends StatefulWidget {
@@ -17,9 +18,40 @@ class _NewCommentState extends State<NewComment> {
   final _controller = TextEditingController();
   var _enteredMessage = '';
 
+  void _anonymousAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title:
+            Text(Translations.of(context).text('dialog_need_account')),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_cancel')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text(Translations.of(context).text('button_create_account')),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _sendComment() async {
     FocusScope.of(context).unfocus();
     final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert();
+      return;
+    }
     final userData =
         await Firestore.instance.collection('users').document(user.uid).get();
     String commentId =

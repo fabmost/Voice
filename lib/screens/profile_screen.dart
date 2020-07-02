@@ -7,10 +7,11 @@ import 'edit_profile_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
 
+import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
-import '../translations.dart';
+import '../widgets/saved_list.dart';
 
 class ProfileScreen extends StatelessWidget {
   void _signOut() {
@@ -111,7 +112,7 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
-                  fontSize: 22,
+                  fontSize: 18,
                 ),
               ),
               Text(
@@ -119,6 +120,7 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(
                   color: Theme.of(context).accentColor,
                   fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
               SizedBox(height: 16),
@@ -131,7 +133,38 @@ class ProfileScreen extends StatelessWidget {
               ),
               SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CircleAvatar(
+                    backgroundColor: (document['tiktok'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    child: Icon(
+                      GalupFont.tik_tok,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  CircleAvatar(
+                    backgroundColor: (document['facebook'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    child: Icon(
+                      GalupFont.facebook,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  CircleAvatar(
+                    backgroundColor: (document['instagram'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    child: Icon(
+                      GalupFont.instagram,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
                 children: <Widget>[
                   _usersWidget(
                     document['following'] != null
@@ -139,6 +172,11 @@ class ProfileScreen extends StatelessWidget {
                         : 0,
                     Translations.of(context).text('label_following'),
                     () => _toFollowing(context, userId),
+                  ),
+                  Container(
+                    width: 1,
+                    color: Colors.grey,
+                    height: 32,
                   ),
                   _usersWidget(
                     document['followers'] != null
@@ -170,7 +208,7 @@ class ProfileScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: Colors.white,
           body: DefaultTabController(
-            length: 2,
+            length: 3,
             child: NestedScrollView(
               headerSliverBuilder: (ctx, isScrolled) {
                 return <Widget>[
@@ -187,8 +225,8 @@ class ProfileScreen extends StatelessWidget {
                   SliverPersistentHeader(
                     pinned: false,
                     delegate: _SliverHeaderDelegate(
-                      350,
-                      350,
+                      360,
+                      360,
                       _header(context, userSnap.data.uid),
                     ),
                   ),
@@ -197,9 +235,11 @@ class ProfileScreen extends StatelessWidget {
                       TabBar(
                         labelColor: Theme.of(context).accentColor,
                         unselectedLabelColor: Colors.grey,
+                        indicatorPadding: EdgeInsets.symmetric(horizontal: 42),
                         tabs: [
                           Tab(icon: Icon(GalupFont.survey)),
                           Tab(icon: Icon(GalupFont.challenge)),
+                          Tab(icon: Icon(GalupFont.saved)),
                         ],
                       ),
                     ),
@@ -211,6 +251,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   PollList(userSnap.data.uid),
                   ChallengeList(userSnap.data.uid),
+                  SavedList(),
                 ],
               ),
             ),
@@ -255,16 +296,26 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height;
+  double get minExtent => _tabBar.preferredSize.height + 1;
   @override
-  double get maxExtent => _tabBar.preferredSize.height;
+  double get maxExtent => _tabBar.preferredSize.height + 1;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Colors.white,
-      child: _tabBar,
+      child: Column(
+        children: <Widget>[
+          Divider(
+            indent: 0,
+            endIndent: 0,
+            height: 1,
+            color: Colors.grey,
+          ),
+          _tabBar,
+        ],
+      ),
     );
   }
 

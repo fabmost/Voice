@@ -32,7 +32,7 @@ class FollowingScreen extends StatelessWidget {
           final documents = snapshot.data.documents;
           if (documents.isEmpty) {
             return Center(
-              child: Text('Vacío'),
+              child: Text(Translations.of(context).text('empty_following')),
             );
           }
           return ListView.separated(

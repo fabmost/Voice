@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'menu_screen.dart';
 import 'auth_screen.dart';
 import '../translations.dart';
 
@@ -13,9 +14,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   var _isLoading = false;
+  String _email, _password;
 
   void _validate() {
     final isValid = _formKey.currentState.validate();
@@ -23,26 +26,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (isValid) {
       _formKey.currentState.save();
+      _submit();
     }
   }
 
-  void _submit(email, password) async {
+  void _submit() async {
     try {
       setState(() {
         _isLoading = true;
       });
       await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: _email,
+        password: _password,
       );
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          MenuScreen.routeName, (Route<dynamic> route) => false);
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {
         message = err.message;
       }
-      Scaffold.of(context).showSnackBar(
+      _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           content: Text(message),
           backgroundColor: Theme.of(context).errorColor,
@@ -63,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
@@ -83,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: <Widget>[
                 Text(
-                  'Iniciar sesión en Galup',
+                  Translations.of(context).text('label_login_title'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
@@ -91,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'Gestiona tu cuenta, lee tus notificaciones, participa en las encuestas, retos y más',
+                  Translations.of(context).text('label_login_subtitle'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey,
@@ -107,15 +112,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa un correo';
+                      return Translations.of(context).text('error_missing_email');
                     }
                     Pattern pattern =
                         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                     RegExp regex = new RegExp(pattern);
                     if (!regex.hasMatch(value)) {
-                      return 'Ingresa un correo válido';
+                      return Translations.of(context).text('error_invalid_email');
                     }
                     return null;
+                  },
+                  onSaved: (value) {
+                    _email = value;
                   },
                 ),
                 TextFormField(
@@ -126,9 +134,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Ingresa una contraseña';
+                      return Translations.of(context).text('error_missing_password');
                     }
                     return null;
+                  },
+                  onSaved: (value) {
+                    _password = value;
                   },
                 ),
                 SizedBox(height: 16),
@@ -139,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 42,
                         child: RaisedButton(
                           textColor: Colors.white,
-                          child: Text('Ingresar'),
+                          child: Text(Translations.of(context).text('button_login')),
                           onPressed: _validate,
                         ),
                       ),
@@ -151,10 +162,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Text('No tienes cuenta?'),
+                      Text(Translations.of(context).text('label_no_account')),
                       SizedBox(width: 8),
                       Text(
-                        'Registrate',
+                        Translations.of(context).text('button_signup'),
                         style: TextStyle(
                           color: Theme.of(context).accentColor,
                         ),

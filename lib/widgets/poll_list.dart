@@ -36,6 +36,10 @@ class PollList extends StatelessWidget {
       reposts = doc['reposts'].length;
       hasReposted = (doc['reposts'] as List).contains(userId);
     }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
     return Poll(
       reference: doc.reference,
       myId: userId,
@@ -53,6 +57,7 @@ class PollList extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      hasSaved: hasSaved,
     );
   }
 

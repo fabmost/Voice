@@ -1,12 +1,17 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 import 'poll_options.dart';
+import '../translations.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/preferences_provider.dart';
+import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 
@@ -27,6 +32,7 @@ class Poll extends StatelessWidget {
   final int likes;
   final bool hasReposted;
   final int reposts;
+  final bool hasSaved;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -47,6 +53,7 @@ class Poll extends StatelessWidget {
     this.hasLiked,
     this.reposts,
     this.hasReposted,
+    this.hasSaved,
   });
 
   void _toProfile(context) {
@@ -59,21 +66,79 @@ class Poll extends StatelessWidget {
         .pushNamed(CommentsScreen.routeName, arguments: reference);
   }
 
-  void _like() {
+  void _anonymousAlert(context, text) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(text),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_cancel')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text(Translations.of(context).text('button_create_account')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _like(context) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      final interactions =
+          await Provider.of<Preferences>(context, listen: false)
+              .getInteractions();
+      if (interactions >= 5) {
+        _anonymousAlert(
+          context,
+          Translations.of(context).text('dialog_interactions_done'),
+        );
+        return;
+      }
+    }
+    WriteBatch batch = Firestore.instance.batch();
     if (hasLiked) {
-      reference.updateData({
+      Provider.of<Preferences>(context, listen: false).removeInteractions();
+      batch.updateData(Firestore.instance.collection('users').document(myId), {
+        'liked': FieldValue.arrayRemove([reference.documentID]),
+      });
+      batch.updateData(reference, {
         'likes': FieldValue.arrayRemove([myId]),
         'interactions': FieldValue.increment(-1)
       });
     } else {
-      reference.updateData({
+      Provider.of<Preferences>(context, listen: false).setInteractions();
+      batch.updateData(Firestore.instance.collection('users').document(myId), {
+        'liked': FieldValue.arrayUnion([reference.documentID]),
+      });
+      batch.updateData(reference, {
         'likes': FieldValue.arrayUnion([myId]),
         'interactions': FieldValue.increment(1)
       });
     }
+    batch.commit();
   }
 
-  void _repost() {}
+  void _repost(context) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert(
+        context,
+        Translations.of(context).text('dialog_need_account'),
+      );
+      return;
+    }
+  }
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
@@ -102,6 +167,38 @@ class Poll extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
+  void _save(context) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert(
+        context,
+        Translations.of(context).text('dialog_need_account'),
+      );
+      return;
+    }
+    WriteBatch batch = Firestore.instance.batch();
+    if (hasSaved) {
+      batch.updateData(Firestore.instance.collection('users').document(myId), {
+        'saved': FieldValue.arrayRemove([reference.documentID]),
+      });
+      batch.updateData(reference, {
+        'saved': FieldValue.arrayRemove([myId]),
+        'interactions': FieldValue.increment(-1)
+      });
+    } else {
+      batch.updateData(Firestore.instance.collection('users').document(myId), {
+        'saved': FieldValue.arrayUnion([reference.documentID]),
+      });
+      batch.updateData(reference, {
+        'saved': FieldValue.arrayUnion([myId]),
+        'interactions': FieldValue.increment(1)
+      });
+    }
+    batch.commit();
+
+    Navigator.of(context).pop();
+  }
+
   void _options(context) {
     FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
@@ -111,6 +208,14 @@ class Poll extends StatelessWidget {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
+              if (myId != userId)
+                ListTile(
+                  onTap: () => _save(context),
+                  leading: Icon(
+                    GalupFont.saved,
+                  ),
+                  title: Text(hasSaved ? 'Borrar' : 'Guardar'),
+                ),
               ListTile(
                 onTap: () => _flag(context),
                 leading: Icon(
@@ -118,7 +223,7 @@ class Poll extends StatelessWidget {
                   color: Colors.red,
                 ),
                 title: Text(
-                  "Denunciar",
+                  'Denunciar',
                   style: TextStyle(color: Colors.red),
                 ),
               ),
@@ -185,13 +290,20 @@ class Poll extends StatelessWidget {
               ),
               child: PollOptions(
                 reference: reference,
-                userId: userId,
+                userId: myId,
                 votes: votes,
                 options: options,
                 hasVoted: hasVoted,
                 vote: vote,
                 voters: voters,
               ),
+            ),
+            if(voters > 0) Padding(
+              padding: const EdgeInsets.only(
+                left: 16,
+                bottom: 16,
+              ),
+              child: Text(voters == 1 ? '$voters participante' : '$voters participantes'),
             ),
             Container(
               color: color,
@@ -204,7 +316,7 @@ class Poll extends StatelessWidget {
                     label: Text(comments == 0 ? '' : '$comments'),
                   ),
                   FlatButton.icon(
-                    onPressed: _like,
+                    onPressed: () => _like(context),
                     icon: Icon(
                       GalupFont.like,
                       color: hasLiked
@@ -214,7 +326,7 @@ class Poll extends StatelessWidget {
                     label: Text(likes == 0 ? '' : '$likes'),
                   ),
                   FlatButton.icon(
-                    onPressed: _repost,
+                    onPressed: () => _repost(context),
                     icon: Icon(GalupFont.repost,
                         color: hasReposted ? Color(0xFFA4175D) : Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),

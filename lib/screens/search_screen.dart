@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../translations.dart';
 import '../custom/search_delegate.dart';
 import '../widgets/appbar.dart';
+import '../widgets/top_content.dart';
+import '../widgets/filtered_content.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -15,7 +18,7 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   void initState() {
     super.initState();
-    _controller = TabController(vsync: this, length: 7);
+    _controller = TabController(vsync: this, length: 6);
     _controller.addListener(null);
   }
 
@@ -34,54 +37,68 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        GestureDetector(
-          onTap: ()=> _startSearch(context),
-          child: Container(
-            height: 42,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Color(0xFF8E8EAB),
-            ),
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Buscar',
-                style: TextStyle(fontSize: 16, color: Colors.black26),
+    return DefaultTabController(
+      length: 6,
+      child: Scaffold(
+        appBar: CustomAppBar(
+          GestureDetector(
+            onTap: () => _startSearch(context),
+            child: Container(
+              height: 42,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Color(0xFF8E8EAB),
+              ),
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  Translations.of(context).text('hint_search'),
+                  style: TextStyle(fontSize: 16, color: Colors.black26),
+                ),
               ),
             ),
           ),
+          true,
         ),
-        true,
-      ),
-      body: Column(
-        children: <Widget>[
-          Container(
-            constraints: BoxConstraints(maxHeight: 150.0),
-            child: Material(
-              color: Colors.white,
-              child: TabBar(
-                controller: _controller,
-                isScrollable: true,
-                indicatorPadding: EdgeInsets.symmetric(horizontal: 16),
-                labelColor: Theme.of(context).accentColor,
-                unselectedLabelColor: Colors.grey,
-                tabs: [
-                  Tab(text: 'Tendencia'),
-                  Tab(text: 'Política'),
-                  Tab(text: 'Deportes'),
-                  Tab(text: 'Gaming'),
-                  Tab(text: 'Educación'),
-                  Tab(text: 'Comedia'),
-                  Tab(text: 'Etc'),
+        body: Column(
+          children: <Widget>[
+            Container(
+              constraints: BoxConstraints(maxHeight: 150.0),
+              child: Material(
+                color: Colors.white,
+                child: TabBar(
+                  //controller: _controller,
+                  isScrollable: true,
+                  indicatorPadding: EdgeInsets.symmetric(horizontal: 16),
+                  labelColor: Theme.of(context).accentColor,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: [
+                    Tab(text: 'Tendencia'),
+                    Tab(text: 'Belleza'),
+                    Tab(text: 'Salud'),
+                    Tab(text: 'Tecnología'),
+                    Tab(text: 'Deportes'),
+                    Tab(text: 'Política'),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  TopContent(),
+                  FilteredContent('Belleza'),
+                  FilteredContent('Salud'),
+                  FilteredContent('Tecnología'),
+                  FilteredContent('Deportes'),
+                  FilteredContent('Política'),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
