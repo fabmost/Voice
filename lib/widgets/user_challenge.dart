@@ -14,7 +14,7 @@ import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 
-class Challenge extends StatelessWidget {
+class UserChallenge extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
   final String myId;
@@ -26,13 +26,12 @@ class Challenge extends StatelessWidget {
   final int comments;
   final bool hasLiked;
   final int likes;
-  final bool hasReposted;
   final int reposts;
   final bool hasSaved;
 
   final Color color = Color(0xFFFFF5FB);
 
-  Challenge({
+  UserChallenge({
     this.reference,
     this.userName,
     this.myId,
@@ -45,7 +44,6 @@ class Challenge extends StatelessWidget {
     this.likes,
     this.hasLiked,
     this.reposts,
-    this.hasReposted,
     this.hasSaved,
   });
 
@@ -116,76 +114,6 @@ class Challenge extends StatelessWidget {
       });
       batch.updateData(reference, {
         'likes': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
-  void _repost(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-    
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-        Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-challenge',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'creator_name': userName,
-        'creator_image': userImage,
-        'metric_type': metric,
-        'metric_goal': goal,
-        'originalDate': Timestamp.now(),
-        'parent': reference,
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([myId]),
         'interactions': FieldValue.increment(1)
       });
     }
@@ -385,9 +313,9 @@ class Challenge extends StatelessWidget {
                     label: Text(likes == 0 ? '' : '$likes'),
                   ),
                   FlatButton.icon(
-                    onPressed: () => _repost(context),
+                    onPressed: () => null,
                     icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Color(0xFFA4175D) : Colors.black),
+                        color: Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(

@@ -28,8 +28,11 @@ class _NewPollScreenState extends State<NewPollScreen> {
 
   bool moreOptions = false;
   File _option1, _option2, _option3;
+  List<File> pollImages = [];
   String category;
   List<String> chips = [];
+
+  final double size = 82;
 
   Iterable<Widget> get chipWidgets sync* {
     for (final String actor in chips) {
@@ -56,29 +59,93 @@ class _NewPollScreenState extends State<NewPollScreen> {
     }
   }
 
-  void _imageOptions(file) {
+  void _deleteFile(file, isOption) {
+    Navigator.of(context).pop();
+    if (!isOption) {
+      setState(() {
+        pollImages.removeAt(file);
+      });
+    }
+    switch (file) {
+      case 0:
+        setState(() {
+          _option1 = null;
+        });
+        break;
+      case 1:
+        setState(() {
+          _option2 = null;
+        });
+        break;
+      case 2:
+        setState(() {
+          _option3 = null;
+        });
+        break;
+    }
+  }
+
+  void _imageOptions(file, isOption) {
+    bool showDelete = false;
+    switch (file) {
+      case 0:
+        if (isOption) {
+          if (_option1 != null) showDelete = true;
+        } else {
+          if (pollImages.length > 0) showDelete = true;
+        }
+        break;
+      case 1:
+        if (isOption) {
+          if (_option1 != null) showDelete = true;
+        } else {
+          if (pollImages.length > 1) showDelete = true;
+        }
+        break;
+      case 2:
+        if (isOption) {
+          if (_option3 != null) showDelete = true;
+        } else {
+          if (pollImages.length > 2) showDelete = true;
+        }
+        break;
+    }
     FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
-        return new Container(
+        return Container(
           color: Colors.transparent,
-          child: new Wrap(
+          child: Wrap(
             children: <Widget>[
-              new ListTile(
-                onTap: () => _openCamera(file),
-                leading: new Icon(
+              ListTile(
+                onTap: () => _openCamera(file, isOption),
+                leading: Icon(
                   Icons.camera_alt,
                 ),
                 title: Text("Cámara"),
               ),
-              new ListTile(
-                onTap: () => _openGallery(file),
-                leading: new Icon(
+              ListTile(
+                onTap: () => _openGallery(file, isOption),
+                leading: Icon(
                   Icons.image,
                 ),
                 title: Text("Galería"),
               ),
+              if (showDelete)
+                ListTile(
+                  onTap: () => _deleteFile(file, isOption),
+                  leading: Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
+                  title: Text(
+                    "Eliminar",
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
             ],
           ),
         );
@@ -86,17 +153,17 @@ class _NewPollScreenState extends State<NewPollScreen> {
     );
   }
 
-  void _openCamera(file) {
+  void _openCamera(file, isOption) {
     Navigator.of(context).pop();
-    _takePicture(file);
+    _takePicture(file, isOption);
   }
 
-  void _openGallery(file) {
+  void _openGallery(file, isOption) {
     Navigator.of(context).pop();
-    _getPicture(file);
+    _getPicture(file, isOption);
   }
 
-  Future<void> _takePicture(file) async {
+  Future<void> _takePicture(file, isOption) async {
     final imageFile = await ImagePicker.pickImage(
       source: ImageSource.camera,
       maxWidth: 600,
@@ -107,17 +174,38 @@ class _NewPollScreenState extends State<NewPollScreen> {
       final fileName = path.basename(imageFile.path);
       final savedImage = await imageFile.copy('${appDir.path}/$fileName');
       */
-      _cropImage(file, imageFile.path);
+      if (isOption)
+        _cropImage(file, imageFile.path);
+      else
+        _cropBigImage(file, imageFile.path);
     }
   }
 
-  Future<void> _getPicture(file) async {
+  Future<void> _getPicture(file, isOption) async {
     final imageFile = await ImagePicker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 600,
     );
     if (imageFile != null) {
-      _cropImage(file, imageFile.path);
+      if (isOption)
+        _cropImage(file, imageFile.path);
+      else
+        _cropBigImage(file, imageFile.path);
+    }
+  }
+
+  void _cropBigImage(file, pathFile) async {
+    File cropped = await ImageCropper.cropImage(
+      sourcePath: pathFile,
+    );
+    if (cropped != null) {
+      setState(() {
+        if (pollImages.length <= file || pollImages.isEmpty) {
+          pollImages.add(cropped);
+        } else {
+          pollImages[file] = cropped;
+        }
+      });
     }
   }
 
@@ -224,8 +312,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
     if (_titleController.text.isNotEmpty &&
         _firstController.text.isNotEmpty &&
         _secondController.text.isNotEmpty &&
-        category != null &&
-        chips.isNotEmpty) {
+        category != null) {
       if (!moreOptions || (moreOptions && _thirdController.text.isNotEmpty)) {
         _savePoll();
         return;
@@ -288,7 +375,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
     var resultData = {'votes': 0, "countries": {}, "gender": {}, "age": {}};
     if (_option1 != null) {
       final ref =
-          FirebaseStorage.instance.ref().child('polls').child('option1.jpg');
+          FirebaseStorage.instance.ref().child('polls').child(pollId).child('option1.jpg');
 
       await ref.putFile(_option1).onComplete;
 
@@ -303,7 +390,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
     results.add(resultData);
     if (_option2 != null) {
       final ref =
-          FirebaseStorage.instance.ref().child('polls').child('option2.jpg');
+          FirebaseStorage.instance.ref().child('polls').child(pollId).child('option2.jpg');
 
       await ref.putFile(_option2).onComplete;
 
@@ -319,7 +406,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
     if (moreOptions) {
       if (_option3 != null) {
         final ref =
-            FirebaseStorage.instance.ref().child('polls').child('option3.jpg');
+            FirebaseStorage.instance.ref().child('polls').child(pollId).child('option3.jpg');
 
         await ref.putFile(_option3).onComplete;
 
@@ -332,6 +419,17 @@ class _NewPollScreenState extends State<NewPollScreen> {
         pollOptions.add({'text': _thirdController.text});
       }
       results.add(resultData);
+    }
+    List<String> images = [];
+    for(int i = 0; i < pollImages.length; i++) {
+      final element = pollImages[i];
+      final ref =
+          FirebaseStorage.instance.ref().child('polls').child(pollId).child('$i.jpg');
+
+      await ref.putFile(element).onComplete;
+
+      final url = await ref.getDownloadURL();
+      images.add(url);
     }
     batch.setData(Firestore.instance.collection('content').document(pollId), {
       'type': 'poll',
@@ -347,6 +445,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'category': category,
       'tags': chips,
       'interactions': 0,
+      'images': images,
     });
     chips.forEach((element) {
       batch.setData(
@@ -396,7 +495,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
         Expanded(child: _optionField(_firstController, 'Opción 1')),
         const SizedBox(width: 8),
         InkWell(
-          onTap: () => _imageOptions(0),
+          onTap: () => _imageOptions(0, true),
           child: Container(
             width: 42,
             height: 42,
@@ -422,7 +521,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
         Expanded(child: _optionField(_secondController, 'Opción 2')),
         const SizedBox(width: 8),
         InkWell(
-          onTap: () => _imageOptions(1),
+          onTap: () => _imageOptions(1, true),
           child: Container(
             width: 42,
             height: 42,
@@ -448,7 +547,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
         Expanded(child: _optionField(_thirdController, 'Opción 3')),
         const SizedBox(width: 8),
         InkWell(
-          onTap: () => _imageOptions(2),
+          onTap: () => _imageOptions(2, true),
           child: Container(
             width: 42,
             height: 42,
@@ -521,20 +620,57 @@ class _NewPollScreenState extends State<NewPollScreen> {
               _title('Imágenes (opcional)'),
               SizedBox(height: 16),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Container(
-                    width: 72,
-                    height: 72,
-                    child: RawMaterialButton(
-                      onPressed: () => _imageOptions(3),
-                      child: Icon(
-                        Icons.camera_alt,
+                  InkWell(
+                    onTap: () => _imageOptions(0, false),
+                    child: Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.black),
+                        image: pollImages.length > 0
+                            ? DecorationImage(image: FileImage(pollImages[0]))
+                            : null,
                       ),
-                      shape: CircleBorder(
-                        side: BorderSide(color: Colors.black),
-                      ),
+                      child: Icon(Icons.camera_alt),
                     ),
                   ),
+                  SizedBox(width: 8),
+                  if (pollImages.length > 0)
+                    InkWell(
+                      onTap: () => _imageOptions(1, false),
+                      child: Container(
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.black),
+                          image: pollImages.length > 1
+                              ? DecorationImage(image: FileImage(pollImages[1]))
+                              : null,
+                        ),
+                        child: Icon(Icons.camera_alt),
+                      ),
+                    ),
+                  SizedBox(width: 8),
+                  if (pollImages.length > 1)
+                    InkWell(
+                      onTap: () => _imageOptions(2, false),
+                      child: Container(
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.black),
+                          image: pollImages.length > 2
+                              ? DecorationImage(image: FileImage(pollImages[2]))
+                              : null,
+                        ),
+                        child: Icon(Icons.camera_alt),
+                      ),
+                    ),
                 ],
               ),
               SizedBox(height: 16),

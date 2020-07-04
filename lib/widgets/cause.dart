@@ -177,6 +177,7 @@ class Cause extends StatelessWidget {
         'info': info,
         'creator': creator,
         'originalDate': Timestamp.now(),
+        'parent': reference,
       });
       batch.updateData(reference, {
         'reposts': FieldValue.arrayUnion([myId]),
@@ -326,7 +327,7 @@ class Cause extends StatelessWidget {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     IconButton(
-                      icon: Icon(Icons.add_circle),
+                      icon: Icon(GalupFont.info_circled_alt),
                       onPressed: ()=> _infoAlert(context),
                     )
                   ],

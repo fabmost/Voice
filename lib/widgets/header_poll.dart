@@ -21,9 +21,11 @@ class HeaderPoll extends StatelessWidget {
 
   HeaderPoll(this.reference, this.userId);
 
-void _toProfile(context) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+  void _toProfile(context, creatorId) {
+    if (creatorId != userId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
+    }
   }
 
   void _anonymousAlert(context, text) {
@@ -69,7 +71,8 @@ void _toProfile(context) {
     WriteBatch batch = Firestore.instance.batch();
     if (hasLiked) {
       Provider.of<Preferences>(context, listen: false).removeInteractions();
-      batch.updateData(Firestore.instance.collection('users').document(userId), {
+      batch
+          .updateData(Firestore.instance.collection('users').document(userId), {
         'liked': FieldValue.arrayRemove([reference.documentID]),
       });
       batch.updateData(reference, {
@@ -78,7 +81,8 @@ void _toProfile(context) {
       });
     } else {
       Provider.of<Preferences>(context, listen: false).setInteractions();
-      batch.updateData(Firestore.instance.collection('users').document(userId), {
+      batch
+          .updateData(Firestore.instance.collection('users').document(userId), {
         'liked': FieldValue.arrayUnion([reference.documentID]),
       });
       batch.updateData(reference, {
@@ -138,7 +142,8 @@ void _toProfile(context) {
     }
     WriteBatch batch = Firestore.instance.batch();
     if (hasSaved) {
-      batch.updateData(Firestore.instance.collection('users').document(userId), {
+      batch
+          .updateData(Firestore.instance.collection('users').document(userId), {
         'saved': FieldValue.arrayRemove([reference.documentID]),
       });
       batch.updateData(reference, {
@@ -146,7 +151,8 @@ void _toProfile(context) {
         'interactions': FieldValue.increment(-1)
       });
     } else {
-      batch.updateData(Firestore.instance.collection('users').document(userId), {
+      batch
+          .updateData(Firestore.instance.collection('users').document(userId), {
         'saved': FieldValue.arrayUnion([reference.documentID]),
       });
       batch.updateData(reference, {
@@ -193,7 +199,119 @@ void _toProfile(context) {
       },
     );
   }
-  
+
+  Widget _images(images) {
+    if (images.length == 1) {
+      return InkWell(
+        //onTap: () => _imageOptions(2, false),
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(image: NetworkImage(images[0]))),
+        ),
+      );
+    } else if (images.length == 2) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[1]),
+                ),
+              ),
+            ),
+          )
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[1]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[2]),
+                ),
+              ),
+            ),
+          )
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -237,96 +355,105 @@ void _toProfile(context) {
 
           final creatorId = document['user_id'];
           final userImage = document['user_image'] ?? '';
+          final images = document['images'] ?? [];
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-              color: color,
-              child: ListTile(
-                onTap: creatorId == userId ? null : () => _toProfile(context),
-                leading: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Theme.of(context).accentColor,
-                  backgroundImage: NetworkImage(userImage),
-                ),
-                title: Text(
-                  document['user_name'],
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                subtitle: Text('Hace 5 días'),
-                trailing: Transform.rotate(
-                  angle: 270 * pi / 180,
-                  child: IconButton(
-                    icon: Icon(Icons.chevron_left),
-                    onPressed: () => _options(context, creatorId, hasSaved),
+                color: color,
+                child: ListTile(
+                  onTap: creatorId == userId
+                      ? null
+                      : () => _toProfile(context, creatorId),
+                  leading: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Theme.of(context).accentColor,
+                    backgroundImage: NetworkImage(userImage),
                   ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                document['title'],
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: 8,
-              ),
-              child: PollOptions(
-                reference: reference,
-                userId: userId,
-                votes: document['results'],
-                options: document['options'],
-                hasVoted: hasVoted,
-                vote: vote,
-                voters: voters,
-              ),
-            ),
-            if(voters > 0) Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                bottom: 16,
-              ),
-              child: Text(voters == 1 ? '$voters participante' : '$voters participantes'),
-            ),
-            Container(
-              color: color,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: () => _like(context, hasLiked),
-                    icon: Icon(
-                      GalupFont.like,
-                      color: hasLiked
-                          ? Theme.of(context).accentColor
-                          : Colors.black,
+                  title: Text(
+                    document['user_name'],
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  subtitle: Text('Hace 5 días'),
+                  trailing: Transform.rotate(
+                    angle: 270 * pi / 180,
+                    child: IconButton(
+                      icon: Icon(Icons.chevron_left),
+                      onPressed: () => _options(context, creatorId, hasSaved),
                     ),
-                    label: Text(likes == 0 ? '' : '$likes'),
                   ),
-                  FlatButton.icon(
-                    onPressed: () => _repost(context),
-                    icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Color(0xFFA4175D) : Colors.black),
-                    label: Text(reposts == 0 ? '' : '$reposts'),
-                  ),
-                  IconButton(
-                    icon: Icon(GalupFont.share),
-                    onPressed: _share,
-                  ),
-                ],
+                ),
               ),
-            ),
+              SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  document['title'],
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (images.isNotEmpty) SizedBox(height: 16),
+              if (images.isNotEmpty) _images(images),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: 8,
+                ),
+                child: PollOptions(
+                  reference: reference,
+                  userId: userId,
+                  votes: document['results'],
+                  options: document['options'],
+                  hasVoted: hasVoted,
+                  vote: vote,
+                  voters: voters,
+                ),
+              ),
+              if (voters > 0)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    bottom: 16,
+                  ),
+                  child: Text(voters == 1
+                      ? '$voters participante'
+                      : '$voters participantes'),
+                ),
+              Container(
+                color: color,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    FlatButton.icon(
+                      onPressed: () => _like(context, hasLiked),
+                      icon: Icon(
+                        GalupFont.like,
+                        color: hasLiked
+                            ? Theme.of(context).accentColor
+                            : Colors.black,
+                      ),
+                      label: Text(likes == 0 ? '' : '$likes'),
+                    ),
+                    FlatButton.icon(
+                      onPressed: () => _repost(context),
+                      icon: Icon(GalupFont.repost,
+                          color:
+                              hasReposted ? Color(0xFFA4175D) : Colors.black),
+                      label: Text(reposts == 0 ? '' : '$reposts'),
+                    ),
+                    IconButton(
+                      icon: Icon(GalupFont.share),
+                      onPressed: _share,
+                    ),
+                  ],
+                ),
+              ),
             ],
           );
         });

@@ -32,6 +32,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _tiktokController = TextEditingController();
   TextEditingController _facebookController = TextEditingController();
   TextEditingController _instagramController = TextEditingController();
+  TextEditingController _youtubeController = TextEditingController();
   FocusNode _birthFocus = FocusNode();
   FocusNode _genderFocus = FocusNode();
   FocusNode _countryFocus = FocusNode();
@@ -226,6 +227,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'tiktok': _tiktokController.text,
             'facebook': _facebookController.text,
             'instagram': _instagramController.text,
+            'youtube': _youtubeController.text,
           },
           merge: true,
         );
@@ -345,6 +347,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               }
               if (document['instagram'] != null) {
                 _instagramController.text = document['instagram'];
+              }
+              if (document['youtube'] != null) {
+                _youtubeController.text = document['youtube'];
               }
               _currentUrl = document['image'];
               return SingleChildScrollView(
@@ -497,6 +502,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           controller: _instagramController,
                           decoration: InputDecoration(
                             labelText: 'Instagram',
+                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        TextFormField(
+                          controller: _youtubeController,
+                          decoration: InputDecoration(
+                            labelText: 'Youtube',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),

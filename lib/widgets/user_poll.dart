@@ -4,9 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
+import 'poll_options.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
@@ -14,39 +16,41 @@ import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 
-class Challenge extends StatelessWidget {
+class UserPoll extends StatelessWidget {
   final DocumentReference reference;
-  final String userId;
   final String myId;
+  final String userId;
   final String userName;
   final String userImage;
   final String title;
-  final String metric;
-  final double goal;
   final int comments;
+  final List images;
+  final List options;
+  final List votes;
+  final int voters;
   final bool hasLiked;
   final int likes;
-  final bool hasReposted;
   final int reposts;
   final bool hasSaved;
 
-  final Color color = Color(0xFFFFF5FB);
+  final Color color = Color(0xFFF8F8FF);
 
-  Challenge({
+  UserPoll({
     this.reference,
-    this.userName,
     this.myId,
+    this.userName,
     this.userImage,
     this.title,
-    this.metric,
-    this.goal,
     this.comments,
     this.userId,
+    this.options,
+    this.votes,
+    this.voters,
     this.likes,
     this.hasLiked,
     this.reposts,
-    this.hasReposted,
     this.hasSaved,
+    this.images,
   });
 
   void _toProfile(context) {
@@ -122,81 +126,11 @@ class Challenge extends StatelessWidget {
     batch.commit();
   }
 
-  void _repost(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-    
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-        Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-challenge',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'creator_name': userName,
-        'creator_image': userImage,
-        'metric_type': metric,
-        'metric_goal': goal,
-        'originalDate': Timestamp.now(),
-        'parent': reference,
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
       link:
-          Uri.parse('https://voiceinc.page.link/challenge/${reference.documentID}'),
+          Uri.parse('https://voiceinc.page.link/poll/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -213,7 +147,7 @@ class Challenge extends StatelessWidget {
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
     Uri url = shortLink.shortUrl;
 
-    Share.share('Te comparto este Reto de Galup $url');
+    Share.share('Te comparto esta encuesta de Galup $url');
   }
 
   void _flag(context) {
@@ -271,7 +205,7 @@ class Challenge extends StatelessWidget {
                 ),
               ListTile(
                 onTap: () => _flag(context),
-                leading: new Icon(
+                leading: Icon(
                   Icons.flag,
                   color: Colors.red,
                 ),
@@ -287,33 +221,213 @@ class Challenge extends StatelessWidget {
     );
   }
 
-  Widget _challengeGoal() {
-    bool goalReached = false;
-    switch (metric) {
-      case 'likes':
-        if (likes >= goal) {
-          goalReached = true;
-        }
-        break;
-      case 'comentarios':
-        if (comments >= goal) {
-          goalReached = true;
-        }
-        break;
-      case 'regalups':
-        if (reposts >= goal) {
-          goalReached = true;
-        }
-        break;
+  Widget _images() {
+    if (images.length == 1) {
+      return InkWell(
+        //onTap: () => _imageOptions(2, false),
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(image: NetworkImage(images[0]))),
+        ),
+      );
+    } else if (images.length == 2) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[1]),
+                ),
+              ),
+            ),
+          )
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[1]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[2]),
+                ),
+              ),
+            ),
+          )
+        ],
+      );
     }
+  }
+
+  Widget _getOptions() {
+    int pos = -1;
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: options.map(
+          (option) {
+            pos++;
+            if (option.containsKey('image')) {
+              return Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      CircleAvatar(
+                        backgroundImage: NetworkImage(option['image']),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: _voted(option['text'], pos),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                ],
+              );
+            }
+            return Column(
+              children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  child: _voted(option['text'], pos),
+                ),
+                SizedBox(height: 8),
+              ],
+            );
+          },
+        ).toList());
+  }
+
+  Widget _voted(option, position) {
+    final int amount = votes[position]['votes'];
+    final totalPercentage = amount / voters;
+    final format = NumberFormat('###.##');
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
-      width: double.infinity,
-      child: OutlineButton(
-        highlightColor: Color(0xFFA4175D),
-        onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : 'Faltan $metric'),
+      child: Stack(
+        children: <Widget>[
+          FractionallySizedBox(
+            widthFactor: totalPercentage,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xAA6767CB),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                  topRight:
+                      totalPercentage == 1 ? Radius.circular(12) : Radius.zero,
+                  bottomRight:
+                      totalPercentage == 1 ? Radius.circular(12) : Radius.zero,
+                ),
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey,
+                width: 1.0,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    option,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${format.format(totalPercentage * 100)}%',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
@@ -325,7 +439,7 @@ class Challenge extends StatelessWidget {
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: Color(0xFFA4175D), width: 0.5),
+          side: BorderSide(color: Theme.of(context).accentColor, width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -337,7 +451,7 @@ class Challenge extends StatelessWidget {
                 onTap: myId == userId ? null : () => _toProfile(context),
                 leading: CircleAvatar(
                   radius: 18,
-                  backgroundColor: Color(0xFFA4175D),
+                  backgroundColor: Theme.of(context).accentColor,
                   backgroundImage: NetworkImage(userImage),
                 ),
                 title: Text(
@@ -365,9 +479,27 @@ class Challenge extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 16),
-            _challengeGoal(),
-            SizedBox(height: 16),
+            if (images.isNotEmpty) SizedBox(height: 16),
+            if (images.isNotEmpty) _images(),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 8,
+              ),
+              child: _getOptions(),
+            ),
+            if (voters > 0)
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  bottom: 16,
+                ),
+                child: Text(voters == 1
+                    ? '$voters participante'
+                    : '$voters participantes'),
+              ),
             Container(
               color: color,
               child: Row(
@@ -380,14 +512,17 @@ class Challenge extends StatelessWidget {
                   ),
                   FlatButton.icon(
                     onPressed: () => _like(context),
-                    icon: Icon(GalupFont.like,
-                        color: hasLiked ? Color(0xFFA4175D) : Colors.black),
+                    icon: Icon(
+                      GalupFont.like,
+                      color: hasLiked
+                          ? Theme.of(context).accentColor
+                          : Colors.black,
+                    ),
                     label: Text(likes == 0 ? '' : '$likes'),
                   ),
                   FlatButton.icon(
-                    onPressed: () => _repost(context),
-                    icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Color(0xFFA4175D) : Colors.black),
+                    onPressed: () => null,
+                    icon: Icon(GalupFont.repost, color: Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(
@@ -396,7 +531,7 @@ class Challenge extends StatelessWidget {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

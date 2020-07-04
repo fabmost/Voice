@@ -32,6 +32,7 @@ class CustomSearchDelegate extends SearchDelegate {
       creatorImage: doc['user_image'] ?? '',
       title: doc['title'],
       options: doc['options'],
+      images: doc['images'] ?? [],
     );
   }
 

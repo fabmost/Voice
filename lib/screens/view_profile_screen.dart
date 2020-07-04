@@ -40,6 +40,14 @@ class ViewProfileScreen extends StatelessWidget {
       _anonymousAlert(context);
       return;
     }
+    final userData =
+        await Firestore.instance.collection('users').document(userId).get();
+    final List creations = userData['created'] ?? [];
+    if (userData['reposted'] != null) {
+      (userData['reposted'] as List).forEach((element) {
+        creations.add(element.values.first);
+      });
+    }
     WriteBatch batch = Firestore.instance.batch();
     if (!isFollowing) {
       batch.updateData(
@@ -54,6 +62,14 @@ class ViewProfileScreen extends StatelessWidget {
           'following': FieldValue.arrayUnion([userId])
         },
       );
+      creations.forEach((element) {
+        batch.updateData(
+          Firestore.instance.collection('content').document(element),
+          {
+            'home': FieldValue.arrayUnion([myId])
+          },
+        );
+      });
     } else {
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
@@ -67,6 +83,14 @@ class ViewProfileScreen extends StatelessWidget {
           'following': FieldValue.arrayRemove([userId])
         },
       );
+      creations.forEach((element) {
+        batch.updateData(
+          Firestore.instance.collection('content').document(element),
+          {
+            'home': FieldValue.arrayRemove([myId])
+          },
+        );
+      });
     }
     batch.commit();
   }
@@ -204,7 +228,8 @@ class ViewProfileScreen extends StatelessWidget {
                     children: <Widget>[
                       if ((document['tiktok'] ?? '').toString().isNotEmpty)
                         GestureDetector(
-                          onTap: () => _launchURL('https://www.tiktok.com/${document['tiktok']}'),
+                          onTap: () => _launchURL(
+                              'https://www.tiktok.com/${document['tiktok']}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
@@ -217,7 +242,8 @@ class ViewProfileScreen extends StatelessWidget {
                       SizedBox(width: 8),
                       if ((document['facebook'] ?? '').toString().isNotEmpty)
                         GestureDetector(
-                          onTap: () => _launchURL('https://www.facebook.com/${document['facebook']}'),
+                          onTap: () => _launchURL(
+                              'https://www.facebook.com/${document['facebook']}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
@@ -230,11 +256,26 @@ class ViewProfileScreen extends StatelessWidget {
                       SizedBox(width: 8),
                       if ((document['instagram'] ?? '').toString().isNotEmpty)
                         GestureDetector(
-                          onTap: () => _launchURL('https://www.instagram.com/${document['instagram']}'),
+                          onTap: () => _launchURL(
+                              'https://www.instagram.com/${document['instagram']}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
                               GalupFont.instagram,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      SizedBox(width: 8),
+                      if ((document['youtube'] ?? '').toString().isNotEmpty)
+                        GestureDetector(
+                          onTap: () => _launchURL(
+                              'https://www.youtube.com/c/${document['instagram']}'),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black,
+                            child: Icon(
+                              GalupFont.youtube,
                               color: Colors.white,
                               size: 20,
                             ),

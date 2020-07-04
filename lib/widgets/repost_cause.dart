@@ -28,23 +28,6 @@ class RespostCause extends StatelessWidget {
         arguments: reference.documentID);
   }
 
-  void _infoAlert(context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Text(info),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Ok'),
-          )
-        ],
-      ),
-    );
-  }
-
   Widget _causeButton(context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -118,10 +101,7 @@ class RespostCause extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.add_circle),
-                            onPressed: () => _infoAlert(context),
-                          )
+                          Icon(GalupFont.info_circled_alt),
                         ],
                       ),
                       subtitle: Text('Por: Galup'),

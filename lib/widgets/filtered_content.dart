@@ -48,6 +48,7 @@ class FilteredContent extends StatelessWidget {
       comments: doc['comments'],
       options: doc['options'],
       votes: doc['results'],
+      images: doc['images'] ?? [],
       hasVoted: hasVoted,
       vote: vote,
       voters: voters,

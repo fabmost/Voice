@@ -23,6 +23,7 @@ class Poll extends StatelessWidget {
   final String userImage;
   final String title;
   final int comments;
+  final List images;
   final List options;
   final List votes;
   final bool hasVoted;
@@ -54,6 +55,7 @@ class Poll extends StatelessWidget {
     this.reposts,
     this.hasReposted,
     this.hasSaved,
+    this.images,
   });
 
   void _toProfile(context) {
@@ -142,7 +144,7 @@ class Poll extends StatelessWidget {
     final userData =
         await Firestore.instance.collection('users').document(user.uid).get();
     WriteBatch batch = Firestore.instance.batch();
-    
+
     if (hasReposted) {
       String repostId;
       final item = (userData['reposted'] as List).firstWhere(
@@ -167,7 +169,7 @@ class Poll extends StatelessWidget {
       });
     } else {
       String repostId =
-        Firestore.instance.collection('content').document().documentID;
+          Firestore.instance.collection('content').document().documentID;
 
       batch.updateData(
         Firestore.instance.collection('users').document(user.uid),
@@ -188,6 +190,8 @@ class Poll extends StatelessWidget {
         'creator_image': userImage,
         'options': options,
         'originalDate': Timestamp.now(),
+        'images': images,
+        'parent': reference,
       });
       batch.updateData(reference, {
         'reposts': FieldValue.arrayUnion([myId]),
@@ -200,7 +204,8 @@ class Poll extends StatelessWidget {
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse('https://voiceinc.page.link/poll/${reference.documentID}'),
+      link:
+          Uri.parse('https://voiceinc.page.link/poll/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -291,6 +296,118 @@ class Poll extends StatelessWidget {
     );
   }
 
+  Widget _images() {
+    if (images.length == 1) {
+      return InkWell(
+        //onTap: () => _imageOptions(2, false),
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(image: NetworkImage(images[0]))),
+        ),
+      );
+    } else if (images.length == 2) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[1]),
+                ),
+              ),
+            ),
+          )
+        ],
+      );
+    }else{
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                 border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[1]),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            //onTap: () => _imageOptions(2, false),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[2]),
+                ),
+              ),
+            ),
+          )
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -338,6 +455,8 @@ class Poll extends StatelessWidget {
                 ),
               ),
             ),
+            if (images.isNotEmpty) SizedBox(height: 16),
+            if (images.isNotEmpty) _images(),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,
@@ -388,7 +507,9 @@ class Poll extends StatelessWidget {
                   FlatButton.icon(
                     onPressed: () => _repost(context),
                     icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Theme.of(context).accentColor : Colors.black),
+                        color: hasReposted
+                            ? Theme.of(context).accentColor
+                            : Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(

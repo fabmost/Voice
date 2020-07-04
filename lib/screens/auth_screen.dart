@@ -20,6 +20,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   var _isLoading = false;
+  bool _isChecked = false;
   TextEditingController _birthController = TextEditingController();
   TextEditingController _genderController = TextEditingController();
   TextEditingController _countryController = TextEditingController();
@@ -102,7 +103,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
-    if (isValid) {
+    if (isValid && _isChecked) {
       _formKey.currentState.save();
       _validateUserName();
     }
@@ -392,6 +393,16 @@ class _AuthScreenState extends State<AuthScreen> {
                           .text('error_password_mismatch');
                     }
                     return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                CheckboxListTile(
+                  value: _isChecked,
+                  title: Text('Acepto los términos y condiciones'),
+                  onChanged: (value) {
+                    setState(() {
+                      _isChecked = value;
+                    });
                   },
                 ),
                 SizedBox(height: 16),

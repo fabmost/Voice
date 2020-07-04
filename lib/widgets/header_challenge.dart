@@ -20,9 +20,11 @@ class HeaderChallenge extends StatelessWidget {
 
   HeaderChallenge(this.reference, this.userId);
 
-  void _toProfile(context) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+  void _toProfile(context, creatorId) {
+    if (userId != creatorId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
+    }
   }
 
   void _anonymousAlert(context, text) {
@@ -265,7 +267,7 @@ class HeaderChallenge extends StatelessWidget {
               Container(
                 color: color,
                 child: ListTile(
-                  onTap: creatorId == userId ? null : () => _toProfile(context),
+                  onTap: creatorId == userId ? null : () => _toProfile(context, creatorId),
                   leading: CircleAvatar(
                     radius: 18,
                     backgroundColor: Color(0xFFA4175D),

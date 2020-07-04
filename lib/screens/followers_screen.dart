@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'view_profile_screen.dart';
@@ -7,9 +8,12 @@ import '../translations.dart';
 class FollowersScreen extends StatelessWidget {
   static const routeName = '/followers';
 
-  void _toProfile(context, userId) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+  void _toProfile(context, userId) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.uid != userId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    }
   }
 
   @override

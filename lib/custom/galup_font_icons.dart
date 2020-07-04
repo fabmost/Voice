@@ -12,6 +12,10 @@
 ///       - asset: fonts/GalupFont.ttf
 ///
 /// 
+/// * MFG Labs, Copyright (C) 2012 by Daniel Bruce
+///         Author:    MFG Labs
+///         License:   SIL (http://scripts.sil.org/OFL)
+///         Homepage:  http://www.mfglabs.com/
 ///
 import 'package:flutter/widgets.dart';
 
@@ -22,7 +26,6 @@ class GalupFont {
   static const _kFontPkg = null;
 
   static const IconData add = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData back = IconData(0xe801, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData call = IconData(0xe802, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData certification = IconData(0xe803, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData close = IconData(0xe804, fontFamily: _kFontFam, fontPackage: _kFontPkg);
@@ -38,9 +41,12 @@ class GalupFont {
   static const IconData profile = IconData(0xe810, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData rango = IconData(0xe811, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData repost = IconData(0xe812, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData challenge = IconData(0xe813, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData challenge_1 = IconData(0xe813, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData search = IconData(0xe814, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData share = IconData(0xe815, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData survey = IconData(0xe816, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData tik_tok = IconData(0xe818, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData challenge = IconData(0xe81a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData youtube = IconData(0xe81b, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData info_circled_alt = IconData(0xf086, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

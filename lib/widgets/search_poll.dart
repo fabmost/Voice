@@ -12,6 +12,7 @@ class SearchPoll extends StatelessWidget {
   final List options;
   final String creatorName;
   final String creatorImage;
+  final List images;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -24,6 +25,7 @@ class SearchPoll extends StatelessWidget {
     this.options,
     this.creatorName,
     this.creatorImage,
+    this.images,
   });
 
   void _toDetail(context) {
@@ -87,6 +89,100 @@ class SearchPoll extends StatelessWidget {
     );
   }
 
+  Widget _images() {
+    if (images.length == 1) {
+      Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.black),
+            image: DecorationImage(image: NetworkImage(images[0]))),
+      );
+    } else if (images.length == 2) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[1]),
+              ),
+            ),
+          )
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[1]),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[2]),
+              ),
+            ),
+          )
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -128,6 +224,8 @@ class SearchPoll extends StatelessWidget {
                   ),
                 ),
               ),
+              if (images.isNotEmpty) SizedBox(height: 16),
+              if (images.isNotEmpty) _images(),
               Padding(
                 padding: const EdgeInsets.only(
                   left: 16,

@@ -9,8 +9,8 @@ import 'following_screen.dart';
 
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
-import '../widgets/poll_list.dart';
-import '../widgets/challenge_list.dart';
+import '../widgets/poll_user_list.dart';
+import '../widgets/challenge_user_list.dart';
 import '../widgets/saved_list.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -161,6 +161,15 @@ class ProfileScreen extends StatelessWidget {
                       size: 20,
                     ),
                   ),
+                  SizedBox(width: 8),
+                  CircleAvatar(
+                    backgroundColor: (document['youtube'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    child: Icon(
+                      GalupFont.youtube,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 16),
@@ -249,8 +258,8 @@ class ProfileScreen extends StatelessWidget {
               },
               body: TabBarView(
                 children: [
-                  PollList(userSnap.data.uid),
-                  ChallengeList(userSnap.data.uid),
+                  PollUserList(userSnap.data.uid),
+                  ChallengeUserList(userSnap.data.uid),
                   SavedList(),
                 ],
               ),

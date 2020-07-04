@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../custom/galup_font_icons.dart';
 import '../screens/detail_cause_screen.dart';
 
 class SearchCause extends StatelessWidget {
@@ -25,23 +26,6 @@ class SearchCause extends StatelessWidget {
   void _toDetail(context) {
     Navigator.of(context).pushNamed(DetailCauseScreen.routeName,
         arguments: reference.documentID);
-  }
-
-  void _infoAlert(context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Text(info),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Ok'),
-          )
-        ],
-      ),
-    );
   }
 
   Widget _causeButton(context) {
@@ -92,10 +76,7 @@ class SearchCause extends StatelessWidget {
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.add_circle),
-                        onPressed: () => _infoAlert(context),
-                      )
+                      Icon(GalupFont.info_circled_alt),
                     ],
                   ),
                   subtitle: Text('Por: Galup'),

@@ -61,6 +61,7 @@ class PollsScreen extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      images: doc['images'] ?? [],
     );
   }
 
@@ -132,7 +133,7 @@ class PollsScreen extends StatelessWidget {
 
   Widget _repostPollWidget(doc, userId) {
     return RepostPoll(
-      reference: doc.reference,
+      reference: doc['parent'] ?? doc.reference,
       myId: userId,
       userId: doc['user_id'],
       userName: doc['user_name'],
@@ -140,12 +141,13 @@ class PollsScreen extends StatelessWidget {
       options: doc['options'],
       creatorName: doc['creator_name'],
       creatorImage: doc['creator_image'] ?? '',
+      images: doc['images'] ?? [],
     );
   }
 
   Widget _repostChallengeWidget(doc, userId) {
     return RepostChallenge(
-      reference: doc.reference,
+      reference: doc['parent'] ?? doc.reference,
       myId: userId,
       userId: doc['user_id'],
       userName: doc['user_name'],
@@ -158,12 +160,99 @@ class PollsScreen extends StatelessWidget {
 
   Widget _repostCauseWidget(doc, userId) {
     return RespostCause(
-      reference: doc.reference,
+      reference: doc['parent'] ?? doc.reference,
       myId: userId,
       userName: doc['user_name'],
       title: doc['title'],
       creator: doc['creator'],
       info: doc['info'],
+    );
+  }
+
+  Widget _likesHome(userId, userLikes) {
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection('content')
+          .where('category', whereIn: userLikes)
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final documents = snapshot.data.documents;
+        return _contentList(documents, userId);
+      },
+    );
+  }
+
+  Widget _topHome(userId) {
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection('content')
+          .orderBy('interactions', descending: true)
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final documents = snapshot.data.documents;
+        return _contentList(documents, userId);
+      },
+    );
+  }
+
+  Widget _userHome(userId) {
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection('content')
+          .where('home', arrayContains: userId)
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final documents = snapshot.data.documents;
+        if(documents.isEmpty){
+          return _topHome(userId);
+        }
+        return _contentList(documents, userId);
+      },
+    );
+  }
+
+  /**
+   * 
+   * Guardar detro de un arreglo home el id del usuario
+   * Filtrar por arrayContains id de usuario
+   * 
+   * 
+  */
+
+  Widget _contentList(documents, userId) {
+    return ListView.builder(
+      itemCount: documents.length,
+      itemBuilder: (ctx, i) {
+        final doc = documents[i];
+        switch (doc['type']) {
+          case 'poll':
+            return _pollWidget(doc, userId);
+          case 'challenge':
+            return _challengeWidget(doc, userId);
+          case 'cause':
+            return _causeWidget(doc, userId);
+          case 'repost-poll':
+            return _repostPollWidget(doc, userId);
+          case 'repost-challenge':
+            return _repostChallengeWidget(doc, userId);
+          case 'repost-cause':
+            return _repostCauseWidget(doc, userId);
+          default:
+            return SizedBox();
+        }
+      },
     );
   }
 
@@ -179,45 +268,14 @@ class PollsScreen extends StatelessWidget {
       ),
       body: FutureBuilder(
         future: FirebaseAuth.instance.currentUser(),
-        builder: (ctx, userSnap) {
+        builder: (ctx, AsyncSnapshot<FirebaseUser> userSnap) {
           if (userSnap.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-          return StreamBuilder(
-            stream: Firestore.instance
-                .collection('content')
-                .orderBy('createdAt', descending: true)
-                .snapshots(),
-            builder: (ctx, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              final documents = snapshot.data.documents;
-
-              return ListView.builder(
-                itemCount: documents.length,
-                itemBuilder: (ctx, i) {
-                  final doc = documents[i];
-                  switch (doc['type']) {
-                    case 'poll':
-                      return _pollWidget(doc, userSnap.data.uid);
-                    case 'challenge':
-                      return _challengeWidget(doc, userSnap.data.uid);
-                    case 'cause':
-                      return _causeWidget(doc, userSnap.data.uid);
-                    case 'repost-poll':
-                      return _repostPollWidget(doc, userSnap.data.uid);
-                    case 'repost-challenge':
-                      return _repostChallengeWidget(doc, userSnap.data.uid);
-                    case 'repost-cause':
-                      return _repostCauseWidget(doc, userSnap.data.uid);
-                    default:
-                      return SizedBox();
-                  }
-                },
-              );
-            },
-          );
+          if(userSnap.data.isAnonymous){
+            return _topHome(userSnap.data.uid);
+          }
+          return _userHome(userSnap.data.uid);
         },
       ),
     );
