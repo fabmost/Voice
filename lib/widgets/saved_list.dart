@@ -57,6 +57,7 @@ class SavedList extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -92,6 +93,7 @@ class SavedList extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
     );
   }
 

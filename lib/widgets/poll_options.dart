@@ -98,15 +98,16 @@ class _PollOptionsState extends State<PollOptions> {
         if (userData.data['birthday'] != null) {
           DateTime userDate =
               DateFormat('yyy-MM-dd').parse(userData.data['birthday']);
-          int years = ((DateTime.now().difference(userDate).inDays)/365).floor();
+          int years =
+              ((DateTime.now().difference(userDate).inDays) / 365).floor();
           String yearsString;
-          if(years <= 18){
+          if (years <= 18) {
             yearsString = '-18';
-          }else if(years > 18 && years <= 30){
+          } else if (years > 18 && years <= 30) {
             yearsString = '18-30';
-          }else if(years > 30 && years <= 40){
+          } else if (years > 30 && years <= 40) {
             yearsString = '30-40';
-          }else{
+          } else {
             yearsString = '40+';
           }
           if (result['age'].containsKey(yearsString)) {
@@ -186,7 +187,7 @@ class _PollOptionsState extends State<PollOptions> {
 
   Widget _voted(option, position) {
     final int amount = widget.votes[position]['votes'];
-    final totalPercentage = amount / widget.voters;
+    final totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.voters;
     final format = NumberFormat('###.##');
     return Container(
       height: 42,
@@ -222,13 +223,24 @@ class _PollOptionsState extends State<PollOptions> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
                     option,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  if (widget.vote == position)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.check_circle,
+                        color: Colors.black,
+                        size: 16,
+                      ),
+                    ),
+                  Expanded(
+                    child: SizedBox(),
                   ),
                   Text(
                     '${format.format(totalPercentage * 100)}%',

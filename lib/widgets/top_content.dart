@@ -52,6 +52,7 @@ class TopContent extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -82,6 +83,7 @@ class TopContent extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
     );
   }
 

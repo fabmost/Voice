@@ -4,8 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -105,9 +107,9 @@ class HeaderChallenge extends StatelessWidget {
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link:
-          Uri.parse('https://app.galup.app/challenge/${reference.documentID}'),
+      uriPrefix: 'https://galup.page.link',
+      link: Uri.parse(
+          'https://galup.page.link/challenge/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.oz.voice_inc',
         minimumVersion: 0,
@@ -202,23 +204,29 @@ class HeaderChallenge extends StatelessWidget {
 
   Widget _challengeGoal(metric, goal, likes, comments, reposts) {
     bool goalReached = false;
+    int amount;
     switch (metric) {
       case 'likes':
+        amount = likes;
         if (likes >= goal) {
           goalReached = true;
         }
         break;
       case 'comentarios':
+        amount = comments;
         if (comments >= goal) {
           goalReached = true;
         }
         break;
       case 'regalups':
+        amount = reposts;
         if (reposts >= goal) {
           goalReached = true;
         }
         break;
     }
+    final totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    final format = NumberFormat('###.##');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
@@ -226,7 +234,7 @@ class HeaderChallenge extends StatelessWidget {
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
         onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : 'Faltan $metric'),
+        child: Text(goalReached ? 'Ver' : '${format.format(totalPercentage * 100)}% completado'),
       ),
     );
   }
@@ -261,13 +269,19 @@ class HeaderChallenge extends StatelessWidget {
           final creatorId = document['user_id'];
           final userImage = document['user_image'] ?? '';
 
+          final date = document['createdAt'].toDate();
+          final now = new DateTime.now();
+          final difference = now.difference(date);
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
                 color: color,
                 child: ListTile(
-                  onTap: creatorId == userId ? null : () => _toProfile(context, creatorId),
+                  onTap: creatorId == userId
+                      ? null
+                      : () => _toProfile(context, creatorId),
                   leading: CircleAvatar(
                     radius: 18,
                     backgroundColor: Color(0xFFA4175D),
@@ -277,7 +291,7 @@ class HeaderChallenge extends StatelessWidget {
                     document['user_name'],
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  subtitle: Text('Hace 5 días'),
+                  subtitle: Text(timeago.format(now.subtract(difference))),
                   trailing: Transform.rotate(
                     angle: 270 * pi / 180,
                     child: IconButton(

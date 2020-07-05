@@ -23,6 +23,7 @@ class Cause extends StatelessWidget {
   final int reposts;
   final bool hasSaved;
   final String info;
+  final DateTime date;
 
   final Color color = Color(0xFFF0F0F0);
 
@@ -37,6 +38,7 @@ class Cause extends StatelessWidget {
     this.hasReposted,
     this.hasSaved,
     this.info,
+    this.date,
   });
 
   void _infoAlert(context) {
@@ -132,7 +134,7 @@ class Cause extends StatelessWidget {
     final userData =
         await Firestore.instance.collection('users').document(user.uid).get();
     WriteBatch batch = Firestore.instance.batch();
-    
+
     if (hasReposted) {
       String repostId;
       final item = (userData['reposted'] as List).firstWhere(
@@ -157,7 +159,7 @@ class Cause extends StatelessWidget {
       });
     } else {
       String repostId =
-        Firestore.instance.collection('content').document().documentID;
+          Firestore.instance.collection('content').document().documentID;
 
       batch.updateData(
         Firestore.instance.collection('users').document(user.uid),
@@ -176,8 +178,9 @@ class Cause extends StatelessWidget {
         'title': title,
         'info': info,
         'creator': creator,
-        'originalDate': Timestamp.now(),
+        'originalDate': Timestamp.fromDate(date),
         'parent': reference,
+        'home': userData['followers'] ?? []
       });
       batch.updateData(reference, {
         'reposts': FieldValue.arrayUnion([myId]),
@@ -189,8 +192,9 @@ class Cause extends StatelessWidget {
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse('https://voiceinc.page.link/cause/${reference.documentID}'),
+      uriPrefix: 'https://galup.page.link',
+      link:
+          Uri.parse('https://galup.page.link/cause/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -285,15 +289,22 @@ class Cause extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
       width: double.infinity,
-      child: OutlineButton(
-        highlightColor: Color(0xFFA4175D),
-        borderSide: BorderSide(
-          color: Colors.black,
-          width: 2,
-        ),
-        onPressed: () => _like(context),
-        child: Text(hasLiked ? 'No apoyo esta causa' : 'Apoyo esta causa'),
-      ),
+      child: hasLiked
+          ? OutlineButton(
+              highlightColor: Color(0xFFA4175D),
+              borderSide: BorderSide(
+                color: Colors.black,
+                width: 2,
+              ),
+              onPressed: () => _like(context),
+              child: Text('No apoyo esta causa'),
+            )
+          : RaisedButton(
+              onPressed: () => _like(context),
+              color: Colors.black,
+              textColor: Colors.white,
+              child: Text('Apoyo esta causa'),
+            ),
     );
   }
 
@@ -326,9 +337,10 @@ class Cause extends StatelessWidget {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
+                    SizedBox(width: 2),
                     IconButton(
                       icon: Icon(GalupFont.info_circled_alt),
-                      onPressed: ()=> _infoAlert(context),
+                      onPressed: () => _infoAlert(context),
                     )
                   ],
                 ),
@@ -361,7 +373,7 @@ class Cause extends StatelessWidget {
               child: Row(
                 children: <Widget>[
                   FlatButton.icon(
-                    onPressed: ()=> _repost(context),
+                    onPressed: () => _repost(context),
                     icon: Icon(GalupFont.repost,
                         color: hasReposted ? Colors.grey : Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),

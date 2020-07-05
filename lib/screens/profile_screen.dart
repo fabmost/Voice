@@ -9,15 +9,13 @@ import 'following_screen.dart';
 
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
+import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
 import '../widgets/saved_list.dart';
 
 class ProfileScreen extends StatelessWidget {
-  void _signOut() {
-    FirebaseAuth.instance.signOut();
-  }
-
+  
   void _toFollowers(context, id) {
     Navigator.of(context).pushNamed(FollowersScreen.routeName, arguments: id);
   }
@@ -216,6 +214,7 @@ class ProfileScreen extends StatelessWidget {
         }
         return Scaffold(
           backgroundColor: Colors.white,
+          drawer: AppDrawer(),
           body: DefaultTabController(
             length: 3,
             child: NestedScrollView(

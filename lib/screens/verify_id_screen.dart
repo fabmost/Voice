@@ -64,7 +64,7 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
   }
 
   Future<void> _takePicture() async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
     );
     if (imageFile != null) {
@@ -78,7 +78,7 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
   }
 
   Future<void> _getPicture() async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 600,
     );

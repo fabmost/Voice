@@ -22,8 +22,7 @@ class _NewCommentState extends State<NewComment> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title:
-            Text(Translations.of(context).text('dialog_need_account')),
+        title: Text(Translations.of(context).text('dialog_need_account')),
         actions: <Widget>[
           FlatButton(
             onPressed: () {
@@ -95,7 +94,10 @@ class _NewCommentState extends State<NewComment> {
               textCapitalization: TextCapitalization.sentences,
               autocorrect: true,
               enableSuggestions: true,
+              maxLines: null,
+              maxLength: 120,
               decoration: InputDecoration(
+                  counterText: '',
                   hintText: Translations.of(context).text('hint_comment')),
               onChanged: (value) {
                 setState(() {

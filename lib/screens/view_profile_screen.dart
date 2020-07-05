@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -50,6 +51,7 @@ class ViewProfileScreen extends StatelessWidget {
     }
     WriteBatch batch = Firestore.instance.batch();
     if (!isFollowing) {
+      FirebaseMessaging().subscribeToTopic(userId);
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
         {
@@ -71,6 +73,7 @@ class ViewProfileScreen extends StatelessWidget {
         );
       });
     } else {
+      FirebaseMessaging().unsubscribeFromTopic(userId);
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
         {
@@ -229,7 +232,7 @@ class ViewProfileScreen extends StatelessWidget {
                       if ((document['tiktok'] ?? '').toString().isNotEmpty)
                         GestureDetector(
                           onTap: () => _launchURL(
-                              'https://www.tiktok.com/${document['tiktok']}'),
+                              'https://www.tiktok.com/${document['tiktok'].replaceAll('@', '')}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
@@ -243,7 +246,7 @@ class ViewProfileScreen extends StatelessWidget {
                       if ((document['facebook'] ?? '').toString().isNotEmpty)
                         GestureDetector(
                           onTap: () => _launchURL(
-                              'https://www.facebook.com/${document['facebook']}'),
+                              'https://www.facebook.com/${document['facebook'].replaceAll('@', '')}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
@@ -257,7 +260,7 @@ class ViewProfileScreen extends StatelessWidget {
                       if ((document['instagram'] ?? '').toString().isNotEmpty)
                         GestureDetector(
                           onTap: () => _launchURL(
-                              'https://www.instagram.com/${document['instagram']}'),
+                              'https://www.instagram.com/${document['instagram'].replaceAll('@', '')}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
@@ -271,7 +274,7 @@ class ViewProfileScreen extends StatelessWidget {
                       if ((document['youtube'] ?? '').toString().isNotEmpty)
                         GestureDetector(
                           onTap: () => _launchURL(
-                              'https://www.youtube.com/c/${document['instagram']}'),
+                              'https://www.youtube.com/c/${document['youtube']}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(

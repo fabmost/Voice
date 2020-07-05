@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../custom/galup_font_icons.dart';
 import '../screens/detail_poll_screen.dart';
@@ -14,6 +15,7 @@ class RepostPoll extends StatelessWidget {
   final String creatorName;
   final String creatorImage;
   final List images;
+  final DateTime date;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -27,6 +29,7 @@ class RepostPoll extends StatelessWidget {
     this.creatorName,
     this.creatorImage,
     this.images,
+    this.date,
   });
 
   void _toDetail(context) {
@@ -92,15 +95,21 @@ class RepostPoll extends StatelessWidget {
 
   Widget _images() {
     if (images.length == 1) {
-      return InkWell(
-        //onTap: () => _imageOptions(2, false),
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(image: NetworkImage(images[0]))),
+      return Align(
+        alignment: Alignment.center,
+        child: InkWell(
+          //onTap: () => _imageOptions(2, false),
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                  fit: BoxFit.cover,
+                )),
+          ),
         ),
       );
     } else if (images.length == 2) {
@@ -120,6 +129,7 @@ class RepostPoll extends StatelessWidget {
                 border: Border.all(color: Colors.black),
                 image: DecorationImage(
                   image: NetworkImage(images[0]),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -138,6 +148,7 @@ class RepostPoll extends StatelessWidget {
                 border: Border.all(color: Colors.black),
                 image: DecorationImage(
                   image: NetworkImage(images[1]),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -161,6 +172,7 @@ class RepostPoll extends StatelessWidget {
                 border: Border.all(color: Colors.black),
                 image: DecorationImage(
                   image: NetworkImage(images[0]),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -175,6 +187,7 @@ class RepostPoll extends StatelessWidget {
                 border: Border.all(color: Colors.black),
                 image: DecorationImage(
                   image: NetworkImage(images[1]),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -193,6 +206,7 @@ class RepostPoll extends StatelessWidget {
                 border: Border.all(color: Colors.black),
                 image: DecorationImage(
                   image: NetworkImage(images[2]),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -204,6 +218,9 @@ class RepostPoll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -245,17 +262,18 @@ class RepostPoll extends StatelessWidget {
                       ),
                     ),
                     ListTile(
-                        leading: CircleAvatar(
-                          radius: 18,
-                          backgroundColor: Theme.of(context).accentColor,
-                          backgroundImage: NetworkImage(creatorImage),
-                        ),
-                        title: Text(
-                          creatorName,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                        subtitle: Text('Hace 5 días')),
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Theme.of(context).accentColor,
+                        backgroundImage: NetworkImage(creatorImage),
+                      ),
+                      title: Text(
+                        creatorName,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      subtitle: Text(timeago.format(now.subtract(difference))),
+                    ),
                   ],
                 ),
               ),

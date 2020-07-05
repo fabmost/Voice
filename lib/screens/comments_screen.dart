@@ -63,6 +63,7 @@ class CommentsScreen extends StatelessWidget {
                         return Comment(
                           reference: doc.reference,
                           myId: userSnap.data.uid,
+                          userId: doc['userId'],
                           title: doc['text'],
                           comments: doc['comments'],
                           date: doc['createdAt'].toDate(),

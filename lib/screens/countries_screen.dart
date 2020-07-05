@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../translations.dart';
 
-class CountriesScreen extends StatelessWidget {
+class CountriesScreen extends StatefulWidget {
   static const routeName = '/countries';
 
+  @override
+  _CountriesScreenState createState() => _CountriesScreenState();
+}
+
+class _CountriesScreenState extends State<CountriesScreen> {
+  TextEditingController _controller = new TextEditingController();
+  String _filter;
   final countries = [
     'Andorra',
     'Emiratos Árabes Unidos',
@@ -251,17 +258,61 @@ class CountriesScreen extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        _filter = _controller.text;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_countries')),
       ),
-      body: ListView.builder(
-        itemCount: countries.length,
-        itemBuilder: (ctx, i) => ListTile(
-          onTap: () => _selected(context, countries[i]),
-          title: Text(countries[i]),
-        ),
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              decoration: InputDecoration(
+                  icon: Icon(Icons.search),
+                  hintText: Translations.of(context).text('hint_search')),
+              controller: _controller,
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: countries.length,
+              itemBuilder: (ctx, i) {
+                return _filter == null || _filter == ""
+                    ? Column(
+                        children: <Widget>[
+                          ListTile(
+                            onTap: () => _selected(context, countries[i]),
+                            title: Text(countries[i]),
+                          ),
+                          Divider()
+                        ],
+                      )
+                    : countries[i].toLowerCase().contains(_filter.toLowerCase())
+                        ? Column(
+                            children: <Widget>[
+                              ListTile(
+                                onTap: () => _selected(context, countries[i]),
+                                title: Text(countries[i]),
+                              ),
+                              Divider(),
+                            ],
+                          )
+                        : Container();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

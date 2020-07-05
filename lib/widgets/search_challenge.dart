@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../screens/detail_challenge_screen.dart';
 
@@ -12,6 +13,7 @@ class SearchChallenge extends StatelessWidget {
   final String metric;
   final String creatorName;
   final String creatorImage;
+  final DateTime date;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -24,6 +26,7 @@ class SearchChallenge extends StatelessWidget {
     this.userId,
     this.creatorImage,
     this.creatorName,
+    this.date,
   });
 
   void _toDetail(context) {
@@ -46,6 +49,9 @@ class SearchChallenge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -71,7 +77,7 @@ class SearchChallenge extends StatelessWidget {
                     creatorName,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  subtitle: Text('Hace 5 días'),
+                  subtitle: Text(timeago.format(now.subtract(difference))),
                 ),
               ),
               SizedBox(height: 16),

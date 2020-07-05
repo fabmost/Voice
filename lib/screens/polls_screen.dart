@@ -62,6 +62,7 @@ class PollsScreen extends StatelessWidget {
       hasReposted: hasReposted,
       hasSaved: hasSaved,
       images: doc['images'] ?? [],
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -97,6 +98,7 @@ class PollsScreen extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -128,6 +130,7 @@ class PollsScreen extends StatelessWidget {
       hasSaved: hasSaved,
       creator: doc['creator'],
       info: doc['info'],
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -142,6 +145,7 @@ class PollsScreen extends StatelessWidget {
       creatorName: doc['creator_name'],
       creatorImage: doc['creator_image'] ?? '',
       images: doc['images'] ?? [],
+      date: doc['originalDate'].toDate(),
     );
   }
 
@@ -155,6 +159,7 @@ class PollsScreen extends StatelessWidget {
       creatorName: doc['creator_name'],
       creatorImage: doc['creator_image'] ?? '',
       metric: doc['metric_type'],
+      date: doc['originalDate'].toDate(),
     );
   }
 
@@ -166,6 +171,7 @@ class PollsScreen extends StatelessWidget {
       title: doc['title'],
       creator: doc['creator'],
       info: doc['info'],
+      date: doc['originalDate'].toDate(),
     );
   }
 
@@ -222,14 +228,6 @@ class PollsScreen extends StatelessWidget {
       },
     );
   }
-
-  /**
-   * 
-   * Guardar detro de un arreglo home el id del usuario
-   * Filtrar por arrayContains id de usuario
-   * 
-   * 
-  */
 
   Widget _contentList(documents, userId) {
     return ListView.builder(

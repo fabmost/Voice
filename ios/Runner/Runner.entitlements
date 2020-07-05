@@ -7,6 +7,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:voiceinc.page.link</string>
+		<string>applinks:galup.page.link</string>
 	</array>
 </dict>
 </plist>

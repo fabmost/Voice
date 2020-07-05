@@ -11,6 +11,7 @@ class RespostCause extends StatelessWidget {
   final String title;
   final String info;
   final String userName;
+  final DateTime date;
 
   final Color color = Color(0xFFF0F0F0);
 
@@ -21,6 +22,7 @@ class RespostCause extends StatelessWidget {
     this.title,
     this.info,
     this.userName,
+    this.date,
   });
 
   void _toDetail(context) {

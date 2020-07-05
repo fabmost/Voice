@@ -56,6 +56,7 @@ class FilteredContent extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -86,6 +87,7 @@ class FilteredContent extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
     );
   }
 

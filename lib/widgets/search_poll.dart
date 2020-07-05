@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../screens/detail_poll_screen.dart';
 
@@ -13,6 +14,7 @@ class SearchPoll extends StatelessWidget {
   final String creatorName;
   final String creatorImage;
   final List images;
+  final DateTime date;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -26,6 +28,7 @@ class SearchPoll extends StatelessWidget {
     this.creatorName,
     this.creatorImage,
     this.images,
+    this.date,
   });
 
   void _toDetail(context) {
@@ -91,13 +94,19 @@ class SearchPoll extends StatelessWidget {
 
   Widget _images() {
     if (images.length == 1) {
-      Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.black),
-            image: DecorationImage(image: NetworkImage(images[0]))),
+      return Align(
+        alignment: Alignment.center,
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
+              )),
+        ),
       );
     } else if (images.length == 2) {
       return Row(
@@ -114,6 +123,7 @@ class SearchPoll extends StatelessWidget {
               border: Border.all(color: Colors.black),
               image: DecorationImage(
                 image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -129,6 +139,7 @@ class SearchPoll extends StatelessWidget {
               border: Border.all(color: Colors.black),
               image: DecorationImage(
                 image: NetworkImage(images[1]),
+                fit: BoxFit.cover,
               ),
             ),
           )
@@ -149,6 +160,7 @@ class SearchPoll extends StatelessWidget {
               border: Border.all(color: Colors.black),
               image: DecorationImage(
                 image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -160,6 +172,7 @@ class SearchPoll extends StatelessWidget {
               border: Border.all(color: Colors.black),
               image: DecorationImage(
                 image: NetworkImage(images[1]),
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -175,6 +188,7 @@ class SearchPoll extends StatelessWidget {
               border: Border.all(color: Colors.black),
               image: DecorationImage(
                 image: NetworkImage(images[2]),
+                fit: BoxFit.cover,
               ),
             ),
           )
@@ -185,6 +199,9 @@ class SearchPoll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -210,7 +227,7 @@ class SearchPoll extends StatelessWidget {
                     creatorName,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  subtitle: Text('Hace 5 días'),
+                  subtitle: Text(timeago.format(now.subtract(difference))),
                 ),
               ),
               SizedBox(height: 16),

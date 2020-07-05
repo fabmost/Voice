@@ -95,7 +95,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
   }
 
   Future<void> _takePicture() async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
     );
     if (imageFile != null) {
@@ -109,7 +109,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
   }
 
   Future<void> _getPicture() async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 600,
     );
@@ -197,8 +197,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     if (_titleController.text.isNotEmpty &&
         _imageFile != null &&
         goal > 0 &&
-        category != null &&
-        chips.isNotEmpty) {
+        category != null) {
       _saveChallenge();
       return;
     }
@@ -281,6 +280,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       'category': category,
       'tags': chips,
       'interactions': 0,
+      'home': userData['followers'] ?? [],
     });
     await batch.commit();
     setState(() {
@@ -349,19 +349,19 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               SizedBox(height: 16),
               Align(
                 alignment: Alignment.center,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  child: RawMaterialButton(
-                    onPressed: () => _imageOptions(),
-                    child: _imageFile != null
-                        ? Image.file(_imageFile)
-                        : Icon(
-                            Icons.camera_alt,
-                          ),
-                    shape: CircleBorder(
-                      side: BorderSide(color: Colors.black),
+                child: InkWell(
+                  onTap: _imageOptions,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.black),
+                      image: _imageFile != null
+                          ? DecorationImage(image: FileImage(_imageFile))
+                          : null,
                     ),
+                    child: Icon(Icons.camera_alt),
                   ),
                 ),
               ),
@@ -381,7 +381,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                       },
                       min: 0,
                       max: 10000,
-                      divisions: 4,
+                      divisions: 10,
                       label: '${NumberFormat.compact().format(goal)}',
                     ),
                   ),

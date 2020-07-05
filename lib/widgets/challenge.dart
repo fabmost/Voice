@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -29,6 +31,7 @@ class Challenge extends StatelessWidget {
   final bool hasReposted;
   final int reposts;
   final bool hasSaved;
+  final DateTime date;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -47,6 +50,7 @@ class Challenge extends StatelessWidget {
     this.reposts,
     this.hasReposted,
     this.hasSaved,
+    this.date,
   });
 
   void _toProfile(context) {
@@ -135,7 +139,7 @@ class Challenge extends StatelessWidget {
     final userData =
         await Firestore.instance.collection('users').document(user.uid).get();
     WriteBatch batch = Firestore.instance.batch();
-    
+
     if (hasReposted) {
       String repostId;
       final item = (userData['reposted'] as List).firstWhere(
@@ -160,7 +164,7 @@ class Challenge extends StatelessWidget {
       });
     } else {
       String repostId =
-        Firestore.instance.collection('content').document().documentID;
+          Firestore.instance.collection('content').document().documentID;
 
       batch.updateData(
         Firestore.instance.collection('users').document(user.uid),
@@ -181,8 +185,9 @@ class Challenge extends StatelessWidget {
         'creator_image': userImage,
         'metric_type': metric,
         'metric_goal': goal,
-        'originalDate': Timestamp.now(),
+        'originalDate': Timestamp.fromDate(date),
         'parent': reference,
+        'home': userData['followers'] ?? [],
       });
       batch.updateData(reference, {
         'reposts': FieldValue.arrayUnion([myId]),
@@ -194,9 +199,9 @@ class Challenge extends StatelessWidget {
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link:
-          Uri.parse('https://voiceinc.page.link/challenge/${reference.documentID}'),
+      uriPrefix: 'https://galup.page.link',
+      link: Uri.parse(
+          'https://galup.page.link/challenge/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -289,23 +294,29 @@ class Challenge extends StatelessWidget {
 
   Widget _challengeGoal() {
     bool goalReached = false;
+    int amount;
     switch (metric) {
       case 'likes':
+        amount = likes;
         if (likes >= goal) {
           goalReached = true;
         }
         break;
       case 'comentarios':
+        amount = comments;
         if (comments >= goal) {
           goalReached = true;
         }
         break;
       case 'regalups':
+        amount = reposts;
         if (reposts >= goal) {
           goalReached = true;
         }
         break;
     }
+    final totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    final format = NumberFormat('###.##');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
@@ -313,13 +324,16 @@ class Challenge extends StatelessWidget {
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
         onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : 'Faltan $metric'),
+        child: Text(goalReached ? 'Ver' : '${format.format(totalPercentage * 100)}% completado'),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -344,7 +358,7 @@ class Challenge extends StatelessWidget {
                   userName,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                subtitle: Text('Hace 5 días'),
+                subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(

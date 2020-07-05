@@ -101,8 +101,8 @@ class DetailCauseScreen extends StatelessWidget {
 
   void _share(reference) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse('https://app.galup.app/cause/${reference.documentID}'),
+      uriPrefix: 'https://galup.page.link',
+      link: Uri.parse('https://galup.page.link/cause/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.oz.voice_inc',
         minimumVersion: 0,

@@ -41,6 +41,7 @@ class ChallengeList extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
     );
   }
 

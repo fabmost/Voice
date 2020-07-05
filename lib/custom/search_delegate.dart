@@ -24,6 +24,7 @@ class CustomSearchDelegate extends SearchDelegate {
   }
 
   Widget _pollWidget(id, doc) {
+    final time = Timestamp(doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
     return SearchPoll(
       reference: Firestore.instance.collection('content').document(id),
       myId: userId,
@@ -33,10 +34,12 @@ class CustomSearchDelegate extends SearchDelegate {
       title: doc['title'],
       options: doc['options'],
       images: doc['images'] ?? [],
+      date: time.toDate()
     );
   }
 
   Widget _challengeWidget(id, doc) {
+    final time = Timestamp(doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
     return SearchChallenge(
       reference: Firestore.instance.collection('content').document(id),
       myId: userId,
@@ -45,6 +48,7 @@ class CustomSearchDelegate extends SearchDelegate {
       creatorImage: doc['user_image'] ?? '',
       title: doc['title'],
       metric: doc['metric_type'],
+      date: time.toDate(),
     );
   }
 

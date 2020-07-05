@@ -39,6 +39,8 @@
 		<string>https://voiceinc.page.link/challenge</string>
 		<string>https://voiceinc.page.link/poll</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>

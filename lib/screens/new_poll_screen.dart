@@ -164,7 +164,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
   }
 
   Future<void> _takePicture(file, isOption) async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 600,
     );
@@ -182,7 +182,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
   }
 
   Future<void> _getPicture(file, isOption) async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 600,
     );
@@ -252,6 +252,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
     });
   }
 
+/*
   void _selectDuration() {
     showDialog(
       context: context,
@@ -296,6 +297,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
   void _optionSelected(position) {
     Navigator.of(context).pop();
   }
+  */
 
   void _getChip() {
     if (_hashController.text.contains(' ') &&
@@ -446,6 +448,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'tags': chips,
       'interactions': 0,
       'images': images,
+      'home': userData['followers'] ?? [],
     });
     chips.forEach((element) {
       batch.setData(
@@ -693,11 +696,13 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 onTap: _selectCategory,
                 title: Text('${category ?? 'Selecciona una categoría'}'),
               ),
+              /*
               _title('Duración'),
               ListTile(
                 onTap: _selectDuration,
                 title: Text('Infinito'),
               ),
+              */
               TextField(
                 controller: _hashController,
                 decoration: InputDecoration(labelText: 'Hashtags'),

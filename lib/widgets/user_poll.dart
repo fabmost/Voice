@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-import 'poll_options.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
@@ -32,6 +32,7 @@ class UserPoll extends StatelessWidget {
   final int likes;
   final int reposts;
   final bool hasSaved;
+  final DateTime date;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -51,6 +52,7 @@ class UserPoll extends StatelessWidget {
     this.reposts,
     this.hasSaved,
     this.images,
+    this.date,
   });
 
   void _toProfile(context) {
@@ -223,15 +225,18 @@ class UserPoll extends StatelessWidget {
 
   Widget _images() {
     if (images.length == 1) {
-      return InkWell(
-        //onTap: () => _imageOptions(2, false),
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(image: NetworkImage(images[0]))),
+      return Align(
+        alignment: Alignment.center,
+        child: InkWell(
+          //onTap: () => _imageOptions(2, false),
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.black),
+                image: DecorationImage(image: NetworkImage(images[0]))),
+          ),
         ),
       );
     } else if (images.length == 2) {
@@ -373,7 +378,7 @@ class UserPoll extends StatelessWidget {
 
   Widget _voted(option, position) {
     final int amount = votes[position]['votes'];
-    final totalPercentage = amount / voters;
+    final totalPercentage = (amount == 0.0) ? 0.0 : amount / voters;
     final format = NumberFormat('###.##');
     return Container(
       height: 42,
@@ -434,6 +439,9 @@ class UserPoll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -458,7 +466,7 @@ class UserPoll extends StatelessWidget {
                   userName,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                subtitle: Text('Hace 5 días'),
+                subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(

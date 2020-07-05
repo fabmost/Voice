@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'poll_options.dart';
 import '../translations.dart';
@@ -13,6 +14,7 @@ import '../providers/preferences_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class HeaderPoll extends StatelessWidget {
   final DocumentReference reference;
@@ -26,6 +28,20 @@ class HeaderPoll extends StatelessWidget {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
     }
+  }
+
+  void _toGallery(context, images, position) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          galleryItems: images,
+          initialIndex: position,
+          reference: reference,
+          userId: userId,
+        ),
+      ),
+    );
   }
 
   void _anonymousAlert(context, text) {
@@ -106,8 +122,8 @@ class HeaderPoll extends StatelessWidget {
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse('https://app.galup.app/poll/${reference.documentID}'),
+      uriPrefix: 'https://galup.page.link',
+      link: Uri.parse('https://galup.page.link/poll/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.oz.voice_inc',
         minimumVersion: 0,
@@ -200,17 +216,26 @@ class HeaderPoll extends StatelessWidget {
     );
   }
 
-  Widget _images(images) {
+  Widget _images(context, images) {
     if (images.length == 1) {
-      return InkWell(
-        //onTap: () => _imageOptions(2, false),
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(image: NetworkImage(images[0]))),
+      return Align(
+        alignment: Alignment.center,
+        child: InkWell(
+          onTap: () => _toGallery(context, images, 0),
+          child: Hero(
+            tag: images[0],
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[0]),
+                    fit: BoxFit.cover,
+                  )),
+            ),
+          ),
         ),
       );
     } else if (images.length == 2) {
@@ -218,36 +243,44 @@ class HeaderPoll extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  bottomLeft: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
+            onTap: () => _toGallery(context, images, 0),
+            child: Hero(
+              tag: images[0],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[0]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
           ),
           SizedBox(width: 5),
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[1]),
+            onTap: () => _toGallery(context, images, 1),
+            child: Hero(
+              tag: images[1],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[1]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -259,50 +292,62 @@ class HeaderPoll extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  bottomLeft: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[1]),
+            onTap: () => _toGallery(context, images, 0),
+            child: Hero(
+              tag: images[0],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[0]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
           ),
           SizedBox(width: 5),
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+            onTap: () => _toGallery(context, images, 1),
+            child: Hero(
+              tag: images[1],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[1]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[2]),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            onTap: () => _toGallery(context, images, 2),
+            child: Hero(
+              tag: images[2],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[2]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -357,6 +402,10 @@ class HeaderPoll extends StatelessWidget {
           final userImage = document['user_image'] ?? '';
           final images = document['images'] ?? [];
 
+          final date = document['createdAt'].toDate();
+          final now = new DateTime.now();
+          final difference = now.difference(date);
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -375,7 +424,7 @@ class HeaderPoll extends StatelessWidget {
                     document['user_name'],
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  subtitle: Text('Hace 5 días'),
+                  subtitle: Text(timeago.format(now.subtract(difference))),
                   trailing: Transform.rotate(
                     angle: 270 * pi / 180,
                     child: IconButton(
@@ -397,7 +446,7 @@ class HeaderPoll extends StatelessWidget {
                 ),
               ),
               if (images.isNotEmpty) SizedBox(height: 16),
-              if (images.isNotEmpty) _images(images),
+              if (images.isNotEmpty) _images(context, images),
               Padding(
                 padding: const EdgeInsets.only(
                   left: 16,

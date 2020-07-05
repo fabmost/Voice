@@ -6,6 +6,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -28,6 +29,7 @@ class UserChallenge extends StatelessWidget {
   final int likes;
   final int reposts;
   final bool hasSaved;
+  final DateTime date;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -45,6 +47,7 @@ class UserChallenge extends StatelessWidget {
     this.hasLiked,
     this.reposts,
     this.hasSaved,
+    this.date,
   });
 
   void _toProfile(context) {
@@ -248,6 +251,9 @@ class UserChallenge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -272,7 +278,7 @@ class UserChallenge extends StatelessWidget {
                   userName,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                subtitle: Text('Hace 5 días'),
+                subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(

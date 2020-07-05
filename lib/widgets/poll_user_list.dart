@@ -45,6 +45,7 @@ class PollUserList extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
     );
   }
 
@@ -59,6 +60,7 @@ class PollUserList extends StatelessWidget {
       creatorName: doc['creator_name'],
       creatorImage: doc['creator_image'] ?? '',
       images: doc['images'] ?? [],
+      date: doc['originalDate'].toDate(),
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'poll_options.dart';
 import '../translations.dart';
@@ -14,6 +15,7 @@ import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class Poll extends StatelessWidget {
   final DocumentReference reference;
@@ -34,6 +36,7 @@ class Poll extends StatelessWidget {
   final bool hasReposted;
   final int reposts;
   final bool hasSaved;
+  final DateTime date;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -56,6 +59,7 @@ class Poll extends StatelessWidget {
     this.hasReposted,
     this.hasSaved,
     this.images,
+    this.date,
   });
 
   void _toProfile(context) {
@@ -66,6 +70,20 @@ class Poll extends StatelessWidget {
   void _toComments(context) {
     Navigator.of(context)
         .pushNamed(CommentsScreen.routeName, arguments: reference);
+  }
+
+  void _toGallery(context, position) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: reference,
+          galleryItems: images,
+          initialIndex: position,
+          userId: myId,
+        ),
+      ),
+    );
   }
 
   void _anonymousAlert(context, text) {
@@ -189,9 +207,10 @@ class Poll extends StatelessWidget {
         'creator_name': userName,
         'creator_image': userImage,
         'options': options,
-        'originalDate': Timestamp.now(),
+        'originalDate': Timestamp.fromDate(date),
         'images': images,
         'parent': reference,
+        'home': userData['followers'] ?? []
       });
       batch.updateData(reference, {
         'reposts': FieldValue.arrayUnion([myId]),
@@ -203,9 +222,9 @@ class Poll extends StatelessWidget {
 
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
+      uriPrefix: 'https://galup.page.link',
       link:
-          Uri.parse('https://voiceinc.page.link/poll/${reference.documentID}'),
+          Uri.parse('https://galup.page.link/poll/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -296,17 +315,26 @@ class Poll extends StatelessWidget {
     );
   }
 
-  Widget _images() {
+  Widget _images(context) {
     if (images.length == 1) {
-      return InkWell(
-        //onTap: () => _imageOptions(2, false),
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(image: NetworkImage(images[0]))),
+      return Align(
+        alignment: Alignment.center,
+        child: InkWell(
+          onTap: () => _toGallery(context, 0),
+          child: Hero(
+            tag: images[0],
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[0]),
+                    fit: BoxFit.cover,
+                  )),
+            ),
+          ),
         ),
       );
     } else if (images.length == 2) {
@@ -314,91 +342,111 @@ class Poll extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  bottomLeft: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
+            onTap: () => _toGallery(context, 0),
+            child: Hero(
+              tag: images[0],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[0]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
           ),
           SizedBox(width: 5),
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[1]),
+            onTap: () => _toGallery(context, 1),
+            child: Hero(
+              tag: images[1],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[1]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
           )
         ],
       );
-    }else{
+    } else {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  bottomLeft: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                 border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[1]),
+            onTap: () => _toGallery(context, 0),
+            child: Hero(
+              tag: images[0],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[0]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
           ),
           SizedBox(width: 5),
           InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+            onTap: () => _toGallery(context, 1),
+            child: Hero(
+              tag: images[1],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[1]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[2]),
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          InkWell(
+            onTap: () => _toGallery(context, 2),
+            child: Hero(
+              tag: images[2],
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                  border: Border.all(color: Colors.black),
+                  image: DecorationImage(
+                    image: NetworkImage(images[2]),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -410,6 +458,9 @@ class Poll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
@@ -434,7 +485,7 @@ class Poll extends StatelessWidget {
                   userName,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                subtitle: Text('Hace 5 días'),
+                subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(
@@ -456,7 +507,7 @@ class Poll extends StatelessWidget {
               ),
             ),
             if (images.isNotEmpty) SizedBox(height: 16),
-            if (images.isNotEmpty) _images(),
+            if (images.isNotEmpty) _images(context),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,

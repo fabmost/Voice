@@ -88,6 +88,7 @@ class _NewMessageState extends State<NewMessage> {
           'userId': user.uid,
           'username': userData['user_name'],
           'userimage': userData['image'],
+          'receiverId': widget.other,
         },
       );
       batch.updateData(
@@ -116,7 +117,10 @@ class _NewMessageState extends State<NewMessage> {
               textCapitalization: TextCapitalization.sentences,
               autocorrect: true,
               enableSuggestions: true,
+              maxLines: null,
+              maxLength: 120,
               decoration: InputDecoration(
+                  counterText: '',
                   hintText: Translations.of(context).text('hint_comment')),
               onChanged: (value) {
                 setState(() {

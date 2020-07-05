@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:badges/badges.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,6 +20,8 @@ import 'messages_screen.dart';
 import 'profile_screen.dart';
 import 'new_poll_screen.dart';
 import 'new_challenge_screen.dart';
+import 'chat_screen.dart';
+import 'notifications_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -28,6 +33,7 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   bool _triggeredOnboarding = false;
   bool _isOpen = false;
+  bool _showBadge = false;
   Duration _duration = Duration(milliseconds: 300);
   AnimationController _iconAnimationCtrl;
   Animation<double> _iconAnimationTween;
@@ -43,6 +49,9 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void _selectPage(int index) {
     setState(() {
       _selectedPageIndex = index;
+      if(index == 2){
+        _showBadge = false;
+      }
     });
   }
 
@@ -130,18 +139,93 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     ];
 
     final fm = FirebaseMessaging();
-    fm.requestNotificationPermissions();
+    fm.requestNotificationPermissions(
+      IosNotificationSettings(
+        alert: true,
+        sound: true,
+        badge: true,
+      ),
+    );
     fm.configure(onMessage: (msg) {
       print(msg);
+      Map data = msg['data'] ?? msg;
+      if (_selectedPageIndex != 2 && data['type'] == 'chat') {
+        setState(() {
+          _showBadge = true;
+        });
+      }
+      Platform.isAndroid
+          ? showNotification(msg['notification'])
+          : showNotification(msg['aps']['alert']);
       return;
     }, onLaunch: (msg) {
-      print(msg);
+      //showAlert(msg);
+      Map data = msg['data'] ?? msg;
+      if (data['type'] == 'chat') {
+        Navigator.of(context).pushNamed(ChatScreen.routeName,
+            arguments: {'chatId': data['id'], 'userId': data['sender']});
+      } else {
+        Navigator.of(context).pushNamed(NotificationsScreen.routeName);
+      }
       return;
     }, onResume: (msg) {
-      print(msg);
+      //showAlert(msg);
+      Map data = msg['data'] ?? msg;
+      if (data['type'] == 'chat') {
+        Navigator.of(context).pushNamed(ChatScreen.routeName,
+            arguments: {'chatId': data['id'], 'userId': data['sender']});
+      } else {
+        Navigator.of(context).pushNamed(NotificationsScreen.routeName);
+      }
       return;
     });
-    fm.subscribeToTopic('polls');
+    fm.subscribeToTopic('cause');
+    FirebaseAuth.instance.currentUser().then((value) {
+      fm.getToken().then((token) {
+        print('token: $token');
+        Firestore.instance
+            .collection('users')
+            .document(value.uid)
+            .updateData({'pushToken': token});
+      });
+    });
+  }
+
+  void showAlert(msg) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(msg.toString()),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Ok'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showNotification(message) async {
+    /*
+  var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+    Platform.isAndroid ? 'com.dfa.flutterchatdemo' : 'com.duytq.flutterchatdemo',
+    'Flutter chat demo',
+    'your channel description',
+    playSound: true,
+    enableVibration: true,
+    importance: Importance.Max,
+    priority: Priority.High,
+  );
+  var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+  var platformChannelSpecifics =
+  new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+      0, message['title'].toString(), message['body'].toString(), platformChannelSpecifics,
+      payload: json.encode(message));
+      */
   }
 
   Future<bool> _preventPopIfOpen() async {
@@ -315,12 +399,20 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
               onPressed: () => _selectPage(1),
             ),
             Text(''),
-            IconButton(
-              icon: Icon(
-                GalupFont.message_select,
-                color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
+            Badge(
+              showBadge: _showBadge,
+              badgeContent: Text(
+                '',
+                style: TextStyle(color: Colors.white),
               ),
-              onPressed: () => _selectPage(2),
+              position: BadgePosition(top: -5, right: 0),
+              child: IconButton(
+                icon: Icon(
+                  GalupFont.message_select,
+                  color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
+                ),
+                onPressed: () => _selectPage(2),
+              ),
             ),
             IconButton(
               icon: Icon(

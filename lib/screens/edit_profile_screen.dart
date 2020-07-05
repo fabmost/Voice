@@ -37,6 +37,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   FocusNode _genderFocus = FocusNode();
   FocusNode _countryFocus = FocusNode();
 
+  FocusNode _tiktokFocus = FocusNode();
+  FocusNode _facebookFocus = FocusNode();
+  FocusNode _instagramFocus = FocusNode();
+
   String userId;
   String _currentUrl;
   File _imageFile;
@@ -88,7 +92,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _takePicture() async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 600,
     );
@@ -103,7 +107,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _getPicture() async {
-    final imageFile = await ImagePicker.pickImage(
+    final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 600,
     );
@@ -190,6 +194,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _optionSelected(value) {
     Navigator.of(context).pop();
     _genderController.text = value;
+  }
+
+  void _editingTiktok() {
+    if (_tiktokFocus.hasFocus && _tiktokController.text.isEmpty) {
+      _tiktokController.text = '@';
+    } else if (!_tiktokFocus.hasFocus &&
+        _tiktokController.text.length == 1 &&
+        _tiktokController.text.contains('@')) {
+      _tiktokController.text = '';
+    }
+  }
+
+  void _editingFacebook() {
+    if (_facebookFocus.hasFocus && _facebookController.text.isEmpty) {
+      _facebookController.text = '@';
+    } else if (!_facebookFocus.hasFocus &&
+        _facebookController.text.length == 1 &&
+        _facebookController.text.contains('@')) {
+      _facebookController.text = '';
+    }
+  }
+
+  void _editingInstagram() {
+    if (_instagramFocus.hasFocus && _instagramController.text.isEmpty) {
+      _instagramController.text = '@';
+    } else if (!_instagramFocus.hasFocus &&
+        _instagramController.text.length == 1 &&
+        _instagramController.text.contains('@')) {
+      _instagramController.text = '';
+    }
   }
 
   void _validate(ctx, userData) async {
@@ -304,6 +338,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _birthFocus.addListener(_birthSelected);
     _genderFocus.addListener(_genderSelected);
     _countryFocus.addListener(_countrySelected);
+
+    _tiktokFocus.addListener(_editingTiktok);
+    _facebookFocus.addListener(_editingFacebook);
+    _instagramFocus.addListener(_editingInstagram);
   }
 
   @override
@@ -486,6 +524,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         SizedBox(height: 8),
                         TextFormField(
                           controller: _tiktokController,
+                          focusNode: _tiktokFocus,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter(
+                                RegExp("[@_.a-zA-Z0-9]")),
+                          ],
                           decoration: InputDecoration(
                             labelText: 'Tiktok',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -493,6 +536,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         TextFormField(
                           controller: _facebookController,
+                          focusNode: _facebookFocus,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter(
+                                RegExp("[@_.a-zA-Z0-9]")),
+                          ],
                           decoration: InputDecoration(
                             labelText: 'Facebook',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -500,6 +548,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         TextFormField(
                           controller: _instagramController,
+                          focusNode: _instagramFocus,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter(
+                                RegExp("[@_.a-zA-Z0-9]")),
+                          ],
                           decoration: InputDecoration(
                             labelText: 'Instagram',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -507,8 +560,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         TextFormField(
                           controller: _youtubeController,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter(
+                                RegExp("[@_.a-zA-Z0-9]")),
+                          ],
                           decoration: InputDecoration(
-                            labelText: 'Youtube',
+                            labelText: 'Youtube (canal)',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),

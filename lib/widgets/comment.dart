@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../custom/galup_font_icons.dart';
 import '../screens/detail_comment_screen.dart';
+import '../screens/view_profile_screen.dart';
 
 class Comment extends StatelessWidget {
   final DocumentReference reference;
   final String myId;
+  final String userId;
   final String title;
   final DateTime date;
   final int comments;
@@ -20,6 +22,7 @@ class Comment extends StatelessWidget {
   Comment({
     this.reference,
     this.myId,
+    this.userId,
     this.title,
     this.date,
     this.comments,
@@ -34,6 +37,11 @@ class Comment extends StatelessWidget {
   void _toComment(context) {
     Navigator.of(context)
         .pushNamed(DetailCommentScreen.routeName, arguments: reference);
+  }
+
+  void _toProfile(context) {
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
   }
 
   void _upVote() {
@@ -71,8 +79,11 @@ class Comment extends StatelessWidget {
     return Column(
       children: <Widget>[
         ListTile(
-          leading: CircleAvatar(
-            backgroundImage: NetworkImage(userImage),
+          leading: GestureDetector(
+            onTap: () => _toProfile(context),
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(userImage),
+            ),
           ),
           title: Text(
             userName,

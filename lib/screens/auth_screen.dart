@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'menu_screen.dart';
 import 'login_screen.dart';
@@ -30,6 +32,8 @@ class _AuthScreenState extends State<AuthScreen> {
   FocusNode _countryFocus = FocusNode();
 
   String _name, _last, _userName, _email;
+
+  final String termsUrl = 'https://galup.app/terminos-y-condiciones';
 
   void _genderSelected() {
     if (_genderFocus.hasFocus) {
@@ -280,6 +284,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 TextFormField(
                   maxLength: 22,
+                  inputFormatters: [
+                    WhitelistingTextInputFormatter(RegExp("[a-zA-Z0-9_.]")),
+                  ],
                   decoration: InputDecoration(
                     counterText: '',
                     labelText: Translations.of(context).text('hint_user_name'),
@@ -396,14 +403,41 @@ class _AuthScreenState extends State<AuthScreen> {
                   },
                 ),
                 SizedBox(height: 16),
-                CheckboxListTile(
-                  value: _isChecked,
-                  title: Text('Acepto los términos y condiciones'),
-                  onChanged: (value) {
-                    setState(() {
-                      _isChecked = value;
-                    });
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Checkbox(
+                      value: _isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          _isChecked = value;
+                        });
+                      },
+                    ),
+                    RichText(
+                      text: TextSpan(children: [
+                        TextSpan(
+                          text: 'Acepto los ',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        TextSpan(
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () async {
+                              if (await canLaunch(termsUrl)) {
+                                await launch(
+                                  termsUrl,
+                                );
+                              }
+                            },
+                          text: 'Términos y Condiciones',
+                          style: TextStyle(
+                            color: Theme.of(context).accentColor,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ]),
+                    )
+                  ],
                 ),
                 SizedBox(height: 16),
                 _isLoading
