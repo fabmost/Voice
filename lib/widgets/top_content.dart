@@ -53,6 +53,7 @@ class TopContent extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -84,6 +85,7 @@ class TopContent extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 

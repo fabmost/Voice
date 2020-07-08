@@ -11,6 +11,7 @@ import 'following_screen.dart';
 
 import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
+import '../widgets/influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 
@@ -201,13 +202,21 @@ class ViewProfileScreen extends StatelessWidget {
                     backgroundImage: NetworkImage(document['image'] ?? ''),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    '${document['name']} ${document['last_name']}',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        '${document['name']} ${document['last_name']}',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      InfluencerBadge(document['influencer'] ?? '', 20),
+                    ],
                   ),
                   Text(
                     '@${document['user_name']}',

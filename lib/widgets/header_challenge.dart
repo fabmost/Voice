@@ -9,11 +9,13 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
+import '../screens/flag_screen.dart';
 
 class HeaderChallenge extends StatelessWidget {
   final DocumentReference reference;
@@ -94,7 +96,8 @@ class HeaderChallenge extends StatelessWidget {
     batch.commit();
   }
 
-  void _repost(context) async {
+  void _repost(context, title, userName, userImage, influencer, metric, goal,
+      date, hasReposted) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -103,6 +106,67 @@ class HeaderChallenge extends StatelessWidget {
       );
       return;
     }
+
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+    WriteBatch batch = Firestore.instance.batch();
+
+    if (hasReposted) {
+      String repostId;
+      final item = (userData['reposted'] as List).firstWhere(
+        (element) => (element as Map).containsKey(reference.documentID),
+        orElse: () => null,
+      );
+      if (item != null) {
+        repostId = item[reference.documentID];
+      }
+      batch.delete(Firestore.instance.collection('content').document(repostId));
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayRemove([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayRemove([user.uid]),
+        'interactions': FieldValue.increment(-1)
+      });
+    } else {
+      String repostId =
+          Firestore.instance.collection('content').document().documentID;
+
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayUnion([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.setData(
+          Firestore.instance.collection('content').document(repostId), {
+        'type': 'repost-challenge',
+        'user_name': userData['user_name'],
+        'user_id': user.uid,
+        'createdAt': Timestamp.now(),
+        'title': title,
+        'creator_name': userName,
+        'creator_image': userImage,
+        'influencer': influencer,
+        'metric_type': metric,
+        'metric_goal': goal,
+        'originalDate': Timestamp.fromDate(date),
+        'parent': reference,
+        'home': userData['followers'] ?? [],
+      });
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayUnion([user.uid]),
+        'interactions': FieldValue.increment(1)
+      });
+    }
+    batch.commit();
   }
 
   void _share() async {
@@ -130,7 +194,8 @@ class HeaderChallenge extends StatelessWidget {
   }
 
   void _flag(context) {
-    Navigator.of(context).pop();
+    Navigator.of(context)
+        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context, hasSaved) async {
@@ -234,7 +299,9 @@ class HeaderChallenge extends StatelessWidget {
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
         onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : '${format.format(totalPercentage * 100)}% completado'),
+        child: Text(goalReached
+            ? 'Ver'
+            : '${format.format(totalPercentage * 100)}% completado'),
       ),
     );
   }
@@ -287,9 +354,16 @@ class HeaderChallenge extends StatelessWidget {
                     backgroundColor: Color(0xFFA4175D),
                     backgroundImage: NetworkImage(userImage),
                   ),
-                  title: Text(
-                    document['user_name'],
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  title: Row(
+                    children: <Widget>[
+                      Text(
+                        document['user_name'],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      SizedBox(width: 8),
+                      InfluencerBadge(document['influencer'] ?? '', 16),
+                    ],
                   ),
                   subtitle: Text(timeago.format(now.subtract(difference))),
                   trailing: Transform.rotate(
@@ -333,7 +407,17 @@ class HeaderChallenge extends StatelessWidget {
                       label: Text(likes == 0 ? '' : '$likes'),
                     ),
                     FlatButton.icon(
-                      onPressed: () => _repost(context),
+                      onPressed: () => _repost(
+                        context,
+                        document['title'],
+                        document['user_name'],
+                        userImage,
+                        document['influencer'],
+                        document['metric_type'],
+                        document['metric_goal'],
+                        date,
+                        hasReposted,
+                      ),
                       icon: Icon(GalupFont.repost,
                           color:
                               hasReposted ? Color(0xFFA4175D) : Colors.black),

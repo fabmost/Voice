@@ -9,12 +9,14 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/flag_screen.dart';
 
 class Challenge extends StatelessWidget {
   final DocumentReference reference;
@@ -32,6 +34,7 @@ class Challenge extends StatelessWidget {
   final int reposts;
   final bool hasSaved;
   final DateTime date;
+  final String influencer;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -51,6 +54,7 @@ class Challenge extends StatelessWidget {
     this.hasReposted,
     this.hasSaved,
     this.date,
+    @required this.influencer,
   });
 
   void _toProfile(context) {
@@ -183,6 +187,7 @@ class Challenge extends StatelessWidget {
         'title': title,
         'creator_name': userName,
         'creator_image': userImage,
+        'influencer': influencer,
         'metric_type': metric,
         'metric_goal': goal,
         'originalDate': Timestamp.fromDate(date),
@@ -222,7 +227,8 @@ class Challenge extends StatelessWidget {
   }
 
   void _flag(context) {
-    Navigator.of(context).pop();
+    Navigator.of(context)
+        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context) async {
@@ -324,7 +330,9 @@ class Challenge extends StatelessWidget {
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
         onPressed: goalReached ? () {} : null,
-        child: Text(goalReached ? 'Ver' : '${format.format(totalPercentage * 100)}% completado'),
+        child: Text(goalReached
+            ? 'Ver'
+            : '${format.format(totalPercentage * 100)}% completado'),
       ),
     );
   }
@@ -354,9 +362,16 @@ class Challenge extends StatelessWidget {
                   backgroundColor: Color(0xFFA4175D),
                   backgroundImage: NetworkImage(userImage),
                 ),
-                title: Text(
-                  userName,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                title: Row(
+                  children: <Widget>[
+                    Text(
+                      userName,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    SizedBox(width: 8),
+                    InfluencerBadge(influencer, 16),
+                  ],
                 ),
                 subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(

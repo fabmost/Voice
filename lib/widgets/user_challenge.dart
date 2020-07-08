@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
@@ -30,6 +31,7 @@ class UserChallenge extends StatelessWidget {
   final int reposts;
   final bool hasSaved;
   final DateTime date;
+  final String influencer;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -48,6 +50,7 @@ class UserChallenge extends StatelessWidget {
     this.reposts,
     this.hasSaved,
     this.date,
+    @required this.influencer,
   });
 
   void _toProfile(context) {
@@ -126,8 +129,8 @@ class UserChallenge extends StatelessWidget {
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://voiceinc.page.link',
-      link:
-          Uri.parse('https://voiceinc.page.link/challenge/${reference.documentID}'),
+      link: Uri.parse(
+          'https://voiceinc.page.link/challenge/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -274,9 +277,16 @@ class UserChallenge extends StatelessWidget {
                   backgroundColor: Color(0xFFA4175D),
                   backgroundImage: NetworkImage(userImage),
                 ),
-                title: Text(
-                  userName,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                title: Row(
+                  children: <Widget>[
+                    Text(
+                      userName,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    SizedBox(width: 8),
+                    InfluencerBadge(influencer, 16),
+                  ],
                 ),
                 subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(
@@ -320,8 +330,7 @@ class UserChallenge extends StatelessWidget {
                   ),
                   FlatButton.icon(
                     onPressed: () => null,
-                    icon: Icon(GalupFont.repost,
-                        color: Colors.black),
+                    icon: Icon(GalupFont.repost, color: Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(

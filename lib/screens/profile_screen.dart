@@ -13,9 +13,9 @@ import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
 import '../widgets/saved_list.dart';
+import '../widgets/influencer_badge.dart';
 
 class ProfileScreen extends StatelessWidget {
-  
   void _toFollowers(context, id) {
     Navigator.of(context).pushNamed(FollowersScreen.routeName, arguments: id);
   }
@@ -105,13 +105,21 @@ class ProfileScreen extends StatelessWidget {
                 backgroundImage: NetworkImage(document['image'] ?? ''),
               ),
               const SizedBox(height: 16),
-              Text(
-                '${document['name']} ${document['last_name']}',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    '${document['name']} ${document['last_name']}',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  InfluencerBadge(document['influencer'] ?? '', 20),
+                ],
               ),
               Text(
                 '@${document['user_name']}',
@@ -134,7 +142,10 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   CircleAvatar(
-                    backgroundColor: (document['tiktok'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    backgroundColor:
+                        (document['tiktok'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
                     child: Icon(
                       GalupFont.tik_tok,
                       color: Colors.white,
@@ -143,7 +154,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   CircleAvatar(
-                    backgroundColor: (document['facebook'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    backgroundColor:
+                        (document['facebook'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
                     child: Icon(
                       GalupFont.facebook,
                       color: Colors.white,
@@ -152,7 +166,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   CircleAvatar(
-                    backgroundColor: (document['instagram'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    backgroundColor:
+                        (document['instagram'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
                     child: Icon(
                       GalupFont.instagram,
                       color: Colors.white,
@@ -161,7 +178,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   CircleAvatar(
-                    backgroundColor: (document['youtube'] ?? '').toString().isEmpty ? Colors.grey : Colors.black,
+                    backgroundColor:
+                        (document['youtube'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
                     child: Icon(
                       GalupFont.youtube,
                       color: Colors.white,

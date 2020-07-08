@@ -271,6 +271,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       'user_name': userData['user_name'],
       'user_id': user.uid,
       'user_image': userData['image'],
+      "influencer": userData['influencer'],
       'createdAt': Timestamp.now(),
       'images': [url],
       'metric_type': metric.toLowerCase(),

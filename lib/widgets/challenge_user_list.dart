@@ -40,6 +40,7 @@ class ChallengeUserList extends StatelessWidget {
       reposts: reposts,
       hasSaved: hasSaved,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -54,6 +55,7 @@ class ChallengeUserList extends StatelessWidget {
       creatorImage: doc['creator_image'] ?? '',
       metric: doc['metric_type'],
       date: doc['originalDate'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 

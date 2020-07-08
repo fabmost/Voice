@@ -439,6 +439,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'user_name': userData['user_name'],
       'user_id': user.uid,
       'user_image': userData['image'],
+      "influencer": userData['influencer'],
       'createdAt': Timestamp.now(),
       'options': pollOptions,
       'results': results,

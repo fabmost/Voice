@@ -11,6 +11,7 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
+import '../screens/flag_screen.dart';
 
 class DetailCauseScreen extends StatelessWidget {
   static const routeName = '/cause';
@@ -97,7 +98,75 @@ class DetailCauseScreen extends StatelessWidget {
     batch.commit();
   }
 
-  void _repost() {}
+  void _repost(
+      context, reference, myId, title, info, creator, date, hasReposted) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert(
+        context,
+        Translations.of(context).text('dialog_need_account'),
+      );
+      return;
+    }
+
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+    WriteBatch batch = Firestore.instance.batch();
+
+    if (hasReposted) {
+      String repostId;
+      final item = (userData['reposted'] as List).firstWhere(
+        (element) => (element as Map).containsKey(reference.documentID),
+        orElse: () => null,
+      );
+      if (item != null) {
+        repostId = item[reference.documentID];
+      }
+      batch.delete(Firestore.instance.collection('content').document(repostId));
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayRemove([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayRemove([myId]),
+        'interactions': FieldValue.increment(-1)
+      });
+    } else {
+      String repostId =
+          Firestore.instance.collection('content').document().documentID;
+
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayUnion([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.setData(
+          Firestore.instance.collection('content').document(repostId), {
+        'type': 'repost-cause',
+        'user_name': userData['user_name'],
+        'user_id': user.uid,
+        'createdAt': Timestamp.now(),
+        'title': title,
+        'info': info,
+        'creator': creator,
+        'originalDate': Timestamp.fromDate(date),
+        'parent': reference,
+        'home': userData['followers'] ?? []
+      });
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayUnion([myId]),
+        'interactions': FieldValue.increment(1)
+      });
+    }
+    batch.commit();
+  }
 
   void _share(reference) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
@@ -122,8 +191,9 @@ class DetailCauseScreen extends StatelessWidget {
     Share.share('Te comparto esta Causa de Galup $url');
   }
 
-  void _flag(context) {
-    Navigator.of(context).pop();
+  void _flag(context, reference) {
+    Navigator.of(context)
+        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context, reference, myId, hasSaved) async {
@@ -175,7 +245,7 @@ class DetailCauseScreen extends StatelessWidget {
                 title: Text(hasSaved ? 'Borrar' : 'Guardar'),
               ),
               ListTile(
-                onTap: () => _flag(context),
+                onTap: () => _flag(context, reference),
                 leading: new Icon(
                   Icons.flag,
                   color: Colors.red,
@@ -315,7 +385,16 @@ class DetailCauseScreen extends StatelessWidget {
                     child: Row(
                       children: <Widget>[
                         FlatButton.icon(
-                          onPressed: _repost,
+                          onPressed: () => _repost(
+                            context,
+                            reference,
+                            userSnap.data.uid,
+                            document['title'],
+                            document['info'],
+                            document['creator'],
+                            document['createdAt'],
+                            hasReposted,
+                          ),
                           icon: Icon(GalupFont.repost,
                               color: hasReposted
                                   ? Color(0xFFA4175D)

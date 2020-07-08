@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import 'poll_options.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -16,6 +17,7 @@ import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/poll_gallery_screen.dart';
+import '../screens/flag_screen.dart';
 
 class Poll extends StatelessWidget {
   final DocumentReference reference;
@@ -37,6 +39,7 @@ class Poll extends StatelessWidget {
   final int reposts;
   final bool hasSaved;
   final DateTime date;
+  final String influencer;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -60,6 +63,7 @@ class Poll extends StatelessWidget {
     this.hasSaved,
     this.images,
     this.date,
+    @required this.influencer,
   });
 
   void _toProfile(context) {
@@ -206,6 +210,7 @@ class Poll extends StatelessWidget {
         'title': title,
         'creator_name': userName,
         'creator_image': userImage,
+        'influencer': influencer,
         'options': options,
         'originalDate': Timestamp.fromDate(date),
         'images': images,
@@ -245,7 +250,7 @@ class Poll extends StatelessWidget {
   }
 
   void _flag(context) {
-    Navigator.of(context).pop();
+    Navigator.of(context).popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context) async {
@@ -481,9 +486,15 @@ class Poll extends StatelessWidget {
                   backgroundColor: Theme.of(context).accentColor,
                   backgroundImage: NetworkImage(userImage),
                 ),
-                title: Text(
-                  userName,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                title: Row(
+                  children: <Widget>[
+                    Text(
+                      userName,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    SizedBox(width: 8),
+                    InfluencerBadge(influencer, 16),
+                  ],
                 ),
                 subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(

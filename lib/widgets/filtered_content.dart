@@ -57,6 +57,7 @@ class FilteredContent extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -88,6 +89,7 @@ class FilteredContent extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 

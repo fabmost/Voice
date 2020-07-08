@@ -58,6 +58,7 @@ class SavedList extends StatelessWidget {
       hasReposted: hasReposted,
       hasSaved: hasSaved,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -94,6 +95,7 @@ class SavedList extends StatelessWidget {
       hasReposted: hasReposted,
       hasSaved: hasSaved,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 

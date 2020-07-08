@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/detail_challenge_screen.dart';
 
@@ -15,6 +16,7 @@ class RepostChallenge extends StatelessWidget {
   final String creatorName;
   final String creatorImage;
   final DateTime date;
+  final String influencer;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -28,6 +30,7 @@ class RepostChallenge extends StatelessWidget {
     this.creatorImage,
     this.creatorName,
     this.date,
+    @required this.influencer,
   });
 
   void _toDetail(context) {
@@ -36,7 +39,6 @@ class RepostChallenge extends StatelessWidget {
   }
 
   Widget _challengeGoal() {
-    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
@@ -100,10 +102,16 @@ class RepostChallenge extends StatelessWidget {
                         backgroundColor: Color(0xFFA4175D),
                         backgroundImage: NetworkImage(creatorImage),
                       ),
-                      title: Text(
-                        userName,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                      title: Row(
+                        children: <Widget>[
+                          Text(
+                            creatorName,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          SizedBox(width: 8),
+                          InfluencerBadge(influencer, 16),
+                        ],
                       ),
                       subtitle: Text(timeago.format(now.subtract(difference))),
                     ),

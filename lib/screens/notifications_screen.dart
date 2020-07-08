@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
 import 'detail_cause_screen.dart';
+import 'view_profile_screen.dart';
+import 'detail_comment_screen.dart';
 import '../translations.dart';
 
 class NotificationsScreen extends StatelessWidget {
@@ -21,6 +23,15 @@ class NotificationsScreen extends StatelessWidget {
 
   void _toCause(context, id) {
     Navigator.of(context).pushNamed(DetailCauseScreen.routeName, arguments: id);
+  }
+
+  void _toProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toComment(context, id) {
+    Navigator.of(context).pushNamed(DetailCommentScreen.routeName,
+        arguments: Firestore.instance.collection('comments').document(id));
   }
 
   @override
@@ -69,6 +80,10 @@ class NotificationsScreen extends StatelessWidget {
                           return _toChallenge(context, doc['content_id']);
                         case 'cause':
                           return _toCause(context, doc['content_id']);
+                        case 'profile':
+                          return _toProfile(context, doc['content_id']);
+                        case 'comment':
+                          return _toComment(context, doc['content_id']);
                         default:
                           return null;
                       }

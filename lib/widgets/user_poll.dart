@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
@@ -33,6 +34,7 @@ class UserPoll extends StatelessWidget {
   final int reposts;
   final bool hasSaved;
   final DateTime date;
+  final String influencer;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -53,6 +55,7 @@ class UserPoll extends StatelessWidget {
     this.hasSaved,
     this.images,
     this.date,
+    @required this.influencer,
   });
 
   void _toProfile(context) {
@@ -462,9 +465,16 @@ class UserPoll extends StatelessWidget {
                   backgroundColor: Theme.of(context).accentColor,
                   backgroundImage: NetworkImage(userImage),
                 ),
-                title: Text(
-                  userName,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                title: Row(
+                  children: <Widget>[
+                    Text(
+                      userName,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    SizedBox(width: 8),
+                    InfluencerBadge(influencer, 16),
+                  ],
                 ),
                 subtitle: Text(timeago.format(now.subtract(difference))),
                 trailing: Transform.rotate(

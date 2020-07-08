@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'translations.dart';
 
+import 'screens/upgrade_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/preferences_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -25,6 +26,7 @@ import 'screens/following_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
 import 'screens/detail_cause_screen.dart';
+import 'screens/flag_screen.dart';
 
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
@@ -72,6 +74,7 @@ class App extends StatelessWidget {
       shadeValue(color.blue, factor),
       1);
 
+  @override
   Widget build(context) {
     return MultiProvider(
       providers: [
@@ -125,7 +128,8 @@ class App extends StatelessWidget {
           DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
           NewPollScreen.routeName: (ctx) => NewPollScreen(),
           NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
-          NewContentCategoryScreen.routeName: (ctx) => NewContentCategoryScreen(),
+          NewContentCategoryScreen.routeName: (ctx) =>
+              NewContentCategoryScreen(),
           FollowersScreen.routeName: (ctx) => FollowersScreen(),
           FollowingScreen.routeName: (ctx) => FollowingScreen(),
           DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
@@ -134,6 +138,8 @@ class App extends StatelessWidget {
           VerifyTypeScreen.routeName: (ctx) => VerifyTypeScreen(),
           VerifyCategoryScreen.routeName: (ctx) => VerifyCategoryScreen(),
           VerifyIdScreen.routeName: (ctx) => VerifyIdScreen(),
+          FlagScreen.routeName: (ctx) => FlagScreen(),
+          UpgradeScreen.routeName: (ctx) => UpgradeScreen(),
         },
       ),
     );

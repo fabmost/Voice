@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import '../screens/detail_challenge_screen.dart';
 
 class SearchChallenge extends StatelessWidget {
@@ -14,6 +15,7 @@ class SearchChallenge extends StatelessWidget {
   final String creatorName;
   final String creatorImage;
   final DateTime date;
+  final String influencer;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -27,6 +29,7 @@ class SearchChallenge extends StatelessWidget {
     this.creatorImage,
     this.creatorName,
     this.date,
+    @required this.influencer,
   });
 
   void _toDetail(context) {
@@ -73,9 +76,16 @@ class SearchChallenge extends StatelessWidget {
                     backgroundColor: Color(0xFFA4175D),
                     backgroundImage: NetworkImage(creatorImage),
                   ),
-                  title: Text(
-                    creatorName,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  title: Row(
+                    children: <Widget>[
+                      Text(
+                        creatorName,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      SizedBox(width: 8),
+                      InfluencerBadge(influencer, 16),
+                    ],
                   ),
                   subtitle: Text(timeago.format(now.subtract(difference))),
                 ),

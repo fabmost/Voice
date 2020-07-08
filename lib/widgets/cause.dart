@@ -9,6 +9,7 @@ import 'package:share/share.dart';
 
 import '../translations.dart';
 import '../screens/auth_screen.dart';
+import '../screens/flag_screen.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 
@@ -193,8 +194,7 @@ class Cause extends StatelessWidget {
   void _share() async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://galup.page.link',
-      link:
-          Uri.parse('https://galup.page.link/cause/${reference.documentID}'),
+      link: Uri.parse('https://galup.page.link/cause/${reference.documentID}'),
       androidParameters: AndroidParameters(
         packageName: 'com.galup.app',
         minimumVersion: 0,
@@ -215,7 +215,7 @@ class Cause extends StatelessWidget {
   }
 
   void _flag(context) {
-    Navigator.of(context).pop();
+    Navigator.of(context).popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context) async {
@@ -273,7 +273,7 @@ class Cause extends StatelessWidget {
                   color: Colors.red,
                 ),
                 title: Text(
-                  "Denunciar",
+                  Translations.of(context).text('title_flag'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),

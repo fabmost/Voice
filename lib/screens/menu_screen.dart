@@ -6,12 +6,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 
+import 'upgrade_screen.dart';
 import 'auth_screen.dart';
 import 'onboarding_screen.dart';
 import 'polls_screen.dart';
@@ -49,7 +52,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void _selectPage(int index) {
     setState(() {
       _selectedPageIndex = index;
-      if(index == 2){
+      if (index == 2) {
         _showBadge = false;
       }
     });
@@ -188,6 +191,26 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             .document(value.uid)
             .updateData({'pushToken': token});
       });
+    });
+
+    _checkVersion();
+  }
+
+  void _checkVersion() async {
+    final RemoteConfig remoteConfig = await RemoteConfig.instance;
+    // Enable developer mode to relax fetch throttling
+    remoteConfig.setConfigSettings(RemoteConfigSettings(debugMode: false));
+    remoteConfig.setDefaults(<String, dynamic>{
+      'app_version': 0,
+    });
+    await remoteConfig.fetch();
+    await remoteConfig.activateFetched();
+
+    final remoteVersion = remoteConfig.getDouble('app_version');
+    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+      if (remoteVersion > double.parse(packageInfo.buildNumber)) {
+        Navigator.of(context).popAndPushNamed(UpgradeScreen.routeName);
+      }
     });
   }
 

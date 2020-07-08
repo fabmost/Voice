@@ -63,6 +63,7 @@ class PollsScreen extends StatelessWidget {
       hasSaved: hasSaved,
       images: doc['images'] ?? [],
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
     );
   }
 
@@ -99,6 +100,7 @@ class PollsScreen extends StatelessWidget {
       hasReposted: hasReposted,
       hasSaved: hasSaved,
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -146,6 +148,7 @@ class PollsScreen extends StatelessWidget {
       creatorImage: doc['creator_image'] ?? '',
       images: doc['images'] ?? [],
       date: doc['originalDate'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -160,6 +163,7 @@ class PollsScreen extends StatelessWidget {
       creatorImage: doc['creator_image'] ?? '',
       metric: doc['metric_type'],
       date: doc['originalDate'].toDate(),
+      influencer: doc['influencer'] ?? ''
     );
   }
 
@@ -234,6 +238,10 @@ class PollsScreen extends StatelessWidget {
       itemCount: documents.length,
       itemBuilder: (ctx, i) {
         final doc = documents[i];
+        final List flagArray = doc['flag'] ?? [];
+        if(flagArray.contains(userId)){
+          return Container();
+        }
         switch (doc['type']) {
           case 'poll':
             return _pollWidget(doc, userId);
