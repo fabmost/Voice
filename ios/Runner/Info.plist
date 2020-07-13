@@ -44,9 +44,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Necesitamos usar la cámara para que subas fotos</string>
+	<string>Galup usa tu cámara para permitirte tomar tu foto de perfil o tomar fotos para tus encuestas y retos</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Agrega imagenes de tu galería</string>
+	<string>Galup usa tus imágenes para permitirte agregar tu foto de perfil o agregar imágenes a tus encuestas y retos</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

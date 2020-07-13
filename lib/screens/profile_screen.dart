@@ -17,11 +17,25 @@ import '../widgets/influencer_badge.dart';
 
 class ProfileScreen extends StatelessWidget {
   void _toFollowers(context, id) {
-    Navigator.of(context).pushNamed(FollowersScreen.routeName, arguments: id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FollowersScreen(
+          id,
+        ),
+      ),
+    );
   }
 
   void _toFollowing(context, id) {
-    Navigator.of(context).pushNamed(FollowingScreen.routeName, arguments: id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FollowingScreen(
+          id,
+        ),
+      ),
+    );
   }
 
   void _toEdit(context) {

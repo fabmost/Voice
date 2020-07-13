@@ -1,23 +1,21 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
+import '../mixins/share_mixin.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/analytics_screen.dart';
 
-class UserPoll extends StatelessWidget {
+class UserPoll extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String myId;
   final String userId;
@@ -66,6 +64,17 @@ class UserPoll extends StatelessWidget {
   void _toComments(context) {
     Navigator.of(context)
         .pushNamed(CommentsScreen.routeName, arguments: reference);
+  }
+
+  void _toAnalytics(context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnalyticsScreen(
+          reference.documentID,
+        ),
+      ),
+    );
   }
 
   void _anonymousAlert(context, text) {
@@ -131,28 +140,8 @@ class UserPoll extends StatelessWidget {
     batch.commit();
   }
 
-  void _share() async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link:
-          Uri.parse('https://voiceinc.page.link/poll/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.galup.app',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.galup.app',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto esta encuesta de Galup $url');
+  void _share() {
+    sharePoll(reference.documentID);
   }
 
   void _flag(context) {
@@ -459,32 +448,35 @@ class UserPoll extends StatelessWidget {
             Container(
               color: color,
               child: ListTile(
-                onTap: myId == userId ? null : () => _toProfile(context),
-                leading: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Theme.of(context).accentColor,
-                  backgroundImage: NetworkImage(userImage),
-                ),
-                title: Row(
-                  children: <Widget>[
-                    Text(
-                      userName,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    SizedBox(width: 8),
-                    InfluencerBadge(influencer, 16),
-                  ],
-                ),
-                subtitle: Text(timeago.format(now.subtract(difference))),
-                trailing: Transform.rotate(
+                  onTap: myId == userId ? null : () => _toProfile(context),
+                  leading: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Theme.of(context).accentColor,
+                    backgroundImage: NetworkImage(userImage),
+                  ),
+                  title: Row(
+                    children: <Widget>[
+                      Text(
+                        userName,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      SizedBox(width: 8),
+                      InfluencerBadge(influencer, 16),
+                    ],
+                  ),
+                  subtitle: Text(timeago.format(now.subtract(difference))),
+                  trailing: FlatButton(
+                    onPressed: () => _toAnalytics(context),
+                    child: Text('Estadísticas'),
+                  ) /*Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(
                     icon: Icon(Icons.chevron_left),
                     onPressed: () => _options(context),
                   ),
-                ),
-              ),
+                ),*/
+                  ),
             ),
             SizedBox(height: 16),
             Padding(

@@ -110,6 +110,21 @@ class _AuthScreenState extends State<AuthScreen> {
     if (isValid && _isChecked) {
       _formKey.currentState.save();
       _validateUserName();
+    } else if (!_isChecked) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(Translations.of(context).text('dialog_terms')),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Ok'),
+            )
+          ],
+        ),
+      );
     }
   }
 
@@ -310,13 +325,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     labelText: Translations.of(context).text('hint_birth'),
                     labelStyle: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return Translations.of(context)
-                          .text('error_missing_birth');
-                    }
-                    return null;
-                  },
                 ),
                 TextFormField(
                   controller: _genderController,
@@ -325,13 +333,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     labelText: Translations.of(context).text('hint_gender'),
                     labelStyle: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return Translations.of(context)
-                          .text('error_missing_gender');
-                    }
-                    return null;
-                  },
                 ),
                 TextFormField(
                   controller: _countryController,
@@ -340,13 +341,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     labelText: Translations.of(context).text('hint_country'),
                     labelStyle: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return Translations.of(context)
-                          .text('error_missing_country');
-                    }
-                    return null;
-                  },
                 ),
                 TextFormField(
                   keyboardType: TextInputType.emailAddress,
@@ -417,7 +411,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     RichText(
                       text: TextSpan(children: [
                         TextSpan(
-                          text: 'Acepto los ',
+                          text: Translations.of(context).text('label_agree'),
                           style: TextStyle(color: Colors.black),
                         ),
                         TextSpan(
@@ -429,7 +423,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 );
                               }
                             },
-                          text: 'Términos y Condiciones',
+                          text: Translations.of(context).text('label_terms'),
                           style: TextStyle(
                             color: Theme.of(context).accentColor,
                             decoration: TextDecoration.underline,

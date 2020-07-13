@@ -79,6 +79,11 @@ class ChallengeUserList extends StatelessWidget {
               return Center(child: CircularProgressIndicator());
             }
             final documents = snapshot.data.documents;
+            if (documents.isEmpty) {
+              return Center(
+                child: Text('Aquí tus retos'),
+              );
+            }
             return ListView.builder(
               itemCount: documents.length,
               itemBuilder: (context, i) {

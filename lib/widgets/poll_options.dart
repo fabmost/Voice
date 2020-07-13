@@ -76,6 +76,11 @@ class _PollOptionsState extends State<PollOptions> {
     final userData =
         await Firestore.instance.collection('users').document(user.uid).get();
 
+    Firestore.instance.collection('users').document(user.uid).updateData({
+      'voted': FieldValue.arrayUnion(
+        [widget.reference.documentID],
+      )
+    });
     await Firestore.instance.runTransaction((transaction) {
       return transaction.get(widget.reference).then((value) {
         List results = value.data['results'];

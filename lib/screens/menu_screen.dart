@@ -10,6 +10,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
+import 'package:voice_inc/translations.dart';
 
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
@@ -92,7 +93,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       context: context,
       builder: (context) => AlertDialog(
         title:
-            Text('Para realizar esta acción debes tener una cuenta en Galup'),
+            Text(Translations.of(context).text('dialog_need_account')),
         actions: <Widget>[
           FlatButton(
             onPressed: () {

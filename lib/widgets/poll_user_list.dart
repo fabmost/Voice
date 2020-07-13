@@ -30,40 +30,38 @@ class PollUserList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return UserPoll(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      comments: doc['comments'],
-      options: doc['options'],
-      votes: doc['results'],
-      images: doc['images'] ?? [],
-      voters: voters,
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        userImage: doc['user_image'] ?? '',
+        title: doc['title'],
+        comments: doc['comments'],
+        options: doc['options'],
+        votes: doc['results'],
+        images: doc['images'] ?? [],
+        voters: voters,
+        likes: likes,
+        hasLiked: hasLiked,
+        reposts: reposts,
+        hasSaved: hasSaved,
+        date: doc['createdAt'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   Widget _repostPollWidget(doc, userId) {
     return RepostPoll(
-      reference: doc['parent'] ?? doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      title: doc['title'],
-      options: doc['options'],
-      creatorName: doc['creator_name'],
-      creatorImage: doc['creator_image'] ?? '',
-      images: doc['images'] ?? [],
-      date: doc['originalDate'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc['parent'] ?? doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        title: doc['title'],
+        options: doc['options'],
+        creatorName: doc['creator_name'],
+        creatorImage: doc['creator_image'] ?? '',
+        images: doc['images'] ?? [],
+        date: doc['originalDate'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   @override
@@ -86,6 +84,11 @@ class PollUserList extends StatelessWidget {
               return Center(child: CircularProgressIndicator());
             }
             final documents = snapshot.data.documents;
+            if (documents.isEmpty) {
+              return Center(
+                child: Text('Aquí tus encuestas'),
+              );
+            }
             return ListView.builder(
               itemCount: documents.length,
               itemBuilder: (context, i) {
@@ -93,10 +96,10 @@ class PollUserList extends StatelessWidget {
                 switch (doc['type']) {
                   case 'poll':
                     return _pollWidget(doc, userSnap.data.uid);
-                    case 'repost-poll':
-                      return _repostPollWidget(doc, userSnap.data.uid);
-                    default:
-                      return SizedBox();
+                  case 'repost-poll':
+                    return _repostPollWidget(doc, userSnap.data.uid);
+                  default:
+                    return SizedBox();
                 }
               },
             );

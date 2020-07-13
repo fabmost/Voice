@@ -5,6 +5,7 @@ import '../custom/search_delegate.dart';
 import '../widgets/appbar.dart';
 import '../widgets/top_content.dart';
 import '../widgets/filtered_content.dart';
+import '../widgets/categories_list.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -76,11 +77,11 @@ class _SearchScreenState extends State<SearchScreen>
                   unselectedLabelColor: Colors.grey,
                   tabs: [
                     Tab(text: 'Tendencia'),
-                    Tab(text: 'Belleza'),
                     Tab(text: 'Salud'),
                     Tab(text: 'Tecnología'),
                     Tab(text: 'Deportes'),
                     Tab(text: 'Política'),
+                    Tab(text: 'Más'),
                   ],
                 ),
               ),
@@ -89,11 +90,11 @@ class _SearchScreenState extends State<SearchScreen>
               child: TabBarView(
                 children: [
                   TopContent(),
-                  FilteredContent('Belleza'),
                   FilteredContent('Salud'),
                   FilteredContent('Tecnología'),
                   FilteredContent('Deportes'),
                   FilteredContent('Política'),
+                  CategoriesList(),
                 ],
               ),
             ),

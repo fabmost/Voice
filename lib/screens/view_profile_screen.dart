@@ -29,11 +29,126 @@ class ViewProfileScreen extends StatelessWidget {
   }
 
   void _toFollowers(context, id) {
-    Navigator.of(context).pushNamed(FollowersScreen.routeName, arguments: id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FollowersScreen(
+          id,
+        ),
+      ),
+    );
   }
 
   void _toFollowing(context, id) {
-    Navigator.of(context).pushNamed(FollowingScreen.routeName, arguments: id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FollowingScreen(
+          id,
+        ),
+      ),
+    );
+  }
+
+  void _menu(context, userId) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          children: <Widget>[
+            SimpleDialogOption(
+              child: Text(
+                Translations.of(context).text('button_block'),
+                style: TextStyle(fontSize: 16, color: Colors.red),
+              ),
+              onPressed: () => _blockUser(context, userId),
+            ),
+            SimpleDialogOption(
+              child: Text(
+                Translations.of(context).text('button_cancel'),
+                style: TextStyle(fontSize: 16),
+              ),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _blockUser(context, userId) async {
+    Navigator.of(context).pop();
+    bool willClose = false;
+    await showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_block')),
+        content: Text(Translations.of(context).text('dialog_block_content')),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              Translations.of(context).text('button_block'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              willClose = true;
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
+    if (willClose) _blockContent(context, userId);
+  }
+
+  void _blockContent(context, userId) async {
+    final myUser = await FirebaseAuth.instance.currentUser();
+    final userData =
+        await Firestore.instance.collection('users').document(userId).get();
+
+    WriteBatch batch = Firestore.instance.batch();
+    final List creations = userData['created'] ?? [];
+    if (userData['reposted'] != null) {
+      (userData['reposted'] as List).forEach((element) {
+        creations.add(element.values.first);
+      });
+    }
+    batch.updateData(
+      Firestore.instance.collection('users').document(userId),
+      {
+        'followers': FieldValue.arrayRemove([myUser.uid])
+      },
+    );
+    batch.updateData(
+      Firestore.instance.collection('users').document(myUser.uid),
+      {
+        'following': FieldValue.arrayRemove([userId])
+      },
+    );
+    creations.forEach((element) {
+      batch.updateData(
+        Firestore.instance.collection('content').document(element),
+        {
+          'home': FieldValue.arrayRemove([myUser.uid]),
+          'flag': FieldValue.arrayUnion([myUser.uid])
+        },
+      );
+    });
+    await batch.commit();
+    Navigator.of(context).pop();
   }
 
   void _follow(context, userId, myId, isFollowing) async {
@@ -227,11 +342,15 @@ class ViewProfileScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Text(
-                    document['bio'] ?? '',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      document['bio'] ?? '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
@@ -354,6 +473,10 @@ class ViewProfileScreen extends StatelessWidget {
                     icon: Icon(GalupFont.message),
                     onPressed: () => _toChat(context, profileId),
                   ),
+                  IconButton(
+                    icon: Icon(Icons.more_vert),
+                    onPressed: () => _menu(context, profileId),
+                  ),
                   //_header(context, profileId),
                 ],
                 //flexibleSpace: _header(context, statusBarHeight, profileId),
@@ -361,8 +484,8 @@ class ViewProfileScreen extends StatelessWidget {
               SliverPersistentHeader(
                 pinned: false,
                 delegate: _SliverHeaderDelegate(
-                  360,
-                  360,
+                  370,
+                  370,
                   _newHeader(context, profileId),
                 ),
               ),

@@ -5,10 +5,23 @@ import 'package:flutter/material.dart';
 import 'view_profile_screen.dart';
 import '../translations.dart';
 
-class FollowersScreen extends StatelessWidget {
+class FollowersScreen extends StatefulWidget {
   static const routeName = '/followers';
+  final userId;
 
-  void _toProfile(context, userId) async {
+  FollowersScreen(this.userId);
+
+  @override
+  _FollowersScreenState createState() => _FollowersScreenState();
+}
+
+class _FollowersScreenState extends State<FollowersScreen> {
+  TextEditingController _controller = new TextEditingController();
+  List documents;
+  bool _isLoading = false;
+  String _filter;
+
+  void _toProfile(userId) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.uid != userId) {
       Navigator.of(context)
@@ -16,47 +29,91 @@ class FollowersScreen extends StatelessWidget {
     }
   }
 
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    QuerySnapshot usersSnap = await Firestore.instance
+        .collection('users')
+        .where('following', arrayContains: widget.userId)
+        .orderBy('user_name')
+        .getDocuments();
+
+    setState(() {
+      documents = usersSnap.documents;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getData();
+    _controller.addListener(() {
+      setState(() {
+        _filter = _controller.text;
+      });
+    });
+  }
+
+  Widget _userTile(doc) {
+    return ListTile(
+      onTap: () => _toProfile(doc.documentID),
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(doc['image'] ?? ''),
+      ),
+      title: Text('${doc['name']} ${doc['last_name']}'),
+      subtitle: Text('@${doc['user_name']}'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final userId = ModalRoute.of(context).settings.arguments as String;
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('label_followers')),
       ),
-      body: StreamBuilder(
-        stream: Firestore.instance
-            .collection('users')
-            .where('following', arrayContains: userId)
-            .orderBy('user_name')
-            .snapshots(),
-        builder: (ctx, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final documents = snapshot.data.documents;
-          if (documents.isEmpty) {
-            return Center(
-              child: Text(Translations.of(context).text('empty_followers')),
-            );
-          }
-          return ListView.separated(
-            separatorBuilder: (context, index) => Divider(),
-            itemCount: documents.length,
-            itemBuilder: (ctx, i) {
-              final doc = documents[i];
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : (documents.isEmpty)
+              ? Center(
+                  child: Text(Translations.of(context).text('empty_followers')),
+                )
+              : Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: TextField(
+                        decoration: InputDecoration(
+                            icon: Icon(Icons.search),
+                            hintText:
+                                Translations.of(context).text('hint_search')),
+                        controller: _controller,
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: documents.length,
+                        itemBuilder: (ctx, i) {
+                          final doc = documents[i];
 
-              return ListTile(
-                onTap: () => _toProfile(context, doc.documentID),
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(doc['image'] ?? ''),
+                          return _filter == null || _filter == ""
+                              ? Column(
+                                  children: <Widget>[
+                                    _userTile(doc),
+                                    Divider()
+                                  ],
+                                )
+                              : doc['user_name']
+                                      .toLowerCase()
+                                      .contains(_filter.toLowerCase())
+                                  ? _userTile(doc)
+                                  : Container();
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                title: Text('${doc['name']} ${doc['last_name']}'),
-                subtitle: Text('@${doc['user_name']}'),
-              );
-            },
-          );
-        },
-      ),
     );
   }
 }

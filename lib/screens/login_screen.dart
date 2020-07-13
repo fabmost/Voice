@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'menu_screen.dart';
 import 'auth_screen.dart';
+import 'forgot_password_screen.dart';
 import '../translations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -112,13 +113,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return Translations.of(context).text('error_missing_email');
+                      return Translations.of(context)
+                          .text('error_missing_email');
                     }
                     Pattern pattern =
                         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                     RegExp regex = new RegExp(pattern);
                     if (!regex.hasMatch(value)) {
-                      return Translations.of(context).text('error_invalid_email');
+                      return Translations.of(context)
+                          .text('error_invalid_email');
                     }
                     return null;
                   },
@@ -134,7 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value.isEmpty) {
-                      return Translations.of(context).text('error_missing_password');
+                      return Translations.of(context)
+                          .text('error_missing_password');
                     }
                     return null;
                   },
@@ -150,10 +154,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 42,
                         child: RaisedButton(
                           textColor: Colors.white,
-                          child: Text(Translations.of(context).text('button_login')),
+                          child: Text(
+                              Translations.of(context).text('button_login')),
                           onPressed: _validate,
                         ),
                       ),
+                SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  child: FlatButton(
+                    onPressed: () {
+                      Navigator.of(context)
+                          .pushNamed(ForgotPasswordScreen.routeName);
+                    },
+                    child: Text(Translations.of(context).text('button_forgot')),
+                  ),
+                ),
                 ListTile(
                   onTap: () {
                     Navigator.of(context)

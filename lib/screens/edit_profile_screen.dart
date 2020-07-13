@@ -9,6 +9,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'user_name_screen.dart';
 import 'countries_screen.dart';
 import 'verify_type_screen.dart';
 import '../translations.dart';
@@ -25,6 +26,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _lastController = TextEditingController();
+  TextEditingController _userController = TextEditingController();
   TextEditingController _birthController = TextEditingController();
   TextEditingController _genderController = TextEditingController();
   TextEditingController _countryController = TextEditingController();
@@ -33,6 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _facebookController = TextEditingController();
   TextEditingController _instagramController = TextEditingController();
   TextEditingController _youtubeController = TextEditingController();
+  FocusNode _userFocus = FocusNode();
   FocusNode _birthFocus = FocusNode();
   FocusNode _genderFocus = FocusNode();
   FocusNode _countryFocus = FocusNode();
@@ -125,6 +128,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() {
         _imageFile = cropped;
       });
+    }
+  }
+
+  void _userSelected() {
+    if (_userFocus.hasFocus) {
+      FocusScope.of(context).unfocus();
+      Navigator.of(context).pushNamed(
+        UserNameScreen.routeName,
+        arguments: _userController.text,
+      );
     }
   }
 
@@ -248,31 +261,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _changedImage = true;
         }
         WriteBatch batch = Firestore.instance.batch();
-        batch.setData(
-          Firestore.instance.collection('users').document(userId),
-          {
-            'image': _currentUrl,
-            'name': _nameController.text,
-            'last_name': _lastController.text,
-            'gender': _genderController.text,
-            'country': _countryController.text,
-            'birthday': _birthController.text,
-            'bio': _bioController.text,
-            'tiktok': _tiktokController.text,
-            'facebook': _facebookController.text,
-            'instagram': _instagramController.text,
-            'youtube': _youtubeController.text,
-          },
-          merge: true,
-        );
-        batch.setData(
-          Firestore.instance.collection('hash').document(userId),
-          {
-            'user_name': '${_nameController.text} ${_lastController.text}',
-            'user_image': _currentUrl,
-          },
-          merge: true,
-        );
+        batch.updateData(
+            Firestore.instance.collection('users').document(userId), {
+          'image': _currentUrl,
+          'name': _nameController.text,
+          'last_name': _lastController.text,
+          'gender': _genderController.text,
+          'country': _countryController.text,
+          'birthday': _birthController.text,
+          'bio': _bioController.text,
+          'tiktok': _tiktokController.text,
+          'facebook': _facebookController.text,
+          'instagram': _instagramController.text,
+          'youtube': _youtubeController.text,
+        });
+        batch.updateData(
+            Firestore.instance.collection('hash').document(userId), {
+          'user_name': '${_nameController.text} ${_lastController.text}',
+          'user_image': _currentUrl,
+        });
 
         if (_changedImage) {
           if (userData['created'] != null) {
@@ -335,6 +342,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _userFocus.addListener(_userSelected);
     _birthFocus.addListener(_birthSelected);
     _genderFocus.addListener(_genderSelected);
     _countryFocus.addListener(_countrySelected);
@@ -368,6 +376,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 return Center(child: CircularProgressIndicator());
               }
               final DocumentSnapshot document = snapshot.data;
+              _userController.text = document['user_name'];
               _nameController.text = document['name'];
               _lastController.text = document['last_name'];
               _birthController.text = document['birthday'];
@@ -453,6 +462,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             }
                             return null;
                           },
+                        ),
+                        TextFormField(
+                          controller: _userController,
+                          focusNode: _userFocus,
+                          maxLength: 22,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter(
+                                RegExp("[a-zA-Z0-9_.]")),
+                          ],
+                          decoration: InputDecoration(
+                            counterText: '',
+                            labelText:
+                                Translations.of(context).text('hint_user_name'),
+                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                         TextFormField(
                           controller: _birthController,

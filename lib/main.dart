@@ -14,6 +14,7 @@ import 'screens/onboarding_screen.dart';
 import 'screens/menu_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/forgot_password_screen.dart';
 import 'screens/countries_screen.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -21,12 +22,12 @@ import 'screens/view_profile_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
-import 'screens/followers_screen.dart';
-import 'screens/following_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
 import 'screens/detail_cause_screen.dart';
 import 'screens/flag_screen.dart';
+import 'screens/user_name_screen.dart';
+import 'screens/category_screen.dart';
 
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
@@ -119,6 +120,7 @@ class App extends StatelessWidget {
           OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
           AuthScreen.routeName: (ctx) => AuthScreen(),
           LoginScreen.routeName: (ctx) => LoginScreen(),
+          ForgotPasswordScreen.routeName: (ctx) => ForgotPasswordScreen(),
           CountriesScreen.routeName: (ctx) => CountriesScreen(),
           EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
           NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
@@ -130,8 +132,6 @@ class App extends StatelessWidget {
           NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
           NewContentCategoryScreen.routeName: (ctx) =>
               NewContentCategoryScreen(),
-          FollowersScreen.routeName: (ctx) => FollowersScreen(),
-          FollowingScreen.routeName: (ctx) => FollowingScreen(),
           DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
           DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
           DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
@@ -140,6 +140,8 @@ class App extends StatelessWidget {
           VerifyIdScreen.routeName: (ctx) => VerifyIdScreen(),
           FlagScreen.routeName: (ctx) => FlagScreen(),
           UpgradeScreen.routeName: (ctx) => UpgradeScreen(),
+          UserNameScreen.routeName: (ctx) => UserNameScreen(),
+          CategoryScreen.routeName: (ctx) => CategoryScreen(),
         },
       ),
     );
