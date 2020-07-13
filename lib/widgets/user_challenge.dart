@@ -2,21 +2,20 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import '../translations.dart';
+import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 
-class UserChallenge extends StatelessWidget {
+class UserChallenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
   final String myId;
@@ -32,6 +31,7 @@ class UserChallenge extends StatelessWidget {
   final bool hasSaved;
   final DateTime date;
   final String influencer;
+  final List likesList;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -51,6 +51,7 @@ class UserChallenge extends StatelessWidget {
     this.hasSaved,
     this.date,
     @required this.influencer,
+    @required this.likesList,
   });
 
   void _toProfile(context) {
@@ -127,67 +128,10 @@ class UserChallenge extends StatelessWidget {
   }
 
   void _share() async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://voiceinc.page.link',
-      link: Uri.parse(
-          'https://voiceinc.page.link/challenge/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.galup.app',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.galup.app',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto este Reto de Galup $url');
-  }
-
-  void _flag(context) {
-    Navigator.of(context).pop();
-  }
-
-  void _save(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasSaved) {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-
-    Navigator.of(context).pop();
+    shareChallenge(reference.documentID);
   }
 
   void _options(context) {
-    FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -195,22 +139,14 @@ class UserChallenge extends StatelessWidget {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
-              if (myId != userId)
-                ListTile(
-                  onTap: () => _save(context),
-                  leading: Icon(
-                    GalupFont.saved,
-                  ),
-                  title: Text(hasSaved ? 'Borrar' : 'Guardar'),
-                ),
               ListTile(
-                onTap: () => _flag(context),
+                onTap: () => _deleteAlert(context),
                 leading: new Icon(
-                  Icons.flag,
+                  Icons.delete,
                   color: Colors.red,
                 ),
                 title: Text(
-                  'Denunciar',
+                  'Borrar',
                   style: TextStyle(color: Colors.red),
                 ),
               ),
@@ -250,6 +186,68 @@ class UserChallenge extends StatelessWidget {
         child: Text(goalReached ? 'Ver' : 'Faltan $metric'),
       ),
     );
+  }
+
+  void _deleteAlert(context) {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        content: Text('¿Seguro que deseas borrar esta encuesta?'),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              'Borrar',
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              _deleteContent();
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteContent() async {
+    QuerySnapshot snapArray = await Firestore.instance
+        .collection('content')
+        .where('parent', isEqualTo: reference)
+        .getDocuments();
+
+    WriteBatch batch = Firestore.instance.batch();
+
+    batch.delete(reference);
+    snapArray.documents.forEach((element) {
+      batch.delete(element.reference);
+    });
+
+    batch.updateData(Firestore.instance.collection('users').document(myId), {
+      'created': FieldValue.arrayRemove([reference.documentID])
+    });
+    
+    likesList.forEach((element) {
+      batch.updateData(
+        Firestore.instance.collection('users').document(element),
+        {
+          'liked': FieldValue.arrayRemove([reference.documentID]),
+        },
+      );
+    });
+
+    batch.commit();
   }
 
   @override

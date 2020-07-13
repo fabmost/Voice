@@ -94,7 +94,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
       });
     }
     await batch.commit();
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(_userName);
   }
 
   @override

@@ -2,18 +2,17 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 
+import '../mixins/share_mixin.dart';
 import '../translations.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 
-class Cause extends StatelessWidget {
+class Cause extends StatelessWidget with ShareContent{
   final DocumentReference reference;
   final String myId;
   final String creator;
@@ -192,26 +191,7 @@ class Cause extends StatelessWidget {
   }
 
   void _share() async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://galup.page.link',
-      link: Uri.parse('https://galup.page.link/cause/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.galup.app',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.galup.app',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto esta Causa de Galup $url');
+    shareCause(reference.documentID);
   }
 
   void _flag(context) {

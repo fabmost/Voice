@@ -21,6 +21,10 @@ class Influencer {
     Influencer(name: 'Fashion', color: 0xFFFFDA00),
     Influencer(name: 'Espectáculos', color: 0xFF0070BA),
     Influencer(name: 'Healthy', color: 0xFF399A32),
+    //TODO
+    Influencer(name: 'Escritor', color: 0xFF009EBE),
+    //TODO
+    Influencer(name: 'Emprendedor', color: 0xFF009EBE),
     Influencer(name: 'Libre', color: 0xFFE1302F),
   ];
 }

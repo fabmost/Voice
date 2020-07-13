@@ -329,8 +329,8 @@ class Poll extends StatelessWidget {
           child: Hero(
             tag: images[0],
             child: Container(
-              width: 72,
-              height: 72,
+              width: 144,
+              height: 144,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.black),
@@ -351,8 +351,8 @@ class Poll extends StatelessWidget {
             child: Hero(
               tag: images[0],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 144,
+                height: 144,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(24),
@@ -373,8 +373,8 @@ class Poll extends StatelessWidget {
             child: Hero(
               tag: images[1],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 144,
+                height: 144,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(24),
@@ -400,8 +400,8 @@ class Poll extends StatelessWidget {
             child: Hero(
               tag: images[0],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(24),
@@ -422,8 +422,8 @@ class Poll extends StatelessWidget {
             child: Hero(
               tag: images[1],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black),
                   image: DecorationImage(
@@ -440,8 +440,8 @@ class Poll extends StatelessWidget {
             child: Hero(
               tag: images[2],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(24),

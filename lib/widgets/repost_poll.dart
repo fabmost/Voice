@@ -103,8 +103,8 @@ class RepostPoll extends StatelessWidget {
         child: InkWell(
           //onTap: () => _imageOptions(2, false),
           child: Container(
-            width: 72,
-            height: 72,
+            width: 144,
+            height: 144,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.black),
@@ -122,8 +122,8 @@ class RepostPoll extends StatelessWidget {
           InkWell(
             //onTap: () => _imageOptions(2, false),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 144,
+              height: 144,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
@@ -141,8 +141,8 @@ class RepostPoll extends StatelessWidget {
           InkWell(
             //onTap: () => _imageOptions(2, false),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 144,
+              height: 144,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(24),
@@ -165,8 +165,8 @@ class RepostPoll extends StatelessWidget {
           InkWell(
             //onTap: () => _imageOptions(2, false),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
@@ -184,8 +184,8 @@ class RepostPoll extends StatelessWidget {
           InkWell(
             //onTap: () => _imageOptions(2, false),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
                 image: DecorationImage(
@@ -199,8 +199,8 @@ class RepostPoll extends StatelessWidget {
           InkWell(
             //onTap: () => _imageOptions(2, false),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(24),

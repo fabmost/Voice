@@ -34,6 +34,10 @@ class TopContent extends StatelessWidget {
       reposts = doc['reposts'].length;
       hasReposted = (doc['reposts'] as List).contains(userId);
     }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
     return Poll(
       reference: doc.reference,
       myId: userId,
@@ -46,6 +50,7 @@ class TopContent extends StatelessWidget {
       votes: doc['results'],
       images: doc['images'] ?? [],
       hasVoted: hasVoted,
+      hasSaved: hasSaved,
       vote: vote,
       voters: voters,
       likes: likes,
@@ -70,6 +75,10 @@ class TopContent extends StatelessWidget {
       reposts = doc['reposts'].length;
       hasReposted = (doc['reposts'] as List).contains(userId);
     }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
     return Challenge(
       reference: doc.reference,
       myId: userId,
@@ -82,6 +91,7 @@ class TopContent extends StatelessWidget {
       comments: doc['comments'],
       likes: likes,
       hasLiked: hasLiked,
+      hasSaved: hasSaved,
       reposts: reposts,
       hasReposted: hasReposted,
       date: doc['createdAt'].toDate(),
@@ -102,6 +112,10 @@ class TopContent extends StatelessWidget {
       reposts = doc['reposts'].length;
       hasReposted = (doc['reposts'] as List).contains(userId);
     }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
     return Cause(
       reference: doc.reference,
       myId: userId,
@@ -110,6 +124,7 @@ class TopContent extends StatelessWidget {
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
+      hasSaved: hasSaved,
       creator: doc['creator'],
       info: doc['info'],
     );

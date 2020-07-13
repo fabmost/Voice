@@ -381,8 +381,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                         });
                       },
                       min: 0,
-                      max: 10000,
-                      divisions: 10,
+                      max: 5000,
+                      divisions: 50,
                       label: '${NumberFormat.compact().format(goal)}',
                     ),
                   ),

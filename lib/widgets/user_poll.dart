@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,9 @@ class UserPoll extends StatelessWidget with ShareContent {
   final List images;
   final List options;
   final List votes;
+  final List likesList;
+  final List votersList;
+  final List repostedList;
   final int voters;
   final bool hasLiked;
   final int likes;
@@ -53,6 +58,9 @@ class UserPoll extends StatelessWidget with ShareContent {
     this.hasSaved,
     this.images,
     this.date,
+    this.votersList,
+    this.repostedList,
+    @required this.likesList,
     @required this.influencer,
   });
 
@@ -144,44 +152,81 @@ class UserPoll extends StatelessWidget with ShareContent {
     sharePoll(reference.documentID);
   }
 
-  void _flag(context) {
+  void _deleteAlert(context) {
     Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        content: Text('¿Seguro que deseas borrar esta encuesta?'),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              'Borrar',
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              _deleteContent();
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
   }
 
-  void _save(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasSaved) {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
+  void _deleteContent() async {
+    QuerySnapshot snapArray = await Firestore.instance
+        .collection('content')
+        .where('parent', isEqualTo: reference)
+        .getDocuments();
 
-    Navigator.of(context).pop();
+    WriteBatch batch = Firestore.instance.batch();
+
+    batch.delete(reference);
+    snapArray.documents.forEach((element) {
+      batch.delete(element.reference);
+    });
+
+    batch.updateData(Firestore.instance.collection('users').document(myId), {
+      'created': FieldValue.arrayRemove([reference.documentID])
+    });
+
+    likesList.forEach((element) {
+      batch.updateData(
+        Firestore.instance.collection('users').document(element),
+        {
+          'liked': FieldValue.arrayRemove([reference.documentID]),
+        },
+      );
+    });
+
+    votersList.forEach((element) {
+      Map elementMap = element as Map;
+      final key = elementMap.keys.toList()[0];
+      batch.updateData(
+        Firestore.instance.collection('users').document(key),
+        {
+          'voted': FieldValue.arrayRemove([reference.documentID]),
+        },
+      );
+    });
+
+    batch.commit();
   }
 
   void _options(context) {
-    FocusScope.of(context).requestFocus(FocusNode());
+    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -189,22 +234,14 @@ class UserPoll extends StatelessWidget with ShareContent {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
-              if (myId != userId)
-                ListTile(
-                  onTap: () => _save(context),
-                  leading: Icon(
-                    GalupFont.saved,
-                  ),
-                  title: Text(hasSaved ? 'Borrar' : 'Guardar'),
-                ),
               ListTile(
-                onTap: () => _flag(context),
+                onTap: () => _deleteAlert(context),
                 leading: Icon(
-                  Icons.flag,
+                  Icons.delete,
                   color: Colors.red,
                 ),
                 title: Text(
-                  'Denunciar',
+                  'Eliminar',
                   style: TextStyle(color: Colors.red),
                 ),
               ),
@@ -227,7 +264,10 @@ class UserPoll extends StatelessWidget with ShareContent {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.black),
-                image: DecorationImage(image: NetworkImage(images[0]))),
+                image: DecorationImage(
+                  image: NetworkImage(images[0]),
+                  fit: BoxFit.cover,
+                )),
           ),
         ),
       );
@@ -235,38 +275,34 @@ class UserPoll extends StatelessWidget with ShareContent {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  bottomLeft: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
-                ),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
               ),
             ),
           ),
           SizedBox(width: 5),
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[1]),
-                ),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[1]),
+                fit: BoxFit.cover,
               ),
             ),
           )
@@ -276,52 +312,46 @@ class UserPoll extends StatelessWidget with ShareContent {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  bottomLeft: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
-                ),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
               ),
             ),
           ),
           SizedBox(width: 5),
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[1]),
-                ),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[1]),
+                fit: BoxFit.cover,
               ),
             ),
           ),
           SizedBox(width: 5),
-          InkWell(
-            //onTap: () => _imageOptions(2, false),
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[2]),
-                ),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[2]),
+                fit: BoxFit.cover,
               ),
             ),
           )
@@ -448,7 +478,8 @@ class UserPoll extends StatelessWidget with ShareContent {
             Container(
               color: color,
               child: ListTile(
-                  onTap: myId == userId ? null : () => _toProfile(context),
+                onTap: myId == userId ? null : () => _toProfile(context),
+                /*
                   leading: CircleAvatar(
                     radius: 18,
                     backgroundColor: Theme.of(context).accentColor,
@@ -465,18 +496,19 @@ class UserPoll extends StatelessWidget with ShareContent {
                       InfluencerBadge(influencer, 16),
                     ],
                   ),
-                  subtitle: Text(timeago.format(now.subtract(difference))),
-                  trailing: FlatButton(
-                    onPressed: () => _toAnalytics(context),
-                    child: Text('Estadísticas'),
-                  ) /*Transform.rotate(
+                  subtitle: Text(timeago.format(now.subtract(difference))),*/
+                title: OutlineButton(
+                  onPressed: () => _toAnalytics(context),
+                  child: Text('Estadísticas'),
+                ),
+                trailing: Transform.rotate(
                   angle: 270 * pi / 180,
                   child: IconButton(
                     icon: Icon(Icons.chevron_left),
                     onPressed: () => _options(context),
                   ),
-                ),*/
-                  ),
+                ),
+              ),
             ),
             SizedBox(height: 16),
             Padding(

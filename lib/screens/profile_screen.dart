@@ -77,6 +77,7 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(height: 22),
             Text(
               'Registrate para tener un perfil',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 22,

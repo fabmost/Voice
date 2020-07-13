@@ -47,15 +47,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String userId;
   String _currentUrl;
   File _imageFile;
+  bool _loadingView = false;
   bool _isLoading = false;
   bool _changedImage = false;
+  int _isValidated;
+  DocumentSnapshot userData;
 
   void _toValidate(context) {
     Navigator.of(context).pushNamed(VerifyTypeScreen.routeName);
   }
 
   void _imageOptions() {
-    FocusScope.of(context).requestFocus(FocusNode());
+    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -134,10 +137,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _userSelected() {
     if (_userFocus.hasFocus) {
       FocusScope.of(context).unfocus();
-      Navigator.of(context).pushNamed(
+      Navigator.of(context)
+          .pushNamed(
         UserNameScreen.routeName,
         arguments: _userController.text,
-      );
+      )
+          .then((value) {
+        if (value != null) {
+          setState(() {
+            _userController.text = value;
+          });
+        }
+      });
     }
   }
 
@@ -239,7 +250,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  void _validate(ctx, userData) async {
+  void _validate(ctx) async {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
@@ -339,9 +350,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  void _getData() async {
+    setState(() {
+      _loadingView = false;
+    });
+    final user = await FirebaseAuth.instance.currentUser();
+    final document =
+        await Firestore.instance.collection('users').document(user.uid).get();
+
+    setState(() {
+      _loadingView = false;
+      userId = user.uid;
+      userData = document;
+      _isValidated = document['is_validated'] ?? 0;
+      _userController.text = document['user_name'];
+      _nameController.text = document['name'];
+      _lastController.text = document['last_name'];
+      _birthController.text = document['birthday'];
+      _genderController.text = document['gender'];
+      _countryController.text = document['country'];
+
+      if (document['bio'] != null) {
+        _bioController.text = document['bio'];
+      }
+      if (document['tiktok'] != null) {
+        _tiktokController.text = document['tiktok'];
+      }
+      if (document['facebook'] != null) {
+        _facebookController.text = document['facebook'];
+      }
+      if (document['instagram'] != null) {
+        _instagramController.text = document['instagram'];
+      }
+      if (document['youtube'] != null) {
+        _youtubeController.text = document['youtube'];
+      }
+      _currentUrl = document['image'] ?? '';
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _getData();
     _userFocus.addListener(_userSelected);
     _birthFocus.addListener(_birthSelected);
     _genderFocus.addListener(_genderSelected);
@@ -359,281 +410,213 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_edit_profile')),
       ),
-      body: FutureBuilder(
-        future: FirebaseAuth.instance.currentUser(),
-        builder: (ct, AsyncSnapshot<FirebaseUser> userSnap) {
-          if (userSnap.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          userId = userSnap.data.uid;
-          return StreamBuilder(
-            stream: Firestore.instance
-                .collection('users')
-                .document(userSnap.data.uid)
-                .snapshots(),
-            builder: (ctx, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              final DocumentSnapshot document = snapshot.data;
-              _userController.text = document['user_name'];
-              _nameController.text = document['name'];
-              _lastController.text = document['last_name'];
-              _birthController.text = document['birthday'];
-              _genderController.text = document['gender'];
-              _countryController.text = document['country'];
-
-              if (document['bio'] != null) {
-                _bioController.text = document['bio'];
-              }
-              if (document['tiktok'] != null) {
-                _tiktokController.text = document['tiktok'];
-              }
-              if (document['facebook'] != null) {
-                _facebookController.text = document['facebook'];
-              }
-              if (document['instagram'] != null) {
-                _instagramController.text = document['instagram'];
-              }
-              if (document['youtube'] != null) {
-                _youtubeController.text = document['youtube'];
-              }
-              _currentUrl = document['image'];
-              return SingleChildScrollView(
-                child: Form(
-                  key: _formKey,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            CircleAvatar(
-                              radius: 52,
-                              backgroundImage: _imageFile == null
-                                  ? NetworkImage(document['image'] ?? '')
-                                  : FileImage(_imageFile),
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: Container(
-                                height: 42,
-                                child: RaisedButton(
-                                  onPressed: _imageOptions,
-                                  textColor: Colors.white,
-                                  child: Text(Translations.of(context)
-                                      .text('button_change_image')),
-                                ),
+      body: _loadingView
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          CircleAvatar(
+                            radius: 52,
+                            backgroundImage: _imageFile == null
+                                ? NetworkImage(_currentUrl)
+                                : FileImage(_imageFile),
+                          ),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Container(
+                              height: 42,
+                              child: RaisedButton(
+                                onPressed: _imageOptions,
+                                textColor: Colors.white,
+                                child: Text(Translations.of(context)
+                                    .text('button_change_image')),
                               ),
-                            )
-                          ],
-                        ),
-                        TextFormField(
-                          controller: _nameController,
-                          maxLength: 32,
-                          decoration: InputDecoration(
-                            counterText: '',
-                            labelText:
-                                Translations.of(context).text('hint_name'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return Translations.of(context)
-                                  .text('error_missing_name');
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: _lastController,
-                          maxLength: 32,
-                          decoration: InputDecoration(
-                            counterText: '',
-                            labelText:
-                                Translations.of(context).text('hint_last_name'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return Translations.of(context)
-                                  .text('error_missing_last_name');
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: _userController,
-                          focusNode: _userFocus,
-                          maxLength: 22,
-                          inputFormatters: [
-                            WhitelistingTextInputFormatter(
-                                RegExp("[a-zA-Z0-9_.]")),
-                          ],
-                          decoration: InputDecoration(
-                            counterText: '',
-                            labelText:
-                                Translations.of(context).text('hint_user_name'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _birthController,
-                          focusNode: _birthFocus,
-                          decoration: InputDecoration(
-                            labelText:
-                                Translations.of(context).text('hint_birth'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return Translations.of(context)
-                                  .text('error_missing_birth');
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: _genderController,
-                          focusNode: _genderFocus,
-                          decoration: InputDecoration(
-                            labelText:
-                                Translations.of(context).text('hint_gender'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return Translations.of(context)
-                                  .text('error_missing_gender');
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: _countryController,
-                          focusNode: _countryFocus,
-                          decoration: InputDecoration(
-                            labelText:
-                                Translations.of(context).text('hint_country'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return Translations.of(context)
-                                  .text('error_missing_country');
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: _bioController,
-                          keyboardType: TextInputType.multiline,
-                          maxLines: 3,
-                          maxLength: 120,
-                          decoration: InputDecoration(
-                            labelText:
-                                Translations.of(context).text('hint_bio'),
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Redes sociales',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        TextFormField(
-                          controller: _tiktokController,
-                          focusNode: _tiktokFocus,
-                          inputFormatters: [
-                            WhitelistingTextInputFormatter(
-                                RegExp("[@_.a-zA-Z0-9]")),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Tiktok',
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _facebookController,
-                          focusNode: _facebookFocus,
-                          inputFormatters: [
-                            WhitelistingTextInputFormatter(
-                                RegExp("[@_.a-zA-Z0-9]")),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Facebook',
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _instagramController,
-                          focusNode: _instagramFocus,
-                          inputFormatters: [
-                            WhitelistingTextInputFormatter(
-                                RegExp("[@_.a-zA-Z0-9]")),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Instagram',
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _youtubeController,
-                          inputFormatters: [
-                            WhitelistingTextInputFormatter(
-                                RegExp("[@_.a-zA-Z0-9]")),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Youtube (canal)',
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        if ((document['is_validated'] ?? 0) != 2)
-                          SizedBox(height: 16),
-                        if ((document['is_validated'] ?? 0) != 2)
-                          Container(
-                            width: double.infinity,
-                            height: 42,
-                            child: FlatButton(
-                              textColor: Theme.of(context).accentColor,
-                              child: Text(((document['is_validated'] ?? 0) == 0)
-                                  ? Translations.of(context)
-                                      .text('button_verify_account')
-                                  : 'Verificando cuenta'),
-                              onPressed: () =>
-                                  ((document['is_validated'] ?? 0) == 0)
-                                      ? _toValidate(context)
-                                      : null,
                             ),
+                          )
+                        ],
+                      ),
+                      TextFormField(
+                        controller: _nameController,
+                        maxLength: 32,
+                        decoration: InputDecoration(
+                          counterText: '',
+                          labelText: Translations.of(context).text('hint_name'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return Translations.of(context)
+                                .text('error_missing_name');
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: _lastController,
+                        maxLength: 32,
+                        decoration: InputDecoration(
+                          counterText: '',
+                          labelText:
+                              Translations.of(context).text('hint_last_name'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return Translations.of(context)
+                                .text('error_missing_last_name');
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: _userController,
+                        focusNode: _userFocus,
+                        maxLength: 22,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(
+                              RegExp("[a-zA-Z0-9_.]")),
+                        ],
+                        decoration: InputDecoration(
+                          counterText: '',
+                          labelText:
+                              Translations.of(context).text('hint_user_name'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _birthController,
+                        focusNode: _birthFocus,
+                        decoration: InputDecoration(
+                          labelText:
+                              Translations.of(context).text('hint_birth'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _genderController,
+                        focusNode: _genderFocus,
+                        decoration: InputDecoration(
+                          labelText:
+                              Translations.of(context).text('hint_gender'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _countryController,
+                        focusNode: _countryFocus,
+                        decoration: InputDecoration(
+                          labelText:
+                              Translations.of(context).text('hint_country'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _bioController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: 3,
+                        maxLength: 120,
+                        decoration: InputDecoration(
+                          labelText: Translations.of(context).text('hint_bio'),
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Redes sociales',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      TextFormField(
+                        controller: _tiktokController,
+                        focusNode: _tiktokFocus,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(
+                              RegExp("[@_.a-zA-Z0-9]")),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Tiktok',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _facebookController,
+                        focusNode: _facebookFocus,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(
+                              RegExp("[@_.a-zA-Z0-9]")),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Facebook',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _instagramController,
+                        focusNode: _instagramFocus,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(
+                              RegExp("[@_.a-zA-Z0-9]")),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Instagram',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _youtubeController,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(
+                              RegExp("[@_.a-zA-Z0-9]")),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Youtube (canal)',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      if ((_isValidated ?? 0) != 2) SizedBox(height: 16),
+                      if ((_isValidated ?? 0) != 2)
+                        Container(
+                          width: double.infinity,
+                          height: 42,
+                          child: FlatButton(
+                            textColor: Theme.of(context).accentColor,
+                            child: Text(((_isValidated ?? 0) == 0)
+                                ? Translations.of(context)
+                                    .text('button_verify_account')
+                                : 'Verificando cuenta'),
+                            onPressed: () => ((_isValidated ?? 0) == 0)
+                                ? _toValidate(context)
+                                : null,
                           ),
-                        SizedBox(height: 16),
-                        _isLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : Container(
-                                width: double.infinity,
-                                height: 42,
-                                child: RaisedButton(
-                                  textColor: Colors.white,
-                                  child: Text(Translations.of(context)
-                                      .text('button_save')),
-                                  onPressed: () =>
-                                      _validate(context, snapshot.data),
-                                ),
+                        ),
+                      SizedBox(height: 16),
+                      _isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : Container(
+                              width: double.infinity,
+                              height: 42,
+                              child: RaisedButton(
+                                textColor: Colors.white,
+                                child: Text(Translations.of(context)
+                                    .text('button_save')),
+                                onPressed: () => _validate(context),
                               ),
-                      ],
-                    ),
+                            ),
+                    ],
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ),
+            ),
     );
   }
 }

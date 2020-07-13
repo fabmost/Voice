@@ -11,6 +11,8 @@ import '../widgets/repost_poll.dart';
 import '../widgets/repost_challenge.dart';
 import '../widgets/repost_cause.dart';
 
+import '../widgets/cause_tile.dart';
+
 class PollsScreen extends StatelessWidget {
   Widget _pollWidget(doc, userId) {
     int vote = -1;
@@ -85,23 +87,22 @@ class PollsScreen extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      metric: doc['metric_type'],
-      goal: doc['metric_goal'],
-      comments: doc['comments'],
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      hasReposted: hasReposted,
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        userImage: doc['user_image'] ?? '',
+        title: doc['title'],
+        metric: doc['metric_type'],
+        goal: doc['metric_goal'],
+        comments: doc['comments'],
+        likes: likes,
+        hasLiked: hasLiked,
+        reposts: reposts,
+        hasReposted: hasReposted,
+        hasSaved: hasSaved,
+        date: doc['createdAt'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   Widget _causeWidget(doc, userId) {
@@ -138,33 +139,31 @@ class PollsScreen extends StatelessWidget {
 
   Widget _repostPollWidget(doc, userId) {
     return RepostPoll(
-      reference: doc['parent'] ?? doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      title: doc['title'],
-      options: doc['options'],
-      creatorName: doc['creator_name'],
-      creatorImage: doc['creator_image'] ?? '',
-      images: doc['images'] ?? [],
-      date: doc['originalDate'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc['parent'] ?? doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        title: doc['title'],
+        options: doc['options'],
+        creatorName: doc['creator_name'],
+        creatorImage: doc['creator_image'] ?? '',
+        images: doc['images'] ?? [],
+        date: doc['originalDate'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   Widget _repostChallengeWidget(doc, userId) {
     return RepostChallenge(
-      reference: doc['parent'] ?? doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      title: doc['title'],
-      creatorName: doc['creator_name'],
-      creatorImage: doc['creator_image'] ?? '',
-      metric: doc['metric_type'],
-      date: doc['originalDate'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc['parent'] ?? doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        title: doc['title'],
+        creatorName: doc['creator_name'],
+        creatorImage: doc['creator_image'] ?? '',
+        metric: doc['metric_type'],
+        date: doc['originalDate'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   Widget _repostCauseWidget(doc, userId) {
@@ -176,6 +175,35 @@ class PollsScreen extends StatelessWidget {
       creator: doc['creator'],
       info: doc['info'],
       date: doc['originalDate'].toDate(),
+    );
+  }
+
+  Widget _causesList() {
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection('content')
+          .where('type', isEqualTo: 'cause')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final documents = snapshot.data.documents;
+        return Container(
+          height: 192,
+          child: ListView.separated(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            separatorBuilder: (context, index) => SizedBox(width: 16),
+            itemCount: documents.length,
+            itemBuilder: (context, i) => CauseTile(
+              documents[i].documentID,
+              documents[i]['title'],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -225,7 +253,7 @@ class PollsScreen extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         }
         final documents = snapshot.data.documents;
-        if(documents.isEmpty){
+        if (documents.isEmpty) {
           return _topHome(userId);
         }
         return _contentList(documents, userId);
@@ -235,11 +263,14 @@ class PollsScreen extends StatelessWidget {
 
   Widget _contentList(documents, userId) {
     return ListView.builder(
-      itemCount: documents.length,
+      itemCount: documents.length + 1,
       itemBuilder: (ctx, i) {
-        final doc = documents[i];
+        if(i == 6){
+          return _causesList();
+        }
+        final doc = (i > 6) ? documents[i - 1] : documents[i];
         final List flagArray = doc['flag'] ?? [];
-        if(flagArray.contains(userId)){
+        if (flagArray.contains(userId)) {
           return Container();
         }
         switch (doc['type']) {
@@ -278,7 +309,7 @@ class PollsScreen extends StatelessWidget {
           if (userSnap.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-          if(userSnap.data.isAnonymous){
+          if (userSnap.data.isAnonymous) {
             return _topHome(userSnap.data.uid);
           }
           return _userHome(userSnap.data.uid);

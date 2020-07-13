@@ -40,6 +40,7 @@ class ChallengeUserList extends StatelessWidget {
       reposts: reposts,
       hasSaved: hasSaved,
       date: doc['createdAt'].toDate(),
+      likesList: doc['likes'] ?? [],
       influencer: doc['influencer'] ?? ''
     );
   }

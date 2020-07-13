@@ -1,16 +1,15 @@
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'poll_options.dart';
 import '../translations.dart';
+import '../mixins/share_mixin.dart';
 import '../providers/preferences_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
@@ -18,7 +17,7 @@ import '../screens/auth_screen.dart';
 import '../screens/poll_gallery_screen.dart';
 import '../screens/flag_screen.dart';
 
-class HeaderPoll extends StatelessWidget {
+class HeaderPoll extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
   final Color color = Color(0xFFF8F8FF);
@@ -111,8 +110,8 @@ class HeaderPoll extends StatelessWidget {
     batch.commit();
   }
 
-  void _repost(context, title, userName, userImage, influencer, options,
-      date, images, hasReposted) async {
+  void _repost(context, title, userName, userImage, influencer, options, date,
+      images, hasReposted) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -185,26 +184,7 @@ class HeaderPoll extends StatelessWidget {
   }
 
   void _share() async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://galup.page.link',
-      link: Uri.parse('https://galup.page.link/poll/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.oz.voice_inc',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.oz.voiceInc',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto esta encuesta de Galup $url');
+    sharePoll(reference.documentID);
   }
 
   void _flag(context) {
@@ -290,8 +270,8 @@ class HeaderPoll extends StatelessWidget {
           child: Hero(
             tag: images[0],
             child: Container(
-              width: 72,
-              height: 72,
+              width: 144,
+              height: 144,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.black),
@@ -312,8 +292,8 @@ class HeaderPoll extends StatelessWidget {
             child: Hero(
               tag: images[0],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 144,
+                height: 144,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(24),
@@ -334,8 +314,8 @@ class HeaderPoll extends StatelessWidget {
             child: Hero(
               tag: images[1],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 144,
+                height: 144,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(24),
@@ -361,8 +341,8 @@ class HeaderPoll extends StatelessWidget {
             child: Hero(
               tag: images[0],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(24),
@@ -383,8 +363,8 @@ class HeaderPoll extends StatelessWidget {
             child: Hero(
               tag: images[1],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black),
                   image: DecorationImage(
@@ -401,8 +381,8 @@ class HeaderPoll extends StatelessWidget {
             child: Hero(
               tag: images[2],
               child: Container(
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(24),

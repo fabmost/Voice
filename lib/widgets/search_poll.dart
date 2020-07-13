@@ -100,8 +100,8 @@ class SearchPoll extends StatelessWidget {
       return Align(
         alignment: Alignment.center,
         child: Container(
-          width: 72,
-          height: 72,
+          width: 144,
+          height: 144,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Colors.black),
@@ -116,8 +116,8 @@ class SearchPoll extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-            width: 72,
-            height: 72,
+            width: 144,
+            height: 144,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(24),
@@ -132,8 +132,8 @@ class SearchPoll extends StatelessWidget {
           ),
           SizedBox(width: 5),
           Container(
-            width: 72,
-            height: 72,
+            width: 144,
+            height: 144,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(24),
@@ -153,8 +153,8 @@ class SearchPoll extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-            width: 72,
-            height: 72,
+            width: 110,
+            height: 110,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(24),
@@ -169,8 +169,8 @@ class SearchPoll extends StatelessWidget {
           ),
           SizedBox(width: 5),
           Container(
-            width: 72,
-            height: 72,
+            width: 110,
+            height: 110,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black),
               image: DecorationImage(
@@ -181,8 +181,8 @@ class SearchPoll extends StatelessWidget {
           ),
           SizedBox(width: 5),
           Container(
-            width: 72,
-            height: 72,
+            width: 110,
+            height: 110,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(24),

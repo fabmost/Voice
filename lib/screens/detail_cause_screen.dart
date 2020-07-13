@@ -2,18 +2,17 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 
 import '../translations.dart';
+import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
 
-class DetailCauseScreen extends StatelessWidget {
+class DetailCauseScreen extends StatelessWidget with ShareContent{
   static const routeName = '/cause';
 
   final Color color = Color(0xFFF0F0F0);
@@ -169,26 +168,7 @@ class DetailCauseScreen extends StatelessWidget {
   }
 
   void _share(reference) async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://galup.page.link',
-      link: Uri.parse('https://galup.page.link/cause/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.oz.voice_inc',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.oz.voiceInc',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto esta Causa de Galup $url');
+    shareCause(reference.documentID);
   }
 
   void _flag(context, reference) {
@@ -229,7 +209,7 @@ class DetailCauseScreen extends StatelessWidget {
   }
 
   void _options(context, reference, myId, hasSaved) {
-    FocusScope.of(context).requestFocus(FocusNode());
+    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {

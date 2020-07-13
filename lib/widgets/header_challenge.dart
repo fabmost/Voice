@@ -1,23 +1,22 @@
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import '../translations.dart';
+import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
 
-class HeaderChallenge extends StatelessWidget {
+class HeaderChallenge extends StatelessWidget with ShareContent{
   final DocumentReference reference;
   final String userId;
   final Color color = Color(0xFFFFF5FB);
@@ -170,27 +169,7 @@ class HeaderChallenge extends StatelessWidget {
   }
 
   void _share() async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://galup.page.link',
-      link: Uri.parse(
-          'https://galup.page.link/challenge/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.oz.voice_inc',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.oz.voiceInc',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto este Reto de Galup $url');
+    shareChallenge(reference.documentID);
   }
 
   void _flag(context) {
