@@ -101,6 +101,11 @@ class InfluencerBadge extends StatelessWidget {
           size: size,
           color: Color(0xFFE1302F),
         );
+      case 'Galup':
+        return Image.asset(
+          'assets/badge.png',
+          width: (size + 2),
+        );
       default:
         return Container();
     }

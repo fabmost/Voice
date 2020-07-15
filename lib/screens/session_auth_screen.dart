@@ -8,17 +8,16 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'menu_screen.dart';
-import 'login_screen.dart';
 import 'countries_screen.dart';
 import '../translations.dart';
 
-class AuthScreen extends StatefulWidget {
-  static const routeName = '/signup';
+class SessionAuthScreen extends StatefulWidget {
+  static const routeName = '/session-signup';
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends State<SessionAuthScreen> {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
@@ -453,8 +452,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                 ListTile(
                   onTap: () {
-                    Navigator.of(context)
-                        .pushReplacementNamed(LoginScreen.routeName);
+                    Navigator.of(context).pop();
                   },
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

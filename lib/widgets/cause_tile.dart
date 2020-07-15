@@ -22,30 +22,41 @@ class CauseTile extends StatelessWidget {
     return Container(
       height: 180,
       width: 150,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            width: 1,
+            color: Colors.black,
+          )),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
             width: double.infinity,
             height: 50,
-            color: color,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
             alignment: Alignment.center,
             child: Container(
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(19),
                 image: DecorationImage(
                   image: AssetImage('assets/logo.png'),
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
           ),
           Container(
-            height: 80,
+            height: 84,
             padding: EdgeInsets.all(8),
             alignment: Alignment.center,
             child: Text(
@@ -60,11 +71,17 @@ class CauseTile extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            color: color,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              ),
+            ),
             child: ListTile(
               title: OutlineButton(
-                textColor: Colors.white,
-                borderSide: BorderSide(color: Colors.white),
+                textColor: Colors.black,
+                borderSide: BorderSide(color: Colors.black),
                 onPressed: () => _toDetail(context),
                 child: Text('Ver más'),
               ),

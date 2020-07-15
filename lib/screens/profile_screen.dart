@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'auth_screen.dart';
+import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
@@ -40,6 +46,92 @@ class ProfileScreen extends StatelessWidget {
 
   void _toEdit(context) {
     Navigator.of(context).pushNamed(EditProfileScreen.routeName);
+  }
+
+  void _imageOptions(context) {
+    //FocusScope.of(context).requestFocus(FocusNode());
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return new Container(
+          color: Colors.transparent,
+          child: new Wrap(
+            children: <Widget>[
+              new ListTile(
+                onTap: () => _openCamera(context),
+                leading: new Icon(
+                  Icons.camera_alt,
+                ),
+                title: Text("Cámara"),
+              ),
+              new ListTile(
+                onTap: () => _openGallery(context),
+                leading: new Icon(
+                  Icons.image,
+                ),
+                title: Text("Galería"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _openCamera(context) {
+    Navigator.of(context).pop();
+    _takePicture();
+  }
+
+  void _openGallery(context) {
+    Navigator.of(context).pop();
+    _getPicture();
+  }
+
+  Future<void> _takePicture() async {
+    final imageFile = await ImagePicker().getImage(
+      source: ImageSource.camera,
+      maxWidth: 600,
+    );
+    if (imageFile != null) {
+      _cropImage(imageFile.path);
+    }
+  }
+
+  Future<void> _getPicture() async {
+    final imageFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+    if (imageFile != null) {
+      _cropImage(imageFile.path);
+    }
+  }
+
+  void _cropImage(pathFile) async {
+    File cropped = await ImageCropper.cropImage(
+      sourcePath: pathFile,
+      aspectRatio: CropAspectRatio(ratioX: 25, ratioY: 8),
+    );
+    if (cropped != null) {
+      _saveCover(cropped);
+    }
+  }
+
+  void _saveCover(file) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('user_covers')
+        .child(user.uid + '.jpg');
+
+    await ref.putFile(file).onComplete;
+
+    final url = await ref.getDownloadURL();
+
+    await Firestore.instance.collection('users').document(user.uid).updateData(
+      {'cover': url},
+    );
   }
 
   Widget _usersWidget(amount, type, action) {
@@ -95,7 +187,26 @@ class ProfileScreen extends StatelessWidget {
                 },
                 child: Text('Registrarse'),
               ),
-            )
+            ),
+            SizedBox(height: 22),
+            ListTile(
+              onTap: () {
+                Navigator.of(context).pushNamed(LoginScreen.routeName);
+              },
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(Translations.of(context).text('label_have_account')),
+                  SizedBox(width: 8),
+                  Text(
+                    Translations.of(context).text('button_login'),
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -111,126 +222,154 @@ class ProfileScreen extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         }
         final document = snapshot.data;
-        return SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(height: 16),
-              CircleAvatar(
-                radius: 60,
-                backgroundImage: NetworkImage(document['image'] ?? ''),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
+        final screenWidth = MediaQuery.of(context).size.width;
+        final containerHeight = (screenWidth * 8) / 25;
+        return Column(
+          children: <Widget>[
+            Container(
+              height: containerHeight + 60,
+              child: Stack(
                 children: <Widget>[
-                  Text(
-                    '${document['name']} ${document['last_name']}',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  InfluencerBadge(document['influencer'] ?? '', 20),
-                ],
-              ),
-              Text(
-                '@${document['user_name']}',
-                style: TextStyle(
-                  color: Theme.of(context).accentColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                document['bio'] ?? '',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  CircleAvatar(
-                    backgroundColor:
-                        (document['tiktok'] ?? '').toString().isEmpty
-                            ? Colors.grey
-                            : Colors.black,
-                    child: Icon(
-                      GalupFont.tik_tok,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor:
-                        (document['facebook'] ?? '').toString().isEmpty
-                            ? Colors.grey
-                            : Colors.black,
-                    child: Icon(
-                      GalupFont.facebook,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor:
-                        (document['instagram'] ?? '').toString().isEmpty
-                            ? Colors.grey
-                            : Colors.black,
-                    child: Icon(
-                      GalupFont.instagram,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor:
-                        (document['youtube'] ?? '').toString().isEmpty
-                            ? Colors.grey
-                            : Colors.black,
-                    child: Icon(
-                      GalupFont.youtube,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: <Widget>[
-                  _usersWidget(
-                    document['following'] != null
-                        ? document['following'].length
-                        : 0,
-                    Translations.of(context).text('label_following'),
-                    () => _toFollowing(context, userId),
-                  ),
                   Container(
-                    width: 1,
-                    color: Colors.grey,
-                    height: 32,
+                    width: double.infinity,
+                    height: containerHeight,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      image: document['cover'] != null
+                          ? DecorationImage(
+                              image: NetworkImage(document['cover']),
+                              fit: BoxFit.cover)
+                          : null,
+                    ),
                   ),
-                  _usersWidget(
-                    document['followers'] != null
-                        ? document['followers'].length
-                        : 0,
-                    Translations.of(context).text('label_followers'),
-                    () => _toFollowers(context, userId),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: Icon(Icons.camera_alt),
+                      onPressed: () => _imageOptions(context),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundImage: NetworkImage(document['image'] ?? ''),
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  '${document['name']} ${document['last_name']}',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(width: 8),
+                InfluencerBadge(document['influencer'] ?? '', 20),
+              ],
+            ),
+            Text(
+              '@${document['user_name']}',
+              style: TextStyle(
+                color: Theme.of(context).accentColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            if (document['bio'] != null && document['bio'].isNotEmpty)
+              SizedBox(height: 16),
+            Text(
+              document['bio'] ?? '',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                CircleAvatar(
+                  backgroundColor: (document['tiktok'] ?? '').toString().isEmpty
+                      ? Colors.grey
+                      : Colors.black,
+                  child: Icon(
+                    GalupFont.tik_tok,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor:
+                      (document['facebook'] ?? '').toString().isEmpty
+                          ? Colors.grey
+                          : Colors.black,
+                  child: Icon(
+                    GalupFont.facebook,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor:
+                      (document['instagram'] ?? '').toString().isEmpty
+                          ? Colors.grey
+                          : Colors.black,
+                  child: Icon(
+                    GalupFont.instagram,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor:
+                      (document['youtube'] ?? '').toString().isEmpty
+                          ? Colors.grey
+                          : Colors.black,
+                  child: Icon(
+                    GalupFont.youtube,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: <Widget>[
+                _usersWidget(
+                  document['following'] != null
+                      ? document['following'].length
+                      : 0,
+                  Translations.of(context).text('label_following'),
+                  () => _toFollowing(context, userId),
+                ),
+                Container(
+                  width: 1,
+                  color: Colors.grey,
+                  height: 32,
+                ),
+                _usersWidget(
+                  document['followers'] != null
+                      ? document['followers'].length
+                      : 0,
+                  Translations.of(context).text('label_followers'),
+                  () => _toFollowers(context, userId),
+                ),
+              ],
+            ),
+          ],
         );
       },
     );
@@ -238,6 +377,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final containerHeight = (screenWidth * 8) / 25;
     return FutureBuilder(
       future: FirebaseAuth.instance.currentUser(),
       builder: (ct, AsyncSnapshot<FirebaseUser> userSnap) {
@@ -268,8 +409,8 @@ class ProfileScreen extends StatelessWidget {
                   SliverPersistentHeader(
                     pinned: false,
                     delegate: _SliverHeaderDelegate(
-                      360,
-                      360,
+                      360 + containerHeight - 90,
+                      360 + containerHeight - 90,
                       _header(context, userSnap.data.uid),
                     ),
                   ),
@@ -280,9 +421,18 @@ class ProfileScreen extends StatelessWidget {
                         unselectedLabelColor: Colors.grey,
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 42),
                         tabs: [
-                          Tab(icon: Icon(GalupFont.survey)),
-                          Tab(icon: Icon(GalupFont.challenge)),
-                          Tab(icon: Icon(GalupFont.saved)),
+                          Tab(
+                            icon: Icon(GalupFont.survey),
+                            text: 'Encuestas',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.challenge),
+                            text: 'Retos',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.saved),
+                            text: 'Guardados',
+                          ),
                         ],
                       ),
                     ),

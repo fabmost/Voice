@@ -65,8 +65,9 @@
     "label_signup_title": "Signup on Galup",
     "label_signup_subtitle": "Create a profile, follow other accounts, create your own polls and challenges!",
     "label_have_account": "Already have an account?",
+    "label_welcome": "Welcome back!",
     "label_login_title": "Login on Galup",
-    "label_login_subtitle": "Gestiona tu cuenta, lee tus notificaciones, participa en las encuestas, retos y más",
+    "label_login_subtitle": "Manage your account, read your notifications, take part in polls, challenges and more",
     "label_no_account": "Don't have an account?",
     "label_agree": "I agree with the ",
     "label_terms": "Terms of Use",
@@ -81,8 +82,8 @@
     "onboarding_title_2": "Crea cientos de encuestas para saber que opinan tus amigos",
     "onboarding_title_3": "¡Lo retos nunca fueron tan divertidos!",
     "onboarding_title_4": "Únete a miles de personas que ya están compartiendo encuestas, retos y videos",
-    "onboarding_subtitle_1": "¡De eso de trata esta original App! En este espacio podrás seleccionar tus intereses y así comenzar a generar y responder encuestas adaptadas a tus preferencias para hacer valer tu opinión como nunca antes.",
-    "onboarding_subtitle_2": "Si te gusta debatir e intercambiar ideas, Galup es tu mejor opción porque te ofrece la posibilidad de ir más allá a la hora de dar tus puntos de vista y de compartirlos con otros, escribiendo y opinando sobre los distintos contenidos.",
-    "onboarding_subtitle_3": "Dale emoción a tu opinión creando retos de forma divertida para ti y tus amigos. Llegando a 1000 likes podrás descubrir sorpresas con variedad de contenidos que podrás disfrutar al alcance de un “click”.",
-    "onboarding_subtitle_4": "¡Diviértete debatiendo con tus amigos y conocidos! Busca integrar a muchas más personas a la comunidad Galup compartiendo e invitándolos a dar su valiosa opinión en esta increíble y única aplicación."
+    "onboarding_subtitle_1": "¡Esto es Galup! Un espacio en el que tu voz, tu motivación y lo que más importa se puede medir. Bienvenido a esta nueva comunidad que busca generar cambios reales a través de una divertida forma de expresarte y sumar voluntades.",
+    "onboarding_subtitle_2": "Crea encuestas divertidas y conoce mejor la opinión de los tuyos. Ahora es posible medir y conocer opiniones masivas en cuestión de segundos gracias a esta aplicación. Diviértete y conoce la mente y el corazón de tus amigos.",
+    "onboarding_subtitle_3": "Defiende tus causas. Apoya las causas que te mueven y suma a los demás para generar esos cambios que quieres ver en el mundo.",
+    "onboarding_subtitle_4": "Crea retos divertidos y positivos. Reúne likes para lograr resultados que tengan un impacto positivo en tu comunidad. Reta a los tuyos para que juntos generen el cambio que el mundo necesita."
 }

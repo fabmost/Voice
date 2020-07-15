@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Preferences with ChangeNotifier {
   bool _firstTime = true;
   int _interactions = 0;
+  bool _hasAccount = false;
 
   bool get isFirstTime => _firstTime;
+  bool get hasAccount => _hasAccount;
 
   Future<bool> getFirstTime() async {
     final prefs = await SharedPreferences.getInstance();
@@ -31,6 +33,18 @@ class Preferences with ChangeNotifier {
     _interactions--;
     notifyListeners();
     return prefs.setInt('interactions', _interactions);
+  }
+
+  Future<bool> getAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('hasAccount') ?? false;
+  }
+
+  Future<void> setAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('hasAccount', true);
+    _hasAccount = true;
+    notifyListeners();
   }
 
   Future<void> setFirstTime() async {

@@ -2,15 +2,14 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'poll_options.dart';
 import '../translations.dart';
+import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
@@ -19,7 +18,7 @@ import '../screens/view_profile_screen.dart';
 import '../screens/poll_gallery_screen.dart';
 import '../screens/flag_screen.dart';
 
-class Poll extends StatelessWidget {
+class Poll extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String myId;
   final String userId;
@@ -226,31 +225,12 @@ class Poll extends StatelessWidget {
   }
 
   void _share() async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://galup.page.link',
-      link:
-          Uri.parse('https://galup.page.link/poll/${reference.documentID}'),
-      androidParameters: AndroidParameters(
-        packageName: 'com.galup.app',
-        minimumVersion: 0,
-      ),
-      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
-        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
-      ),
-      iosParameters: IosParameters(
-        bundleId: 'com.galup.app',
-        minimumVersion: '0',
-      ),
-    );
-
-    final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
-
-    Share.share('Te comparto esta encuesta de Galup $url');
+    sharePoll(reference.documentID);
   }
 
   void _flag(context) {
-    Navigator.of(context).popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
+    Navigator.of(context)
+        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context) async {
@@ -490,7 +470,8 @@ class Poll extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       userName,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     SizedBox(width: 8),
                     InfluencerBadge(influencer, 16),

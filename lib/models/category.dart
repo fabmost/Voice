@@ -14,6 +14,7 @@ class Category {
     Category(name: 'Deportes', icon: Icons.settings_power),
     Category(name: 'Comedia', icon: Icons.comment),
     Category(name: 'Negocios', icon: Icons.business),
+    Category(name: 'Emprendimiento', icon: Icons.business),
     Category(name: 'Política', icon: Icons.photo_library),
     Category(name: 'Estilo de vida', icon: Icons.style),
     Category(name: 'Espectáculos', icon: Icons.speaker),

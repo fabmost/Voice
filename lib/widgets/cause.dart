@@ -12,7 +12,7 @@ import '../screens/flag_screen.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 
-class Cause extends StatelessWidget with ShareContent{
+class Cause extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String myId;
   final String creator;
@@ -195,7 +195,8 @@ class Cause extends StatelessWidget with ShareContent{
   }
 
   void _flag(context) {
-    Navigator.of(context).popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
+    Navigator.of(context)
+        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
   }
 
   void _save(context) async {
@@ -231,7 +232,7 @@ class Cause extends StatelessWidget with ShareContent{
   }
 
   void _options(context) {
-    FocusScope.of(context).requestFocus(FocusNode());
+    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -306,7 +307,7 @@ class Cause extends StatelessWidget with ShareContent{
               child: ListTile(
                 leading: CircleAvatar(
                   radius: 18,
-                  backgroundColor: Colors.black,
+                  backgroundColor: Theme.of(context).primaryColor,
                   backgroundImage: AssetImage('assets/logo.png'),
                 ),
                 title: Row(
@@ -355,7 +356,9 @@ class Cause extends StatelessWidget with ShareContent{
                   FlatButton.icon(
                     onPressed: () => _repost(context),
                     icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Colors.grey : Colors.black),
+                        color: hasReposted
+                            ? Theme.of(context).primaryColor
+                            : Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(

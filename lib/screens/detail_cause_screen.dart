@@ -27,6 +27,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
             onPressed: () {
               Navigator.of(context).pop();
             },
+            textColor: Colors.black,
             child: Text('Ok'),
           )
         ],
@@ -155,7 +156,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
         'title': title,
         'info': info,
         'creator': creator,
-        'originalDate': Timestamp.fromDate(date),
+        'originalDate': date,
         'parent': reference,
         'home': userData['followers'] ?? []
       });
@@ -242,20 +243,27 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
     );
   }
 
-  Widget _causeButton(context, reference, myId, hasLiked) {
+  Widget _causeButton(context, reference, myId, hasLiked) {    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
       width: double.infinity,
-      child: OutlineButton(
-        highlightColor: Color(0xFFA4175D),
-        borderSide: BorderSide(
-          color: Colors.black,
-          width: 2,
-        ),
-        onPressed: () => _like(context, reference, myId, hasLiked),
-        child: Text(hasLiked ? 'No apoyo esta causa' : 'Apoyo esta causa'),
-      ),
+      child: hasLiked
+          ? OutlineButton(
+              highlightColor: Color(0xFFA4175D),
+              borderSide: BorderSide(
+                color: Colors.black,
+                width: 2,
+              ),
+              onPressed: () => _like(context, reference, myId, hasLiked),
+              child: Text('No apoyo esta causa'),
+            )
+          : RaisedButton(
+              onPressed: () => _like(context, reference, myId, hasLiked),
+              color: Colors.black,
+              textColor: Colors.white,
+              child: Text('Apoyo esta causa'),
+            ),
     );
   }
 
@@ -309,7 +317,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
                     child: ListTile(
                       leading: CircleAvatar(
                         radius: 18,
-                        backgroundColor: Colors.black,
+                        backgroundColor: Theme.of(context).primaryColor,
                         backgroundImage: AssetImage('assets/logo.png'),
                       ),
                       title: Row(
@@ -321,7 +329,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                           IconButton(
-                            icon: Icon(Icons.add_circle),
+                            icon: Icon(GalupFont.info_circled_alt),
                             onPressed: () =>
                                 _infoAlert(context, document['info']),
                           )
@@ -377,7 +385,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
                           ),
                           icon: Icon(GalupFont.repost,
                               color: hasReposted
-                                  ? Color(0xFFA4175D)
+                                  ? Theme.of(context).primaryColor
                                   : Colors.black),
                           label: Text(reposts == 0 ? '' : '$reposts'),
                         ),

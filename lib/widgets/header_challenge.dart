@@ -212,7 +212,6 @@ class HeaderChallenge extends StatelessWidget with ShareContent{
   }
 
   void _options(context, creatorId, hasSaved) {
-    FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {

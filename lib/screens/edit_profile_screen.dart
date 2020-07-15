@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -192,14 +193,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _birthSelected() async {
     if (_birthFocus.hasFocus) {
       FocusScope.of(context).unfocus();
-      final selected = await showDatePicker(
-        context: context,
+      final selected = await DatePicker.showSimpleDatePicker(
+        context,
         initialDate: DateTime.now(),
-        firstDate: DateTime(1900),
+        firstDate: DateTime(1960),
         lastDate: DateTime.now(),
+        dateFormat: "dd-MMMM-yyyy",
+        looping: true,
       );
       if (selected != null) {
-        _birthController.text = DateFormat('yyyy-MM-dd').format(selected);
+        setState(() {
+          _birthController.text = DateFormat('dd-MM-yyyy').format(selected);
+        });
       }
     }
   }

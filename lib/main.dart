@@ -28,6 +28,8 @@ import 'screens/detail_cause_screen.dart';
 import 'screens/flag_screen.dart';
 import 'screens/user_name_screen.dart';
 import 'screens/category_screen.dart';
+import 'screens/session_login_screen.dart';
+import 'screens/session_auth_screen.dart';
 
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
@@ -85,7 +87,7 @@ class App extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Galup',
         theme: ThemeData(
-          primarySwatch: generateMaterialColor(Color(0xFF111122)),
+          primarySwatch: generateMaterialColor(Color(0xFF722282)),
           accentColor: Color(0xFF6767CB),
           buttonTheme: ButtonTheme.of(context).copyWith(
             buttonColor: Color(0xFF6767CB),
@@ -112,7 +114,15 @@ class App extends StatelessWidget {
             if (snapshot.hasData) {
               return MenuScreen();
             }
-            return PreferencesScreen();
+            return FutureBuilder(
+                future:
+                    Provider.of<Preferences>(ctx, listen: false).getAccount(),
+                builder: (ct, AsyncSnapshot<bool> snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return SplashScreen();
+                  }
+                  return snap.data ? SessionLoginScreen() : PreferencesScreen;
+                });
           },
         ),
         routes: {
@@ -142,6 +152,7 @@ class App extends StatelessWidget {
           UpgradeScreen.routeName: (ctx) => UpgradeScreen(),
           UserNameScreen.routeName: (ctx) => UserNameScreen(),
           CategoryScreen.routeName: (ctx) => CategoryScreen(),
+          SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
         },
       ),
     );

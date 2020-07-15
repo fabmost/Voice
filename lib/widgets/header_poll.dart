@@ -20,6 +20,7 @@ import '../screens/flag_screen.dart';
 class HeaderPoll extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
+
   final Color color = Color(0xFFF8F8FF);
 
   HeaderPoll(this.reference, this.userId);
@@ -227,7 +228,6 @@ class HeaderPoll extends StatelessWidget with ShareContent {
   }
 
   void _options(context, creatorId, hasSaved) {
-    FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -554,8 +554,9 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                         hasReposted,
                       ),
                       icon: Icon(GalupFont.repost,
-                          color:
-                              hasReposted ? Color(0xFFA4175D) : Colors.black),
+                          color: hasReposted
+                              ? Theme.of(context).accentColor
+                              : Colors.black),
                       label: Text(reposts == 0 ? '' : '$reposts'),
                     ),
                     IconButton(

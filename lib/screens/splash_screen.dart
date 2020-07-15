@@ -7,7 +7,7 @@ class SplashScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.black,
+        color: Colors.white,
       ),
     );
   }

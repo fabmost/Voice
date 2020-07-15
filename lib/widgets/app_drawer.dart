@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../translations.dart';
+import '../providers/preferences_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   final String termsUrl = 'https://galup.app/terminos-y-condiciones';
@@ -15,7 +17,8 @@ class AppDrawer extends StatelessWidget {
     }
   }
 
-  void _signOut() {
+  void _signOut(context) {
+    Provider.of<Preferences>(context, listen: false).setAccount();
     FirebaseAuth.instance.signOut();
   }
 
@@ -31,7 +34,7 @@ class AppDrawer extends StatelessWidget {
           ),
           Divider(),
           ListTile(
-            onTap: _signOut,
+            onTap: ()=> _signOut(context),
             title: Text('Cerrar sesión'),
           )
         ],

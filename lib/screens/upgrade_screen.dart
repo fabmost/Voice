@@ -24,14 +24,14 @@ class UpgradeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(42),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            Image.asset('assets/splash.png', width: 120,),
+            Image.asset('assets/splash.png', width: 220,),
             SizedBox(height: 42),
             Text(
               'Es necesario realizar una actualización',
@@ -39,7 +39,7 @@ class UpgradeScreen extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 16),
@@ -48,7 +48,7 @@ class UpgradeScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 42),

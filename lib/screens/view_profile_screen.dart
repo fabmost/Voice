@@ -306,15 +306,38 @@ class ViewProfileScreen extends StatelessWidget {
               return Center(child: CircularProgressIndicator());
             }
             final document = snapshot.data;
+            final screenWidth = MediaQuery.of(context).size.width;
+            final containerHeight = (screenWidth * 8) / 25;
             return Container(
-              //padding: new EdgeInsets.only(top: statuBar + 50),
               color: Colors.white,
               child: Column(
                 children: <Widget>[
-                  const SizedBox(height: 16),
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundImage: NetworkImage(document['image'] ?? ''),
+                  Container(
+                    height: containerHeight + 60,
+                    child: Stack(
+                      children: <Widget>[
+                        Container(
+                          width: double.infinity,
+                          height: containerHeight,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFECECEC),
+                            image: document['cover'] != null
+                                ? DecorationImage(
+                                    image: NetworkImage(document['cover']),
+                                    fit: BoxFit.cover)
+                                : null,
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundImage:
+                                NetworkImage(document['image'] ?? ''),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -457,7 +480,8 @@ class ViewProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileId = ModalRoute.of(context).settings.arguments as String;
-    //final double statusBarHeight = MediaQuery.of(context).padding.top;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final containerHeight = (screenWidth * 8) / 25;
     return Scaffold(
       backgroundColor: Colors.white,
       body: DefaultTabController(
@@ -484,8 +508,8 @@ class ViewProfileScreen extends StatelessWidget {
               SliverPersistentHeader(
                 pinned: false,
                 delegate: _SliverHeaderDelegate(
-                  370,
-                  370,
+                  370 + containerHeight - 70,
+                  370 + containerHeight - 70,
                   _newHeader(context, profileId),
                 ),
               ),
@@ -496,8 +520,14 @@ class ViewProfileScreen extends StatelessWidget {
                     unselectedLabelColor: Colors.grey,
                     indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
                     tabs: [
-                      Tab(icon: Icon(GalupFont.survey)),
-                      Tab(icon: Icon(GalupFont.challenge)),
+                      Tab(
+                        icon: Icon(GalupFont.survey),
+                        text: 'Encuestas',
+                      ),
+                      Tab(
+                        icon: Icon(GalupFont.challenge),
+                        text: 'Retos',
+                      ),
                     ],
                   ),
                 ),

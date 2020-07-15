@@ -102,7 +102,7 @@ class _PollOptionsState extends State<PollOptions> {
         }
         if (userData.data['birthday'] != null) {
           DateTime userDate =
-              DateFormat('yyy-MM-dd').parse(userData.data['birthday']);
+              DateFormat('dd-MM-yyyy').parse(userData.data['birthday']);
           int years =
               ((DateTime.now().difference(userDate).inDays) / 365).floor();
           String yearsString;
