@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'view_profile_screen.dart';
 import '../translations.dart';
+import '../widgets/influencer_badge.dart';
 
 class FollowingScreen extends StatefulWidget {
   final userId;
@@ -61,7 +62,13 @@ class _FollowingScreenState extends State<FollowingScreen> {
       leading: CircleAvatar(
         backgroundImage: NetworkImage(doc['image'] ?? ''),
       ),
-      title: Text('${doc['name']} ${doc['last_name']}'),
+      title: Row(
+        children: <Widget>[
+          Text('${doc['name']} ${doc['last_name']}'),
+          SizedBox(width: 8),
+          InfluencerBadge(doc['influencer'] ?? '', 16),
+        ],
+      ),
       subtitle: Text('@${doc['user_name']}'),
     );
   }

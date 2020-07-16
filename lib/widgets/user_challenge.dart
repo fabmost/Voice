@@ -146,7 +146,7 @@ class UserChallenge extends StatelessWidget with ShareContent {
                   color: Colors.red,
                 ),
                 title: Text(
-                  'Borrar',
+                  Translations.of(context).text('button_delete'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),

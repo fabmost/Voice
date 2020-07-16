@@ -245,7 +245,9 @@ class Cause extends StatelessWidget with ShareContent {
                 leading: Icon(
                   GalupFont.saved,
                 ),
-                title: Text(hasSaved ? 'Borrar' : 'Guardar'),
+                title: Text(hasSaved
+                    ? Translations.of(context).text('button_delete')
+                    : Translations.of(context).text('button_save')),
               ),
               ListTile(
                 onTap: () => _flag(context),

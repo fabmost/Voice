@@ -172,7 +172,7 @@ class UserPoll extends StatelessWidget with ShareContent {
           FlatButton(
             textColor: Colors.red,
             child: Text(
-              'Borrar',
+              Translations.of(context).text('button_delete'),
               style: TextStyle(fontSize: 16),
             ),
             onPressed: () {
@@ -241,7 +241,7 @@ class UserPoll extends StatelessWidget with ShareContent {
                   color: Colors.red,
                 ),
                 title: Text(
-                  'Eliminar',
+                  Translations.of(context).text('button_delete'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),

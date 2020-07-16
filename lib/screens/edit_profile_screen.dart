@@ -295,6 +295,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Firestore.instance.collection('hash').document(userId), {
           'user_name': '${_nameController.text} ${_lastController.text}',
           'user_image': _currentUrl,
+          'influencer': userData['influencer'] ?? ''
         });
 
         if (_changedImage) {
@@ -357,7 +358,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _getData() async {
     setState(() {
-      _loadingView = false;
+      _loadingView = true;
     });
     final user = await FirebaseAuth.instance.currentUser();
     final document =

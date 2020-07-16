@@ -241,7 +241,9 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                   leading: Icon(
                     GalupFont.saved,
                   ),
-                  title: Text(hasSaved ? 'Borrar' : 'Guardar'),
+                  title: Text(hasSaved
+                      ? Translations.of(context).text('button_delete')
+                      : Translations.of(context).text('button_save')),
                 ),
               ListTile(
                 onTap: () => _flag(context),
@@ -250,7 +252,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                   color: Colors.red,
                 ),
                 title: Text(
-                  'Denunciar',
+                  Translations.of(context).text('title_flag'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),

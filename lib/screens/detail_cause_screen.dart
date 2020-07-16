@@ -12,7 +12,7 @@ import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
 
-class DetailCauseScreen extends StatelessWidget with ShareContent{
+class DetailCauseScreen extends StatelessWidget with ShareContent {
   static const routeName = '/cause';
 
   final Color color = Color(0xFFF0F0F0);
@@ -223,7 +223,9 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
                 leading: Icon(
                   GalupFont.saved,
                 ),
-                title: Text(hasSaved ? 'Borrar' : 'Guardar'),
+                title: Text(hasSaved
+                    ? Translations.of(context).text('button_delete')
+                    : Translations.of(context).text('button_save')),
               ),
               ListTile(
                 onTap: () => _flag(context, reference),
@@ -232,7 +234,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
                   color: Colors.red,
                 ),
                 title: Text(
-                  "Denunciar",
+                  Translations.of(context).text('title_flag'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),
@@ -243,7 +245,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent{
     );
   }
 
-  Widget _causeButton(context, reference, myId, hasLiked) {    
+  Widget _causeButton(context, reference, myId, hasLiked) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,

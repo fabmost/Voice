@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../custom/galup_font_icons.dart';
 
@@ -63,18 +64,33 @@ class HeaderComment extends StatelessWidget {
           hasDown = document['down'].contains(userId);
         }
 
+        final now = new DateTime.now();
+        final difference = now.difference(document['createdAt'].toDate());
+
         return Column(
           children: <Widget>[
             ListTile(
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(document['userImage'] ?? ''),
               ),
-              title: Text(
-                document['username'],
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    document['username'],
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    timeago.format(now.subtract(difference)),
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  )
+                ],
               ),
               subtitle: Text(
                 document['text'],

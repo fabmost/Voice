@@ -86,21 +86,21 @@ class _PollOptionsState extends State<PollOptions> {
         List results = value.data['results'];
         Map result = results[position];
         result['votes']++;
-        if (userData.data['country'] != null) {
+        if (userData.data['country'] != null && userData.data['country'].isNotEmpty) {
           if (result['countries'].containsKey(userData.data['country'])) {
             result['countries'][userData.data['country']]++;
           } else {
             result['countries'][userData.data['country']] = 1;
           }
         }
-        if (userData.data['gender'] != null) {
+        if (userData.data['gender'] != null && userData.data['gender'].isNotEmpty) {
           if (result['gender'].containsKey(userData.data['gender'])) {
             result['gender'][userData.data['gender']]++;
           } else {
             result['gender'][userData.data['gender']] = 1;
           }
         }
-        if (userData.data['birthday'] != null) {
+        if (userData.data['birthday'] != null && userData.data['birthday'].isNotEmpty) {
           DateTime userDate =
               DateFormat('dd-MM-yyyy').parse(userData.data['birthday']);
           int years =

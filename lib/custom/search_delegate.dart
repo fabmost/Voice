@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../widgets/search_poll.dart';
 import '../widgets/search_challenge.dart';
 import '../widgets/search_cause.dart';
+import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
@@ -94,12 +95,18 @@ class CustomSearchDelegate extends SearchDelegate {
       leading: CircleAvatar(
         backgroundImage: NetworkImage(doc['user_image'] ?? ''),
       ),
-      title: Text(
-        doc['name'],
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+      title: Row(
+        children: <Widget>[
+          Text(
+            doc['name'],
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          SizedBox(width: 8),
+          InfluencerBadge(doc['influencer'] ?? '', 16),
+        ],
       ),
       subtitle: Text(doc['user_name']),
     );

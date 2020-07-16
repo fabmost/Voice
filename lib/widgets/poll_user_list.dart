@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'user_poll.dart';
 import 'repost_poll.dart';
+import '../custom/galup_font_icons.dart';
 
 class PollUserList extends StatelessWidget {
   final String userId;
@@ -89,7 +90,26 @@ class PollUserList extends StatelessWidget {
             final documents = snapshot.data.documents;
             if (documents.isEmpty) {
               return Center(
-                child: Text('Aquí tus encuestas'),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const SizedBox(height: 16),
+                    Icon(
+                      GalupFont.empty_content,
+                      color: Color(0xFF8E8EAB),
+                      size: 32,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Realiza o regalupea encuestas para verlas aquí',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF8E8EAB),
+                      ),
+                    ),
+                  ],
+                ),
               );
             }
             return ListView.builder(

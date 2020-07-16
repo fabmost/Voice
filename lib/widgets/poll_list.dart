@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'poll.dart';
+import '../custom/galup_font_icons.dart';
 
 class PollList extends StatelessWidget {
   final String userId;
@@ -84,6 +85,30 @@ class PollList extends StatelessWidget {
               return Center(child: CircularProgressIndicator());
             }
             final documents = snapshot.data.documents;
+            if (documents.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const SizedBox(height: 16),
+                    Icon(
+                      GalupFont.empty_content,
+                      color: Color(0xFF8E8EAB),
+                      size: 32,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Este usuario no ha realizado encuestas',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF8E8EAB),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
             return ListView.builder(
               itemCount: documents.length,
               itemBuilder: (context, i) {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'poll.dart';
 import 'challenge.dart';
 import 'cause.dart';
+import '../custom/galup_font_icons.dart';
 
 class SavedList extends StatelessWidget {
   Widget _pollWidget(doc, userId) {
@@ -39,27 +40,26 @@ class SavedList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Poll(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      comments: doc['comments'],
-      options: doc['options'],
-      votes: doc['results'],
-      images: doc['images'] ?? [],
-      hasVoted: hasVoted,
-      vote: vote,
-      voters: voters,
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      hasReposted: hasReposted,
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        userImage: doc['user_image'] ?? '',
+        title: doc['title'],
+        comments: doc['comments'],
+        options: doc['options'],
+        votes: doc['results'],
+        images: doc['images'] ?? [],
+        hasVoted: hasVoted,
+        vote: vote,
+        voters: voters,
+        likes: likes,
+        hasLiked: hasLiked,
+        reposts: reposts,
+        hasReposted: hasReposted,
+        hasSaved: hasSaved,
+        date: doc['createdAt'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   Widget _challengeWidget(doc, userId) {
@@ -80,23 +80,22 @@ class SavedList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      metric: doc['metric_type'],
-      goal: doc['metric_goal'],
-      comments: doc['comments'],
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      hasReposted: hasReposted,
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        userImage: doc['user_image'] ?? '',
+        title: doc['title'],
+        metric: doc['metric_type'],
+        goal: doc['metric_goal'],
+        comments: doc['comments'],
+        likes: likes,
+        hasLiked: hasLiked,
+        reposts: reposts,
+        hasReposted: hasReposted,
+        hasSaved: hasSaved,
+        date: doc['createdAt'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   Widget _causeWidget(doc, userId) {
@@ -151,7 +150,25 @@ class SavedList extends StatelessWidget {
             final documents = snapshot.data.documents;
             if (documents.isEmpty) {
               return Center(
-                child: Text('Aquí tus guardados'),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const SizedBox(height: 16),
+                    Icon(
+                      GalupFont.empty_saved,
+                      color: Color(0xFF8E8EAB),
+                      size: 32,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Aún no guardas ningún reto o encuesta',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF8E8EAB),
+                      ),
+                    ),
+                  ],
+                ),
               );
             }
             return ListView.builder(

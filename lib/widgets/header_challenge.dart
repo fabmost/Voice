@@ -16,7 +16,7 @@ import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
 
-class HeaderChallenge extends StatelessWidget with ShareContent{
+class HeaderChallenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
   final Color color = Color(0xFFFFF5FB);
@@ -225,7 +225,9 @@ class HeaderChallenge extends StatelessWidget with ShareContent{
                   leading: Icon(
                     GalupFont.saved,
                   ),
-                  title: Text(hasSaved ? 'Borrar' : 'Guardar'),
+                  title: Text(hasSaved
+                      ? Translations.of(context).text('button_delete')
+                      : Translations.of(context).text('button_save')),
                 ),
               ListTile(
                 onTap: () => _flag(context),
@@ -234,7 +236,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent{
                   color: Colors.red,
                 ),
                 title: Text(
-                  'Denunciar',
+                  Translations.of(context).text('title_flag'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),

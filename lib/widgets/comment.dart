@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../custom/galup_font_icons.dart';
 import '../screens/detail_comment_screen.dart';
@@ -76,6 +77,9 @@ class Comment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+
     return Column(
       children: <Widget>[
         ListTile(
@@ -85,9 +89,21 @@ class Comment extends StatelessWidget {
               backgroundImage: NetworkImage(userImage),
             ),
           ),
-          title: Text(
-            userName,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                userName,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Text(
+                timeago.format(now.subtract(difference)),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              )
+            ],
           ),
           subtitle: Text(
             title,
