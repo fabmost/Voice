@@ -35,9 +35,13 @@ class Preferences with ChangeNotifier {
     return prefs.setInt('interactions', _interactions);
   }
 
-  Future<bool> getAccount() async {
+  Future<void> getAccount() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('hasAccount') ?? false;
+    _hasAccount = prefs.getBool('hasAccount') ?? false;
+    if (_hasAccount) {
+      notifyListeners();
+    }
+    return; //prefs.getBool('hasAccount') ?? false;
   }
 
   Future<void> setAccount() async {

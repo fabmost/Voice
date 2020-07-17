@@ -31,6 +31,7 @@ import 'screens/category_screen.dart';
 import 'screens/session_login_screen.dart';
 import 'screens/session_auth_screen.dart';
 
+import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
 import 'screens/new_content_category_screen.dart';
@@ -83,77 +84,80 @@ class App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (ctx) => Preferences()),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Galup',
-        theme: ThemeData(
-          primarySwatch: generateMaterialColor(Color(0xFF722282)),
-          accentColor: Color(0xFF6767CB),
-          buttonTheme: ButtonTheme.of(context).copyWith(
-            buttonColor: Color(0xFF6767CB),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      child: Consumer<Preferences>(
+        builder: (ctx, provider, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Galup',
+          theme: ThemeData(
+            primarySwatch: generateMaterialColor(Color(0xFF722282)),
+            accentColor: Color(0xFF6767CB),
+            buttonTheme: ButtonTheme.of(context).copyWith(
+              buttonColor: Color(0xFF6767CB),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
           ),
-        ),
-        localizationsDelegates: [
-          const TranslationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: [
-          const Locale('en', ''),
-          const Locale('es', ''),
-        ],
-        home: StreamBuilder(
-          stream: FirebaseAuth.instance.onAuthStateChanged,
-          builder: (ctx, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return SplashScreen();
-            }
-            if (snapshot.hasData) {
-              return MenuScreen();
-            }
-            return FutureBuilder(
-                future:
-                    Provider.of<Preferences>(ctx, listen: false).getAccount(),
-                builder: (ct, AsyncSnapshot<bool> snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    return SplashScreen();
-                  }
-                  return snap.data ? SessionLoginScreen() : PreferencesScreen;
-                });
+          localizationsDelegates: [
+            const TranslationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: [
+            const Locale('en', ''),
+            const Locale('es', ''),
+          ],
+          home: StreamBuilder(
+            stream: FirebaseAuth.instance.onAuthStateChanged,
+            builder: (ctx, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SplashScreen();
+              }
+              if (snapshot.hasData) {
+                return MenuScreen();
+              }
+              return provider.hasAccount
+              ? SessionLoginScreen()
+              : FutureBuilder(
+                  future: provider.getAccount(),
+                  builder: (ctx, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? SplashScreen()
+                          : PreferencesScreen(),
+                );
+            },
+          ),
+          routes: {
+            MenuScreen.routeName: (ctx) => MenuScreen(),
+            OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
+            AuthScreen.routeName: (ctx) => AuthScreen(),
+            LoginScreen.routeName: (ctx) => LoginScreen(),
+            ForgotPasswordScreen.routeName: (ctx) => ForgotPasswordScreen(),
+            CountriesScreen.routeName: (ctx) => CountriesScreen(),
+            EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
+            NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
+            ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
+            ChatScreen.routeName: (ctx) => ChatScreen(),
+            CommentsScreen.routeName: (ctx) => CommentsScreen(),
+            DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
+            NewPollScreen.routeName: (ctx) => NewPollScreen(),
+            NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
+            NewContentCategoryScreen.routeName: (ctx) =>
+                NewContentCategoryScreen(),
+            DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
+            DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
+            DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
+            VerifyTypeScreen.routeName: (ctx) => VerifyTypeScreen(),
+            VerifyCategoryScreen.routeName: (ctx) => VerifyCategoryScreen(),
+            VerifyIdScreen.routeName: (ctx) => VerifyIdScreen(),
+            FlagScreen.routeName: (ctx) => FlagScreen(),
+            UpgradeScreen.routeName: (ctx) => UpgradeScreen(),
+            UserNameScreen.routeName: (ctx) => UserNameScreen(),
+            CategoryScreen.routeName: (ctx) => CategoryScreen(),
+            SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
+            GalleryScreen.routeName: (ctx) => GalleryScreen(),
           },
         ),
-        routes: {
-          MenuScreen.routeName: (ctx) => MenuScreen(),
-          OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
-          AuthScreen.routeName: (ctx) => AuthScreen(),
-          LoginScreen.routeName: (ctx) => LoginScreen(),
-          ForgotPasswordScreen.routeName: (ctx) => ForgotPasswordScreen(),
-          CountriesScreen.routeName: (ctx) => CountriesScreen(),
-          EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
-          NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
-          ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
-          ChatScreen.routeName: (ctx) => ChatScreen(),
-          CommentsScreen.routeName: (ctx) => CommentsScreen(),
-          DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
-          NewPollScreen.routeName: (ctx) => NewPollScreen(),
-          NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
-          NewContentCategoryScreen.routeName: (ctx) =>
-              NewContentCategoryScreen(),
-          DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
-          DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
-          DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
-          VerifyTypeScreen.routeName: (ctx) => VerifyTypeScreen(),
-          VerifyCategoryScreen.routeName: (ctx) => VerifyCategoryScreen(),
-          VerifyIdScreen.routeName: (ctx) => VerifyIdScreen(),
-          FlagScreen.routeName: (ctx) => FlagScreen(),
-          UpgradeScreen.routeName: (ctx) => UpgradeScreen(),
-          UserNameScreen.routeName: (ctx) => UserNameScreen(),
-          CategoryScreen.routeName: (ctx) => CategoryScreen(),
-          SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
-        },
       ),
     );
   }

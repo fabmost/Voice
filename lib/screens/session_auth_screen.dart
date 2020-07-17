@@ -161,15 +161,15 @@ class _AuthScreenState extends State<SessionAuthScreen> {
         _isLoading = true;
       });
 
-      final credential = EmailAuthProvider.getCredential(
-          email: _email, password: _passwordController.text);
-      final user = await _auth.currentUser();
-      await user.linkWithCredential(credential);
-
+      AuthResult authResult = await _auth.createUserWithEmailAndPassword(
+        email: _email,
+        password: _passwordController.text,
+      );
+     
       WriteBatch batch = Firestore.instance.batch();
 
       batch.setData(
-        Firestore.instance.collection('users').document(user.uid),
+        Firestore.instance.collection('users').document(authResult.user.uid),
         {
           'name': _name,
           'last_name': _last,
@@ -182,7 +182,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
         merge: true,
       );
       batch.setData(
-        Firestore.instance.collection('hash').document(user.uid),
+        Firestore.instance.collection('hash').document(authResult.user.uid),
         {
           'name': _userName,
           'user_name': '$_name $_last',

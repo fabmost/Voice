@@ -130,6 +130,7 @@ class _PollOptionsState extends State<PollOptions> {
         });
       });
     });
+    Provider.of<Preferences>(context, listen: false).setInteractions();
     setState(() {
       _isLoading = false;
     });

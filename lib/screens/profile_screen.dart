@@ -288,6 +288,7 @@ class ProfileScreen extends StatelessWidget {
               SizedBox(height: 16),
             Text(
               document['bio'] ?? '',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.grey,
                 fontSize: 16,
@@ -409,8 +410,8 @@ class ProfileScreen extends StatelessWidget {
                   SliverPersistentHeader(
                     pinned: false,
                     delegate: _SliverHeaderDelegate(
-                      360 + containerHeight - 90,
-                      360 + containerHeight - 90,
+                      360 + containerHeight - 80,
+                      360 + containerHeight - 80,
                       _header(context, userSnap.data.uid),
                     ),
                   ),
@@ -467,9 +468,9 @@ class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
   @override
-  double get minExtent => minHeight;
+  double get minExtent => minHeight + 4;
   @override
-  double get maxExtent => maxHeight;
+  double get maxExtent => maxHeight + 4;
 
   @override
   Widget build(
