@@ -8,6 +8,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'poll_options.dart';
+import 'poll_video.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/preferences_provider.dart';
@@ -184,8 +185,8 @@ class HeaderPoll extends StatelessWidget with ShareContent {
     batch.commit();
   }
 
-  void _share() async {
-    sharePoll(reference.documentID);
+  void _share(title) {
+    sharePoll(reference.documentID, title);
   }
 
   void _flag(context) {
@@ -448,6 +449,8 @@ class HeaderPoll extends StatelessWidget with ShareContent {
           final creatorId = document['user_id'];
           final userImage = document['user_image'] ?? '';
           final images = document['images'] ?? [];
+          final thumb = document['video_thumb'] ?? '';
+          final video = document['video'] ?? '';
 
           final date = document['createdAt'].toDate();
           final now = new DateTime.now();
@@ -501,6 +504,8 @@ class HeaderPoll extends StatelessWidget with ShareContent {
               ),
               if (images.isNotEmpty) SizedBox(height: 16),
               if (images.isNotEmpty) _images(context, images),
+              if (video.isNotEmpty) SizedBox(height: 16),
+              if (video.isNotEmpty) PollVideo(thumb, video),
               Padding(
                 padding: const EdgeInsets.only(
                   left: 16,
@@ -563,7 +568,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                     ),
                     IconButton(
                       icon: Icon(GalupFont.share),
-                      onPressed: _share,
+                      onPressed: () => _share(document['title']),
                     ),
                   ],
                 ),

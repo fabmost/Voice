@@ -69,7 +69,7 @@ class _MyHomePageState extends State<GalleryScreen> {
               if (snapshot.connectionState == ConnectionState.done)
                 return GestureDetector(
                   onTap: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(asset);
                   },
                   child: Stack(
                     children: <Widget>[

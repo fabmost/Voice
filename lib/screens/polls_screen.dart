@@ -64,6 +64,8 @@ class PollsScreen extends StatelessWidget {
       hasReposted: hasReposted,
       hasSaved: hasSaved,
       images: doc['images'] ?? [],
+      video: doc['video'] ?? '',
+      thumb: doc['video_thumb'] ?? '',
       date: doc['createdAt'].toDate(),
       influencer: doc['influencer'] ?? '',
     );

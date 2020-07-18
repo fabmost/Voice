@@ -168,8 +168,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     batch.commit();
   }
 
-  void _share() async {
-    shareChallenge(reference.documentID);
+  void _share(title) {
+    shareChallenge(reference.documentID, title);
   }
 
   void _flag(context) {
@@ -405,7 +405,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                     ),
                     IconButton(
                       icon: Icon(GalupFont.share),
-                      onPressed: _share,
+                      onPressed: ()=> _share(document['title']),
                     ),
                   ],
                 ),

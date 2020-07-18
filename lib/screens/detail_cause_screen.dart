@@ -168,8 +168,8 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
     batch.commit();
   }
 
-  void _share(reference) async {
-    shareCause(reference.documentID);
+  void _share(reference, title) async {
+    shareCause(reference.documentID, title);
   }
 
   void _flag(context, reference) {
@@ -393,7 +393,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                         ),
                         IconButton(
                           icon: Icon(GalupFont.share),
-                          onPressed: () => _share(reference),
+                          onPressed: () => _share(reference, document['title']),
                         ),
                         Expanded(child: SizedBox(height: 1)),
                         Text(likes == 0 ? '' : '$likes Votos'),

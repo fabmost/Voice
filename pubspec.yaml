@@ -57,8 +57,9 @@ dependencies:
   flutter_typeahead: ^1.8.6
   extended_text_field: ^3.0.1
   photo_manager: ^0.5.6
-  # video_trimmer: ^0.2.4
-  # video_player: ^0.10.11+2
+  video_thumbnail: ^0.2.2
+  video_trimmer: ^0.2.4
+  video_player: ^0.10.11+2
 
 dev_dependencies:
   flutter_test:
@@ -94,6 +95,7 @@ flutter:
     - assets/onboarding_2.png
     - assets/onboarding_3.png
     - assets/onboarding_4.png
+    - assets/onboarding_5.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

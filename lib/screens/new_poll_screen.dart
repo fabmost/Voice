@@ -6,15 +6,19 @@ import 'package:extended_text_field/extended_text_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
+import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
+import '../custom/suggestion_textfield.dart';
 import '../widgets/influencer_badge.dart';
 
 class NewPollScreen extends StatefulWidget {
@@ -27,6 +31,7 @@ class NewPollScreen extends StatefulWidget {
 class _NewPollScreenState extends State<NewPollScreen> {
   bool _isLoading = false;
   bool _isSearching = false;
+  bool _isVideo = false;
   FocusNode _descFocus = FocusNode();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _firstController = TextEditingController();
@@ -35,6 +40,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
   TextEditingController _hashController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
 
+  final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
   Algolia algolia;
@@ -44,6 +50,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
   List<File> pollImages = [];
   String category;
   List<String> chips = [];
+  File _videoFile;
+  File _videoThumb;
 
   final double size = 82;
 
@@ -98,6 +106,42 @@ class _NewPollScreenState extends State<NewPollScreen> {
     }
   }
 
+  void _videoOptions() {
+    FocusScope.of(context).unfocus();
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          color: Colors.transparent,
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                onTap: () {
+                  Navigator.of(bc).pop();
+                  setState(() {
+                    _isVideo = false;
+                    _videoFile = null;
+                    _videoThumb = null;
+                  });
+                },
+                leading: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+                title: Text(
+                  "Eliminar",
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _imageOptions(file, isOption) {
     bool showDelete = false;
     switch (file) {
@@ -105,7 +149,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
         if (isOption) {
           if (_option1 != null) showDelete = true;
         } else {
-          if (pollImages.length > 0) showDelete = true;
+          if (_isVideo && _videoFile != null) {
+            showDelete = true;
+          } else if (pollImages.length > 0) showDelete = true;
         }
         break;
       case 1:
@@ -123,7 +169,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
         }
         break;
     }
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -131,27 +177,30 @@ class _NewPollScreenState extends State<NewPollScreen> {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
-              if (isOption) ListTile(
-                onTap: () => _openCamera(file, isOption),
-                leading: Icon(
-                  Icons.camera_alt,
+              if (isOption || file != 0)
+                ListTile(
+                  onTap: () => _openCamera(file, isOption),
+                  leading: Icon(
+                    Icons.camera_alt,
+                  ),
+                  title: Text("Cámara"),
                 ),
-                title: Text("Cámara"),
-              ),
-              if(!isOption) ListTile(
-                onTap: () => _openCamera(file, isOption),
-                leading: Icon(
-                  Icons.camera_alt,
+              if (!isOption && file == 0)
+                ListTile(
+                  onTap: () => _openCamera(file, isOption),
+                  leading: Icon(
+                    Icons.camera_alt,
+                  ),
+                  title: Text("Foto"),
                 ),
-                title: Text("Foto"),
-              ),
-              if(!isOption) ListTile(
-                onTap: () => _takeVideo(file, isOption),
-                leading: Icon(
-                  Icons.videocam,
+              if (!isOption && file == 0)
+                ListTile(
+                  onTap: () => _takeVideo(file, isOption),
+                  leading: Icon(
+                    Icons.videocam,
+                  ),
+                  title: Text("Video"),
                 ),
-                title: Text("Video"),
-              ),
               ListTile(
                 onTap: () => _openGallery(file, isOption),
                 leading: Icon(
@@ -190,18 +239,29 @@ class _NewPollScreenState extends State<NewPollScreen> {
     if (isOption)
       _getPicture(file, isOption);
     else {
-      Navigator.of(context).pushNamed(GalleryScreen.routeName);
+      Navigator.of(context)
+          .pushNamed(GalleryScreen.routeName)
+          .then((value) async {
+        if (value != null) {
+          AssetEntity asset = value as AssetEntity;
+          if (asset.type == AssetType.video) {
+            File videoFile = await asset.file;
+            _trimVideo(videoFile);
+          } else {
+            File imgFile = await asset.file;
+            _cropBigImage(file, imgFile.path);
+          }
+        }
+      });
     }
   }
 
   Future<void> _takeVideo(file, isOption) async {
     Navigator.of(context).pop();
     final videoFile = await ImagePicker().getVideo(
-      source: ImageSource.camera,
-      maxDuration: Duration(seconds: 60)
-    );
+        source: ImageSource.camera, maxDuration: Duration(seconds: 60));
     if (videoFile != null) {
-      
+      _trimVideo(File(videoFile.path));
     }
   }
 
@@ -249,6 +309,28 @@ class _NewPollScreenState extends State<NewPollScreen> {
         }
       });
     }
+  }
+
+  void _trimVideo(videoFile) async {
+    await _trimmer.loadVideo(videoFile: File(videoFile.path));
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) {
+        return TrimmerView(_trimmer);
+      }),
+    ).then((value) async {
+      if (value != null) {
+        final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
+          imageFormat: ImageFormat.JPEG,
+          quality: 50,
+        );
+        setState(() {
+          _videoThumb = File(mFile);
+          _videoFile = File(value);
+          _isVideo = true;
+        });
+      }
+    });
   }
 
   void _cropImage(file, pathFile) async {
@@ -487,6 +569,29 @@ class _NewPollScreenState extends State<NewPollScreen> {
       final url = await ref.getDownloadURL();
       images.add(url);
     }
+    String videoUrl;
+    String videoThumb;
+    if (_isVideo && _videoFile != null && _videoThumb != null) {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('polls')
+          .child(pollId)
+          .child('thumb.jpg');
+
+      await ref.putFile(_videoFile).onComplete;
+
+      videoUrl = await ref.getDownloadURL();
+
+      final ref2 = FirebaseStorage.instance
+          .ref()
+          .child('polls')
+          .child(pollId)
+          .child('video.mp3');
+
+      await ref2.putFile(_videoThumb).onComplete;
+
+      videoThumb = await ref2.getDownloadURL();
+    }
     batch.setData(Firestore.instance.collection('content').document(pollId), {
       'type': 'poll',
       'title': _titleController.text,
@@ -503,6 +608,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'tags': chips,
       'interactions': 0,
       'images': images,
+      'video': videoUrl,
+      'video_thumb': videoThumb,
       'home': userData['followers'] ?? [],
     });
     chips.forEach((element) {
@@ -715,62 +822,84 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 style: TextStyle(fontSize: 22),
               ),
               SizedBox(height: 16),
-              _title('Imágenes (opcional)'),
+              _title('Imágenes o video (opcional)'),
               SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  InkWell(
-                    onTap: () => _imageOptions(0, false),
+              if (_isVideo)
+                Align(
+                  alignment: Alignment.center,
+                  child: InkWell(
+                    onTap: _videoOptions,
                     child: Container(
-                      width: size,
-                      height: size,
+                      width: 180,
+                      height: 120,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.black),
-                        image: pollImages.length > 0
-                            ? DecorationImage(image: FileImage(pollImages[0]))
-                            : null,
-                      ),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.black),
+                          image: DecorationImage(
+                            image: FileImage(_videoThumb),
+                            fit: BoxFit.cover,
+                          )),
                       child: Icon(Icons.camera_alt),
                     ),
                   ),
-                  SizedBox(width: 8),
-                  if (pollImages.length > 0)
+                ),
+              if (!_isVideo)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
                     InkWell(
-                      onTap: () => _imageOptions(1, false),
+                      onTap: () => _imageOptions(0, false),
                       child: Container(
                         width: size,
                         height: size,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: Colors.black),
-                          image: pollImages.length > 1
-                              ? DecorationImage(image: FileImage(pollImages[1]))
+                          image: pollImages.length > 0
+                              ? DecorationImage(image: FileImage(pollImages[0]))
                               : null,
                         ),
                         child: Icon(Icons.camera_alt),
                       ),
                     ),
-                  SizedBox(width: 8),
-                  if (pollImages.length > 1)
-                    InkWell(
-                      onTap: () => _imageOptions(2, false),
-                      child: Container(
-                        width: size,
-                        height: size,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.black),
-                          image: pollImages.length > 2
-                              ? DecorationImage(image: FileImage(pollImages[2]))
-                              : null,
+                    SizedBox(width: 8),
+                    if (pollImages.length > 0)
+                      InkWell(
+                        onTap: () => _imageOptions(1, false),
+                        child: Container(
+                          width: size,
+                          height: size,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.black),
+                            image: pollImages.length > 1
+                                ? DecorationImage(
+                                    image: FileImage(pollImages[1]))
+                                : null,
+                          ),
+                          child: Icon(Icons.camera_alt),
                         ),
-                        child: Icon(Icons.camera_alt),
                       ),
-                    ),
-                ],
-              ),
+                    SizedBox(width: 8),
+                    if (pollImages.length > 1)
+                      InkWell(
+                        onTap: () => _imageOptions(2, false),
+                        child: Container(
+                          width: size,
+                          height: size,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.black),
+                            image: pollImages.length > 2
+                                ? DecorationImage(
+                                    image: FileImage(pollImages[2]))
+                                : null,
+                          ),
+                          child: Icon(Icons.camera_alt),
+                        ),
+                      ),
+                  ],
+                ),
               SizedBox(height: 16),
               _title('Respuestas'),
               SizedBox(height: 16),
@@ -791,48 +920,39 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 onTap: _selectCategory,
                 title: Text('${category ?? 'Selecciona una categoría'}'),
               ),
-              Stack(
-                children: <Widget>[
-                  ExtendedTextField(
-                    controller: _descriptionController,
-                    specialTextSpanBuilder: _mySpecialTextSpanBuilder,
-                  ),
-                  TypeAheadField(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller: _descriptionController,
-                      focusNode: _descFocus,
-                      style: TextStyle(color: Colors.transparent),
-                      //decoration: InputDecoration(labelText: 'Descripción'),
-                    ),
-                    suggestionsCallback: (pattern) {
-                      if (_isSearching) {
-                        return _getSuggestions(pattern);
-                      }
-                      if (pattern.endsWith('@')) {
-                        _isSearching = true;
-                      }
-                      return null;
-                    },
-                    itemBuilder: (context, itemData) {
-                      AlgoliaObjectSnapshot result = itemData;
-                      if (result.data['interactions'] == null) {
-                        return _userTile(context, result.objectID, result.data);
-                      }
-                      return Container();
-                    },
-                    onSuggestionSelected: (suggestion) {
-                      _isSearching = false;
-                      int index = _descriptionController.text.lastIndexOf('@');
-                      String subs =
-                          _descriptionController.text.substring(0, index);
-                      _descriptionController.text =
-                          '$subs@${suggestion.data['name']} ';
-                      //_descriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _descriptionController.text.length));
-                      //_descFocus.requestFocus();
-                    },
-                    autoFlipDirection: true,
-                  ),
-                ],
+              SuggestionField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  spanBuilder: _mySpecialTextSpanBuilder,
+                  controller: _descriptionController,
+                  focusNode: _descFocus,
+                  decoration: InputDecoration(labelText: 'Descripción'),
+                ),
+                suggestionsCallback: (pattern) {
+                  if (_isSearching) {
+                    return _getSuggestions(pattern);
+                  }
+                  if (pattern.endsWith('@')) {
+                    _isSearching = true;
+                  }
+                  return null;
+                },
+                itemBuilder: (context, itemData) {
+                  AlgoliaObjectSnapshot result = itemData;
+                  if (result.data['interactions'] == null) {
+                    return _userTile(context, result.objectID, result.data);
+                  }
+                  return Container();
+                },
+                onSuggestionSelected: (suggestion) {
+                  _isSearching = false;
+                  int index = _descriptionController.text.lastIndexOf('@');
+                  String subs = _descriptionController.text.substring(0, index);
+                  _descriptionController.text =
+                      '$subs@${suggestion.data['name']} ';
+                  _descriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _descriptionController.text.length));
+                  _descFocus.requestFocus();
+                },
+                autoFlipDirection: true,
               ),
               TextField(
                 controller: _hashController,

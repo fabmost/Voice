@@ -128,7 +128,7 @@ class UserChallenge extends StatelessWidget with ShareContent {
   }
 
   void _share() async {
-    shareChallenge(reference.documentID);
+    shareChallenge(reference.documentID, title);
   }
 
   void _options(context) {

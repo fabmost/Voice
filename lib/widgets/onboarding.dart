@@ -15,19 +15,23 @@ class OnBoarding extends StatelessWidget {
     return Stack(
       children: <Widget>[
         FractionallySizedBox(
-          heightFactor: 0.65,
+          heightFactor: 0.6,
           child: Container(
             width: double.infinity,
-            child: Image.asset(
-              img,
-              fit: BoxFit.cover,
+            color: Color(0xFFF8F8FF),
+            child: Align(
+              alignment: Alignment.center,
+              child: Image.asset(
+                img,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),
         Align(
           alignment: Alignment.bottomCenter,
           child: FractionallySizedBox(
-            heightFactor: 0.55,
+            heightFactor: 0.4,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -52,7 +56,7 @@ class OnBoarding extends StatelessWidget {
                   Expanded(
                     child: AutoSizeText(
                       content,
-                      style: TextStyle(fontSize:42),
+                      style: TextStyle(fontSize: 42),
                     ),
                   ),
                   SizedBox(height: 22),

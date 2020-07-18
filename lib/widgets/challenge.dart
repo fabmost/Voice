@@ -202,7 +202,7 @@ class Challenge extends StatelessWidget with ShareContent {
   }
 
   void _share() async {
-    shareChallenge(reference.documentID);
+    shareChallenge(reference.documentID, title);
   }
 
   void _flag(context) {

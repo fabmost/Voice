@@ -50,6 +50,8 @@ class SavedList extends StatelessWidget {
         options: doc['options'],
         votes: doc['results'],
         images: doc['images'] ?? [],
+        video: doc['video'] ?? '',
+        thumb: doc['video_thumb'] ?? '',
         hasVoted: hasVoted,
         vote: vote,
         voters: voters,

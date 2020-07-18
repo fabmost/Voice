@@ -191,7 +191,7 @@ class Cause extends StatelessWidget with ShareContent {
   }
 
   void _share() async {
-    shareCause(reference.documentID);
+    shareCause(reference.documentID, title);
   }
 
   void _flag(context) {

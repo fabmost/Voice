@@ -101,6 +101,18 @@ class InfluencerBadge extends StatelessWidget {
           size: size,
           color: Color(0xFFE1302F),
         );
+      case 'Escritor':
+        return Icon(
+          GalupFont.certification,
+          size: size,
+          color: Color(0xFFCDDE00),
+        );
+      case 'Emprendedor':
+        return Icon(
+          GalupFont.certification,
+          size: size,
+          color: Color(0xFF8A84D6),
+        );
       case 'Galup':
         return Image.asset(
           'assets/badge.png',

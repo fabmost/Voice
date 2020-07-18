@@ -42,6 +42,8 @@ class PollUserList extends StatelessWidget {
         votes: doc['results'],
         votersList: doc['voters'] ?? [],
         images: doc['images'] ?? [],
+        video: doc['video'] ?? '',
+        thumb: doc['video_thumb'] ?? '',
         voters: voters,
         likesList: doc['likes'] ?? [],
         likes: likes,

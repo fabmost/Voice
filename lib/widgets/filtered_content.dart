@@ -62,7 +62,9 @@ class FilteredContent extends StatelessWidget {
       reposts: reposts,
       hasReposted: hasReposted,
       date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? ''
+      influencer: doc['influencer'] ?? '',
+      video: doc['video'] ?? '',
+      thumb: doc['video_thumb'] ?? '',
     );
   }
 

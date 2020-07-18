@@ -5,9 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
-import 'influencer_badge.dart';
+import 'poll_video.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
@@ -38,6 +37,8 @@ class UserPoll extends StatelessWidget with ShareContent {
   final bool hasSaved;
   final DateTime date;
   final String influencer;
+  final String video;
+  final String thumb;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -62,6 +63,8 @@ class UserPoll extends StatelessWidget with ShareContent {
     this.repostedList,
     @required this.likesList,
     @required this.influencer,
+    @required this.video,
+    @required this.thumb,
   });
 
   void _toProfile(context) {
@@ -149,7 +152,7 @@ class UserPoll extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    sharePoll(reference.documentID);
+    sharePoll(reference.documentID, title);
   }
 
   void _deleteAlert(context) {
@@ -461,8 +464,8 @@ class UserPoll extends StatelessWidget with ShareContent {
 
   @override
   Widget build(BuildContext context) {
-    final now = new DateTime.now();
-    final difference = now.difference(date);
+    //final now = new DateTime.now();
+    //final difference = now.difference(date);
 
     return Container(
       margin: const EdgeInsets.all(8),
@@ -523,6 +526,8 @@ class UserPoll extends StatelessWidget with ShareContent {
             ),
             if (images.isNotEmpty) SizedBox(height: 16),
             if (images.isNotEmpty) _images(),
+            if (video.isNotEmpty) SizedBox(height: 16),
+            if (video.isNotEmpty) PollVideo(thumb,video),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,

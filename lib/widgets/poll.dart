@@ -8,6 +8,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'poll_options.dart';
+import 'poll_video.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
@@ -39,6 +40,8 @@ class Poll extends StatelessWidget with ShareContent {
   final bool hasSaved;
   final DateTime date;
   final String influencer;
+  final String thumb;
+  final String video;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -63,6 +66,8 @@ class Poll extends StatelessWidget with ShareContent {
     this.images,
     this.date,
     @required this.influencer,
+    @required this.thumb,
+    @required this.video,
   });
 
   void _toProfile(context) {
@@ -224,8 +229,8 @@ class Poll extends StatelessWidget with ShareContent {
     batch.commit();
   }
 
-  void _share() async {
-    sharePoll(reference.documentID);
+  void _share() {
+    sharePoll(reference.documentID, title);
   }
 
   void _flag(context) {
@@ -502,6 +507,8 @@ class Poll extends StatelessWidget with ShareContent {
             ),
             if (images.isNotEmpty) SizedBox(height: 16),
             if (images.isNotEmpty) _images(context),
+            if (video.isNotEmpty) SizedBox(height: 16),
+            if (video.isNotEmpty) PollVideo(thumb, video),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,
