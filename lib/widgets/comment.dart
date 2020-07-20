@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../screens/detail_comment_screen.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/search_results_screen.dart';
 
 class Comment extends StatelessWidget {
   final DocumentReference reference;
@@ -43,6 +46,15 @@ class Comment extends StatelessWidget {
   void _toProfile(context) {
     Navigator.of(context)
         .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+  }
+
+  void _toTaggedProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
   }
 
   void _upVote() {
@@ -105,19 +117,26 @@ class Comment extends StatelessWidget {
               )
             ],
           ),
-          subtitle: Text(
+          subtitle: ExtendedText(
             title,
             style: TextStyle(fontSize: 16),
+            specialTextSpanBuilder: MySpecialTextSpanBuilder(canClick: true),
+            onSpecialTextTap: (parameter) {
+              if (parameter.toString().startsWith('@')) {
+                String atText = parameter.toString();
+                int start = atText.indexOf('[');
+                int finish = atText.indexOf(']');
+                String toRemove = atText.substring(start + 1, finish);
+                _toTaggedProfile(context, toRemove);
+              } else if (parameter.toString().startsWith('#')) {
+                _toHash(context, parameter.toString());
+              }
+            },
           ),
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
-            FlatButton.icon(
-              icon: Icon(GalupFont.message),
-              label: Text(comments == 0 ? '' : '$comments'),
-              onPressed: () => _toComment(context),
-            ),
             FlatButton.icon(
               icon: Icon(
                 GalupFont.like,
@@ -134,9 +153,29 @@ class Comment extends StatelessWidget {
               label: Text(downs == 0 ? '' : '$downs'),
               onPressed: _downVote,
             ),
+            FlatButton(
+              child: Text('Responder'),
+              onPressed: () => _toComment(context),
+            ),
           ],
         ),
-        Divider(),
+        if (comments > 0)
+          Row(
+            children: <Widget>[
+              SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: Colors.grey,
+                ),
+              ),
+              FlatButton(
+                child: Text('Ver respuestas ($comments)'),
+                onPressed: () => _toComment(context),
+              ),
+            ],
+          ),
+        if (comments == 0) Divider(),
       ],
     );
   }

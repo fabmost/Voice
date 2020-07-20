@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import '../screens/detail_poll_screen.dart';
+import '../custom/my_special_text_span_builder.dart';
 
 class SearchPoll extends StatelessWidget {
   final DocumentReference reference;
-  final String myId;
   final String userId;
   final String userName;
   final String title;
@@ -17,12 +18,12 @@ class SearchPoll extends StatelessWidget {
   final List images;
   final DateTime date;
   final String influencer;
+  final String description;
 
   final Color color = Color(0xFFF8F8FF);
 
   SearchPoll({
     this.reference,
-    this.myId,
     this.userName,
     this.title,
     this.userId,
@@ -32,6 +33,7 @@ class SearchPoll extends StatelessWidget {
     this.images,
     this.date,
     @required this.influencer,
+    @required this.description,
   });
 
   void _toDetail(context) {
@@ -262,6 +264,15 @@ class SearchPoll extends StatelessWidget {
                 ),
                 child: _getOptions(),
               ),
+              if (description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExtendedText(
+                    description,
+                    specialTextSpanBuilder: MySpecialTextSpanBuilder(),
+                  ),
+                ),
+              if (description.isNotEmpty) SizedBox(height: 16),
             ],
           ),
         ),

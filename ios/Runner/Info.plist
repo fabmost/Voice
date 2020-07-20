@@ -43,12 +43,17 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Galup usa tu cámara para permitirte tomar tu foto de perfil o tomar fotos para tus encuestas y retos</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Galup usa tu micrófono para poder grabar videos que mejoren la apariencia de tus encuestas y retos</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Galup usa tus imágenes para permitirte agregar tu foto de perfil o agregar imágenes a tus encuestas y retos</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Galup usa tu micrófono para poder grabar videos que mejoren la apariencia de tus encuestas y retos</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -66,10 +71,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key>
-      <true/>
-    </dict>
 </dict>
 </plist>

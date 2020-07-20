@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -11,11 +12,15 @@ import 'influencer_badge.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/flag_screen.dart';
+import '../screens/search_results_screen.dart';
+import '../screens/poll_gallery_screen.dart';
+import '../screens/detail_video_screen.dart';
 
 class Challenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
@@ -34,6 +39,8 @@ class Challenge extends StatelessWidget with ShareContent {
   final bool hasSaved;
   final DateTime date;
   final String influencer;
+  final bool isVideo;
+  final List images;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -54,6 +61,8 @@ class Challenge extends StatelessWidget with ShareContent {
     this.hasSaved,
     this.date,
     @required this.influencer,
+    @required this.isVideo,
+    @required this.images,
   });
 
   void _toProfile(context) {
@@ -64,6 +73,15 @@ class Challenge extends StatelessWidget with ShareContent {
   void _toComments(context) {
     Navigator.of(context)
         .pushNamed(CommentsScreen.routeName, arguments: reference);
+  }
+
+  void _toTaggedProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
   }
 
   void _anonymousAlert(context, text) {
@@ -279,7 +297,7 @@ class Challenge extends StatelessWidget with ShareContent {
     );
   }
 
-  Widget _challengeGoal() {
+  Widget _challengeGoal(context) {
     bool goalReached = false;
     int amount;
     switch (metric) {
@@ -310,7 +328,31 @@ class Challenge extends StatelessWidget with ShareContent {
       width: double.infinity,
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
-        onPressed: goalReached ? () {} : null,
+        onPressed: goalReached
+            ? () {
+                if (isVideo) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailVideo(
+                        images[0],
+                      ),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PollGalleryScreen(
+                        reference: reference,
+                        galleryItems: images,
+                        initialIndex: 0,
+                      ),
+                    ),
+                  );
+                }
+              }
+            : null,
         child: Text(goalReached
             ? 'Ver'
             : '${format.format(totalPercentage * 100)}% completado'),
@@ -367,16 +409,29 @@ class Challenge extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
+              child: ExtendedText(
                 title,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
+                specialTextSpanBuilder:
+                    MySpecialTextSpanBuilder(canClick: true),
+                onSpecialTextTap: (parameter) {
+                  if (parameter.toString().startsWith('@')) {
+                    String atText = parameter.toString();
+                    int start = atText.indexOf('[');
+                    int finish = atText.indexOf(']');
+                    String toRemove = atText.substring(start + 1, finish);
+                    _toTaggedProfile(context, toRemove);
+                  } else if (parameter.toString().startsWith('#')) {
+                    _toHash(context, parameter.toString());
+                  }
+                },
               ),
             ),
             SizedBox(height: 16),
-            _challengeGoal(),
+            _challengeGoal(context),
             SizedBox(height: 16),
             Container(
               color: color,

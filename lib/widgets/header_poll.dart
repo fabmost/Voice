@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,10 +14,12 @@ import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/preferences_provider.dart';
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
 import '../screens/poll_gallery_screen.dart';
 import '../screens/flag_screen.dart';
+import '../screens/search_results_screen.dart';
 
 class HeaderPoll extends StatelessWidget with ShareContent {
   final DocumentReference reference;
@@ -33,6 +36,11 @@ class HeaderPoll extends StatelessWidget with ShareContent {
     }
   }
 
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
+
   void _toGallery(context, images, position) {
     Navigator.push(
       context,
@@ -41,10 +49,31 @@ class HeaderPoll extends StatelessWidget with ShareContent {
           galleryItems: images,
           initialIndex: position,
           reference: reference,
-          userId: userId,
         ),
       ),
     );
+  }
+
+  void _noExists(context) {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('Este contenido ya no existe'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        Navigator.of(context).pop();
+      });
+    });
   }
 
   void _anonymousAlert(context, text) {
@@ -413,7 +442,12 @@ class HeaderPoll extends StatelessWidget with ShareContent {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-          final document = snapshot.data;
+          final DocumentSnapshot document = snapshot.data;
+
+          if (document.data == null) {
+            _noExists(context);
+            return Container();
+          }
 
           int vote = -1;
           bool hasVoted = false;
@@ -451,6 +485,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
           final images = document['images'] ?? [];
           final thumb = document['video_thumb'] ?? '';
           final video = document['video'] ?? '';
+          final description = document['description'] ?? '';
 
           final date = document['createdAt'].toDate();
           final now = new DateTime.now();
@@ -533,6 +568,27 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                       ? '$voters participante'
                       : '$voters participantes'),
                 ),
+              if (description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExtendedText(
+                    description,
+                    specialTextSpanBuilder:
+                        MySpecialTextSpanBuilder(canClick: true),
+                    onSpecialTextTap: (parameter) {
+                      if (parameter.toString().startsWith('@')) {
+                        String atText = parameter.toString();
+                        int start = atText.indexOf('[');
+                        int finish = atText.indexOf(']');
+                        String toRemove = atText.substring(start + 1, finish);
+                        _toProfile(context, toRemove);
+                      } else if (parameter.toString().startsWith('#')) {
+                        _toHash(context, parameter.toString());
+                      }
+                    },
+                  ),
+                ),
+              if (description.isNotEmpty) SizedBox(height: 16),
               Container(
                 color: color,
                 child: Row(

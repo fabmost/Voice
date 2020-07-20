@@ -52,6 +52,7 @@ class PollsScreen extends StatelessWidget {
       userName: doc['user_name'],
       userImage: doc['user_image'] ?? '',
       title: doc['title'],
+      description: doc['description'] ?? '',
       comments: doc['comments'],
       options: doc['options'],
       votes: doc['results'],
@@ -97,6 +98,8 @@ class PollsScreen extends StatelessWidget {
         title: doc['title'],
         metric: doc['metric_type'],
         goal: doc['metric_goal'],
+        isVideo: doc['is_video'] ?? false,
+        images: doc['images'],
         comments: doc['comments'],
         likes: likes,
         hasLiked: hasLiked,
@@ -230,7 +233,6 @@ class PollsScreen extends StatelessWidget {
     return StreamBuilder(
       stream: Firestore.instance
           .collection('content')
-          .orderBy('interactions', descending: true)
           .orderBy('createdAt', descending: true)
           .snapshots(),
       builder: (ctx, snapshot) {

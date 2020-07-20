@@ -37,6 +37,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_notifications')),
       ),
@@ -64,41 +65,54 @@ class NotificationsScreen extends StatelessWidget {
               }
 
               return ListView.separated(
-                separatorBuilder: (context, index) => Divider(),
+                separatorBuilder: (context, index) => Divider(height: 1),
                 itemCount: documents.length,
                 itemBuilder: (ctx, i) {
                   final doc = documents[i];
 
                   final icon = doc['icon'];
                   final type = doc['type'];
-                  return ListTile(
-                    onTap: () {
-                      switch (type) {
-                        case 'poll':
-                          return _toPoll(context, doc['content_id']);
-                        case 'challenge':
-                          return _toChallenge(context, doc['content_id']);
-                        case 'cause':
-                          return _toCause(context, doc['content_id']);
-                        case 'profile':
-                          return _toProfile(context, doc['content_id']);
-                        case 'comment':
-                          return _toComment(context, doc['content_id']);
-                        default:
-                          return null;
-                      }
-                    },
-                    leading: icon != null
-                        ? CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Theme.of(context).accentColor,
-                            backgroundImage: NetworkImage(icon),
-                          )
-                        : Icon(
-                            Icons.notifications,
-                            color: Colors.black,
-                          ),
-                    title: Text(doc['title']),
+                  bool hasRead = false;
+                  if (doc['read'] != null) {
+                    hasRead = (doc['read'] as List).contains(userSnap.data.uid);
+                  }
+                  return Container(
+                    color: hasRead ? Colors.white : Color(0x22000000),
+                    child: ListTile(
+                      onTap: () {
+                        Firestore.instance
+                            .collection('notifications')
+                            .document(doc.documentID)
+                            .updateData({
+                          'read': FieldValue.arrayUnion([userSnap.data.uid])
+                        });
+                        switch (type) {
+                          case 'poll':
+                            return _toPoll(context, doc['content_id']);
+                          case 'challenge':
+                            return _toChallenge(context, doc['content_id']);
+                          case 'cause':
+                            return _toCause(context, doc['content_id']);
+                          case 'profile':
+                            return _toProfile(context, doc['content_id']);
+                          case 'comment':
+                            return _toComment(context, doc['content_id']);
+                          default:
+                            return null;
+                        }
+                      },
+                      leading: icon != null
+                          ? CircleAvatar(
+                              radius: 12,
+                              backgroundColor: Theme.of(context).accentColor,
+                              backgroundImage: NetworkImage(icon),
+                            )
+                          : Icon(
+                              Icons.notifications,
+                              color: Colors.black,
+                            ),
+                      title: Text(doc['title']),
+                    ),
                   );
                 },
               );

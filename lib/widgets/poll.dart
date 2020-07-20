@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,12 +13,14 @@ import 'poll_video.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/poll_gallery_screen.dart';
 import '../screens/flag_screen.dart';
+import '../screens/search_results_screen.dart';
 
 class Poll extends StatelessWidget with ShareContent {
   final DocumentReference reference;
@@ -42,6 +45,7 @@ class Poll extends StatelessWidget with ShareContent {
   final String influencer;
   final String thumb;
   final String video;
+  final String description;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -68,11 +72,21 @@ class Poll extends StatelessWidget with ShareContent {
     @required this.influencer,
     @required this.thumb,
     @required this.video,
+    @required this.description,
   });
 
   void _toProfile(context) {
     Navigator.of(context)
         .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+  }
+
+  void _toTaggedProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
   }
 
   void _toComments(context) {
@@ -88,7 +102,6 @@ class Poll extends StatelessWidget with ShareContent {
           reference: reference,
           galleryItems: images,
           initialIndex: position,
-          userId: myId,
         ),
       ),
     );
@@ -536,6 +549,27 @@ class Poll extends StatelessWidget with ShareContent {
                     ? '$voters participante'
                     : '$voters participantes'),
               ),
+            if (description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ExtendedText(
+                  description,
+                  style: TextStyle(fontSize: 16),
+                  specialTextSpanBuilder: MySpecialTextSpanBuilder(canClick: true),
+                  onSpecialTextTap: (parameter) {
+                    if (parameter.toString().startsWith('@')) {
+                      String atText = parameter.toString();
+                      int start = atText.indexOf('[');
+                      int finish = atText.indexOf(']');
+                      String toRemove = atText.substring(start + 1, finish);
+                      _toTaggedProfile(context, toRemove);
+                    } else if (parameter.toString().startsWith('#')) {
+                      _toHash(context, parameter.toString());
+                    }
+                  },
+                ),
+              ),
+            if (description.isNotEmpty) SizedBox(height: 16),
             Container(
               color: color,
               child: Row(

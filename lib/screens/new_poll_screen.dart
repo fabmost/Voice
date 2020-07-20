@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:algolia/algolia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:extended_text_field/extended_text_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +36,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
   TextEditingController _firstController = TextEditingController();
   TextEditingController _secondController = TextEditingController();
   TextEditingController _thirdController = TextEditingController();
-  TextEditingController _hashController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
 
   final Trimmer _trimmer = Trimmer();
@@ -49,36 +47,10 @@ class _NewPollScreenState extends State<NewPollScreen> {
   File _option1, _option2, _option3;
   List<File> pollImages = [];
   String category;
-  List<String> chips = [];
   File _videoFile;
   File _videoThumb;
 
   final double size = 82;
-
-  Iterable<Widget> get chipWidgets sync* {
-    for (final String actor in chips) {
-      yield Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Chip(
-          backgroundColor: Theme.of(context).accentColor,
-          label: Text(
-            actor,
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-          deleteIconColor: Colors.white,
-          onDeleted: () {
-            setState(() {
-              chips.removeWhere((entry) {
-                return entry == actor;
-              });
-            });
-          },
-        ),
-      );
-    }
-  }
 
   void _deleteFile(file, isOption) {
     Navigator.of(context).pop();
@@ -259,7 +231,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
   Future<void> _takeVideo(file, isOption) async {
     Navigator.of(context).pop();
     final videoFile = await ImagePicker().getVideo(
-        source: ImageSource.camera, maxDuration: Duration(seconds: 60));
+      source: ImageSource.camera,
+      maxDuration: Duration(seconds: 60),
+    );
     if (videoFile != null) {
       _trimVideo(File(videoFile.path));
     }
@@ -423,17 +397,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
   }
   */
 
-  void _getChip() {
-    if (_hashController.text.contains(' ') &&
-        _hashController.text.trim().isNotEmpty) {
-      setState(() {
-        chips.add(_hashController.text.trim());
-
-        _hashController.text = '';
-      });
-    }
-  }
-
   void _validate() {
     if (_titleController.text.isNotEmpty &&
         _firstController.text.isNotEmpty &&
@@ -578,9 +541,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
           .child(pollId)
           .child('thumb.jpg');
 
-      await ref.putFile(_videoFile).onComplete;
+      await ref.putFile(_videoThumb).onComplete;
 
-      videoUrl = await ref.getDownloadURL();
+      videoThumb = await ref.getDownloadURL();
 
       final ref2 = FirebaseStorage.instance
           .ref()
@@ -588,10 +551,17 @@ class _NewPollScreenState extends State<NewPollScreen> {
           .child(pollId)
           .child('video.mp3');
 
-      await ref2.putFile(_videoThumb).onComplete;
+      await ref2.putFile(_videoFile).onComplete;
 
-      videoThumb = await ref2.getDownloadURL();
+      videoUrl = await ref2.getDownloadURL();
     }
+
+    List<String> hashes = [];
+    RegExp exp = new RegExp(r"\B#\w\w+");
+    exp.allMatches(_descriptionController.text).forEach((match) {
+      hashes.add(match.group(0));
+    });
+
     batch.setData(Firestore.instance.collection('content').document(pollId), {
       'type': 'poll',
       'title': _titleController.text,
@@ -605,14 +575,15 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'comments': 0,
       'endDate': Timestamp.now(),
       'category': category,
-      'tags': chips,
+      'description': _descriptionController.text,
+      'tags': hashes,
       'interactions': 0,
       'images': images,
       'video': videoUrl,
       'video_thumb': videoThumb,
       'home': userData['followers'] ?? [],
     });
-    chips.forEach((element) {
+    hashes.forEach((element) {
       batch.setData(
         Firestore.instance.collection('hash').document(element),
         {
@@ -778,8 +749,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
     super.initState();
 
     // Start listening to changes.
-    _hashController.addListener(_getChip);
-
     algolia = Algolia.init(
       applicationId: 'J3C3F33D3S',
       apiKey: '70469e6182ac069696c17d836c210780',
@@ -916,9 +885,18 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 ),
               SizedBox(height: 16),
               _title('Categoría'),
-              ListTile(
+              SizedBox(height: 8),
+              InkWell(
                 onTap: _selectCategory,
-                title: Text('${category ?? 'Selecciona una categoría'}'),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black),
+                  ),
+                  child: Text('${category ?? 'Selecciona una categoría'}'),
+                ),
               ),
               SuggestionField(
                 textFieldConfiguration: TextFieldConfiguration(
@@ -928,6 +906,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   decoration: InputDecoration(labelText: 'Descripción'),
                 ),
                 suggestionsCallback: (pattern) {
+                  //TextSelection selection = _descriptionController.selection;
+                  //String toCheck = pattern.substring(0, selection.end);
                   if (_isSearching) {
                     return _getSuggestions(pattern);
                   }
@@ -945,21 +925,17 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 },
                 onSuggestionSelected: (suggestion) {
                   _isSearching = false;
+                  //TextSelection selection = _descriptionController.selection;
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
                   _descriptionController.text =
-                      '$subs@${suggestion.data['name']} ';
-                  _descriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _descriptionController.text.length));
-                  _descFocus.requestFocus();
+                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                  _descriptionController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _descriptionController.text.length));
+                  //_descFocus.requestFocus();
+                  //FocusScope.of(context).requestFocus(_descFocus);
                 },
                 autoFlipDirection: true,
-              ),
-              TextField(
-                controller: _hashController,
-                decoration: InputDecoration(labelText: 'Hashtags'),
-              ),
-              Wrap(
-                children: chipWidgets.toList(),
               ),
               SizedBox(height: 16),
               _isLoading

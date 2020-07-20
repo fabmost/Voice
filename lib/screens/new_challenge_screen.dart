@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:algolia/algolia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,9 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:video_trimmer/video_trimmer.dart';
 
+import 'gallery_screen.dart';
+import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../widgets/influencer_badge.dart';
+import '../custom/suggestion_textfield.dart';
+import '../custom/my_special_text_span_builder.dart';
 
 class NewChallengeScreen extends StatefulWidget {
   static const routeName = '/new-challenge';
@@ -19,41 +28,20 @@ class NewChallengeScreen extends StatefulWidget {
 }
 
 class _NewChallengeScreenState extends State<NewChallengeScreen> {
+  final Trimmer _trimmer = Trimmer();
   bool _isLoading = false;
+  bool _isVideo = false;
+  bool _isSearching = false;
   String metric = 'Likes';
   double goal = 0;
   TextEditingController _titleController = TextEditingController();
-  TextEditingController _hashController = TextEditingController();
   File _imageFile;
+  File _videoFile;
+  Algolia algolia;
+  AlgoliaQuery searchQuery;
 
   String category;
-  List<String> chips = [];
-
-  Iterable<Widget> get chipWidgets sync* {
-    for (final String actor in chips) {
-      yield Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Chip(
-          backgroundColor: Color(0xFFA4175D),
-          label: Text(
-            actor,
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-          deleteIconColor: Colors.white,
-          onDeleted: () {
-            setState(() {
-              chips.removeWhere((entry) {
-                return entry == actor;
-              });
-            });
-          },
-        ),
-      );
-    }
-  }
-
+  
   void _imageOptions() {
     FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
@@ -63,16 +51,23 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           color: Colors.transparent,
           child: new Wrap(
             children: <Widget>[
-              new ListTile(
+              ListTile(
                 onTap: () => _openCamera(),
-                leading: new Icon(
+                leading: Icon(
                   Icons.camera_alt,
                 ),
-                title: Text("Cámara"),
+                title: Text("Foto"),
               ),
-              new ListTile(
+              ListTile(
+                onTap: () => _takeVideo(),
+                leading: Icon(
+                  Icons.videocam,
+                ),
+                title: Text("Video"),
+              ),
+              ListTile(
                 onTap: () => _openGallery(),
-                leading: new Icon(
+                leading: Icon(
                   Icons.image,
                 ),
                 title: Text("Galería"),
@@ -91,7 +86,20 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
 
   void _openGallery() {
     Navigator.of(context).pop();
-    _getPicture();
+    Navigator.of(context)
+        .pushNamed(GalleryScreen.routeName)
+        .then((value) async {
+      if (value != null) {
+        AssetEntity asset = value as AssetEntity;
+        if (asset.type == AssetType.video) {
+          File videoFile = await asset.file;
+          _trimVideo(videoFile);
+        } else {
+          File imgFile = await asset.file;
+          _cropImage(imgFile.path);
+        }
+      }
+    });
   }
 
   Future<void> _takePicture() async {
@@ -99,26 +107,45 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       source: ImageSource.camera,
     );
     if (imageFile != null) {
-      /*
-      final appDir = await provider.getApplicationDocumentsDirectory();
-      final fileName = path.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
-      */
       _cropImage(imageFile.path);
     }
   }
 
-  Future<void> _getPicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
+  Future<void> _takeVideo() async {
+    Navigator.of(context).pop();
+    final videoFile = await ImagePicker().getVideo(
+      source: ImageSource.camera,
+      maxDuration: Duration(seconds: 60),
     );
-    if (imageFile != null) {
-      _cropImage(imageFile.path);
+    if (videoFile != null) {
+      _trimVideo(File(videoFile.path));
     }
+  }
+
+  void _trimVideo(videoFile) async {
+    await _trimmer.loadVideo(videoFile: File(videoFile.path));
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) {
+        return TrimmerView(_trimmer);
+      }),
+    ).then((value) async {
+      if (value != null) {
+        final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
+          imageFormat: ImageFormat.JPEG,
+          quality: 50,
+        );
+        setState(() {
+          _isVideo = true;
+          _imageFile = File(mFile);
+          _videoFile = File(value);
+        });
+      }
+    });
   }
 
   void _cropImage(pathFile) async {
+    _isVideo = false;
     File cropped = await ImageCropper.cropImage(
       sourcePath: pathFile,
     );
@@ -182,17 +209,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     });
   }
 
-  void _getChip() {
-    if (_hashController.text.contains(' ') &&
-        _hashController.text.trim().isNotEmpty) {
-      setState(() {
-        chips.add(_hashController.text.trim());
-
-        _hashController.text = '';
-      });
-    }
-  }
-
   void _validate() {
     if (_titleController.text.isNotEmpty &&
         _imageFile != null &&
@@ -249,12 +265,22 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     String challengeId =
         Firestore.instance.collection('content').document().documentID;
 
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('challenges')
-        .child(challengeId + '.jpg');
+    StorageReference ref;
+    if (_isVideo) {
+      ref = FirebaseStorage.instance
+          .ref()
+          .child('challenges')
+          .child('$challengeId.mp3');
 
-    await ref.putFile(_imageFile).onComplete;
+      await ref.putFile(_videoFile).onComplete;
+    } else {
+      ref = FirebaseStorage.instance
+          .ref()
+          .child('challenges')
+          .child(challengeId + '.jpg');
+
+      await ref.putFile(_imageFile).onComplete;
+    }
 
     final url = await ref.getDownloadURL();
     batch.updateData(
@@ -263,6 +289,12 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
         'created': FieldValue.arrayUnion([challengeId])
       },
     );
+
+    List<String> hashes = [];
+    RegExp exp = new RegExp(r"\B#\w\w+");
+    exp.allMatches(_titleController.text).forEach((match) {
+      hashes.add(match.group(0));
+    });
 
     batch.setData(
         Firestore.instance.collection('content').document(challengeId), {
@@ -274,14 +306,25 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       "influencer": userData['influencer'],
       'createdAt': Timestamp.now(),
       'images': [url],
+      'is_video': _isVideo,
       'metric_type': metric.toLowerCase(),
       'metric_goal': goal,
       'comments': 0,
       'endDate': Timestamp.now(),
       'category': category,
-      'tags': chips,
+      'tags': hashes,
       'interactions': 0,
       'home': userData['followers'] ?? [],
+    });
+    hashes.forEach((element) {
+      batch.setData(
+        Firestore.instance.collection('hash').document(element),
+        {
+          'name': element,
+          'interactions': FieldValue.increment(1),
+        },
+        merge: true,
+      );
     });
     await batch.commit();
     setState(() {
@@ -301,12 +344,50 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     );
   }
 
+  Widget _userTile(context, id, doc) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+      ),
+      title: Row(
+        children: <Widget>[
+          Text(
+            doc['name'],
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          SizedBox(width: 8),
+          InfluencerBadge(doc['influencer'] ?? '', 16),
+        ],
+      ),
+      subtitle: Text(doc['user_name']),
+    );
+  }
+
+  Future<List> _getSuggestions(String query) async {
+    if (query.endsWith(' ')) {
+      _isSearching = false;
+      return null;
+    }
+    searchQuery = algolia.instance.index('suggestions');
+    int index = query.lastIndexOf('@');
+    String realQuery = query.substring(index);
+    searchQuery = searchQuery.search(realQuery);
+    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
+    return results.hits;
+  }
+
   @override
   void initState() {
     super.initState();
 
     // Start listening to changes.
-    _hashController.addListener(_getChip);
+    algolia = Algolia.init(
+      applicationId: 'J3C3F33D3S',
+      apiKey: '70469e6182ac069696c17d836c210780',
+    );
   }
 
   @override
@@ -332,18 +413,52 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextField(
-                controller: _titleController,
-                autofocus: true,
-                maxLines: null,
-                maxLength: 120,
-                decoration: InputDecoration(
-                  counterText: '',
-                  border: InputBorder.none,
-                  hintText:
-                      Translations.of(context).text('hint_challenge_title'),
+              SuggestionField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  spanBuilder: MySpecialTextSpanBuilder(),
+                  controller: _titleController,
+                  autofocus: true,
+                  maxLines: null,
+                  maxLength: 120,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    border: InputBorder.none,
+                    hintText:
+                        Translations.of(context).text('hint_challenge_title'),
+                  ),
+                  style: TextStyle(fontSize: 22),
                 ),
-                style: TextStyle(fontSize: 22),
+                suggestionsCallback: (pattern) {
+                  //TextSelection selection = _descriptionController.selection;
+                  //String toCheck = pattern.substring(0, selection.end);
+                  if (_isSearching) {
+                    return _getSuggestions(pattern);
+                  }
+                  if (pattern.endsWith('@')) {
+                    _isSearching = true;
+                  }
+                  return null;
+                },
+                itemBuilder: (context, itemData) {
+                  AlgoliaObjectSnapshot result = itemData;
+                  if (result.data['interactions'] == null) {
+                    return _userTile(context, result.objectID, result.data);
+                  }
+                  return Container();
+                },
+                onSuggestionSelected: (suggestion) {
+                  _isSearching = false;
+                  //TextSelection selection = _descriptionController.selection;
+                  int index = _titleController.text.lastIndexOf('@');
+                  String subs = _titleController.text.substring(0, index);
+                  _titleController.text =
+                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                  _titleController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _titleController.text.length));
+                  //_descFocus.requestFocus();
+                  //FocusScope.of(context).requestFocus(_descFocus);
+                },
+                autoFlipDirection: true,
               ),
               SizedBox(height: 16),
               _title('Imágen a revelar'),
@@ -353,7 +468,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 child: InkWell(
                   onTap: _imageOptions,
                   child: Container(
-                    width: 120,
+                    width: 180,
                     height: 120,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
@@ -405,16 +520,18 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               ),
               SizedBox(height: 16),
               _title('Categoría'),
-              ListTile(
+              SizedBox(height: 8),
+              InkWell(
                 onTap: _selectCategory,
-                title: Text('${category ?? 'Selecciona una categoría'}'),
-              ),
-              TextField(
-                controller: _hashController,
-                decoration: InputDecoration(labelText: 'Hashtags'),
-              ),
-              Wrap(
-                children: chipWidgets.toList(),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black),
+                  ),
+                  child: Text('${category ?? 'Selecciona una categoría'}'),
+                ),
               ),
               SizedBox(height: 16),
               _isLoading

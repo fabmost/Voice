@@ -1,14 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
+import '../screens/search_results_screen.dart';
+import '../screens/view_profile_screen.dart';
 
 class HeaderComment extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
 
   HeaderComment(this.reference, this.userId);
+
+  void _toTaggedProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
 
   void _upVote(hasUp) {
     WriteBatch batch = Firestore.instance.batch();
@@ -92,9 +105,22 @@ class HeaderComment extends StatelessWidget {
                   )
                 ],
               ),
-              subtitle: Text(
+              subtitle: ExtendedText(
                 document['text'],
                 style: TextStyle(fontSize: 16),
+                specialTextSpanBuilder:
+                    MySpecialTextSpanBuilder(canClick: true),
+                onSpecialTextTap: (parameter) {
+                  if (parameter.toString().startsWith('@')) {
+                    String atText = parameter.toString();
+                    int start = atText.indexOf('[');
+                    int finish = atText.indexOf(']');
+                    String toRemove = atText.substring(start + 1, finish);
+                    _toTaggedProfile(context, toRemove);
+                  } else if (parameter.toString().startsWith('#')) {
+                    _toHash(context, parameter.toString());
+                  }
+                },
               ),
             ),
             Row(

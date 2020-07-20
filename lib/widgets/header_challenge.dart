@@ -15,6 +15,8 @@ import '../providers/preferences_provider.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
+import '../screens/poll_gallery_screen.dart';
+import '../screens/detail_video_screen.dart';
 
 class HeaderChallenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
@@ -28,6 +30,28 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
     }
+  }
+
+  void _noExists(context) {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('Este contenido ya no existe'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        Navigator.of(context).pop();
+      });
+    });
   }
 
   void _anonymousAlert(context, text) {
@@ -247,7 +271,16 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     );
   }
 
-  Widget _challengeGoal(metric, goal, likes, comments, reposts) {
+  Widget _challengeGoal(
+    context,
+    metric,
+    goal,
+    likes,
+    comments,
+    reposts,
+    isVideo,
+    images,
+  ) {
     bool goalReached = false;
     int amount;
     switch (metric) {
@@ -278,7 +311,31 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       width: double.infinity,
       child: OutlineButton(
         highlightColor: Color(0xFFA4175D),
-        onPressed: goalReached ? () {} : null,
+        onPressed: goalReached
+            ? () {
+                if (isVideo) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailVideo(
+                        images[0],
+                      ),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PollGalleryScreen(
+                        reference: reference,
+                        galleryItems: images,
+                        initialIndex: 0,
+                      ),
+                    ),
+                  );
+                }
+              }
+            : null,
         child: Text(goalReached
             ? 'Ver'
             : '${format.format(totalPercentage * 100)}% completado'),
@@ -295,6 +352,11 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
             return Center(child: CircularProgressIndicator());
           }
           final document = snapshot.data;
+
+          if (document.data == null) {
+            _noExists(context);
+            return Container();
+          }
 
           int likes = 0;
           bool hasLiked = false;
@@ -368,11 +430,14 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
               ),
               SizedBox(height: 16),
               _challengeGoal(
+                context,
                 document['metric_type'],
                 document['metric_goal'],
                 likes,
                 document['comments'],
                 reposts,
+                document['is_video'] ?? false,
+                document['images']
               ),
               SizedBox(height: 16),
               Container(
@@ -405,7 +470,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                     ),
                     IconButton(
                       icon: Icon(GalupFont.share),
-                      onPressed: ()=> _share(document['title']),
+                      onPressed: () => _share(document['title']),
                     ),
                   ],
                 ),

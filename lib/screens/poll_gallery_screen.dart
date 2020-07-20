@@ -10,10 +10,9 @@ class PollGalleryScreen extends StatefulWidget {
   final PageController pageController;
   final int initialIndex;
   final DocumentReference reference;
-  final String userId;
 
   PollGalleryScreen(
-      {this.reference, this.userId, this.galleryItems, this.initialIndex})
+      {this.reference, this.galleryItems, this.initialIndex})
       : pageController = PageController(initialPage: initialIndex);
 
   @override

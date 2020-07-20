@@ -28,23 +28,24 @@ class ChallengeList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      metric: doc['metric_type'],
-      goal: doc['metric_goal'],
-      comments: doc['comments'],
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      hasReposted: hasReposted,
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? ''
-    );
+        reference: doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        userImage: doc['user_image'] ?? '',
+        title: doc['title'],
+        metric: doc['metric_type'],
+        goal: doc['metric_goal'],
+        isVideo: doc['is_video'] ?? false,
+        images: doc['images'],
+        comments: doc['comments'],
+        likes: likes,
+        hasLiked: hasLiked,
+        reposts: reposts,
+        hasReposted: hasReposted,
+        hasSaved: hasSaved,
+        date: doc['createdAt'].toDate(),
+        influencer: doc['influencer'] ?? '');
   }
 
   @override

@@ -48,6 +48,7 @@ class PollList extends StatelessWidget {
       userName: doc['user_name'],
       userImage: doc['user_image'] ?? '',
       title: doc['title'],
+      description: doc['description'] ?? '',
       comments: doc['comments'],
       options: doc['options'],
       votes: doc['results'],

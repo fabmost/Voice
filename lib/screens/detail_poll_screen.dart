@@ -13,7 +13,8 @@ class DetailPollScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final id = ModalRoute.of(context).settings.arguments;
-    final DocumentReference reference = Firestore.instance.collection('content').document(id);
+    final DocumentReference reference =
+        Firestore.instance.collection('content').document(id);
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_poll')),
@@ -43,7 +44,10 @@ class DetailPollScreen extends StatelessWidget {
                       itemCount: documents.isEmpty ? 2 : documents.length + 1,
                       itemBuilder: (context, i) {
                         if (i == 0) {
-                          return HeaderPoll(reference, userSnap.data.uid);
+                          return HeaderPoll(
+                            reference,
+                            userSnap.data.uid,
+                          );
                         }
                         if (documents.isEmpty) {
                           return Padding(

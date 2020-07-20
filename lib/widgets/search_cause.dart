@@ -6,7 +6,6 @@ import '../screens/detail_cause_screen.dart';
 
 class SearchCause extends StatelessWidget {
   final DocumentReference reference;
-  final String myId;
   final String creator;
   final String title;
   final String info;
@@ -16,7 +15,6 @@ class SearchCause extends StatelessWidget {
 
   SearchCause({
     this.reference,
-    this.myId,
     this.creator,
     this.title,
     this.info,

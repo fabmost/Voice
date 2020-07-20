@@ -8,7 +8,6 @@ import '../screens/detail_challenge_screen.dart';
 class SearchChallenge extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
-  final String myId;
   final String userName;
   final String title;
   final String metric;
@@ -22,7 +21,6 @@ class SearchChallenge extends StatelessWidget {
   SearchChallenge({
     this.reference,
     this.userName,
-    this.myId,
     this.title,
     this.metric,
     this.userId,

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +32,7 @@ import 'screens/user_name_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/session_login_screen.dart';
 import 'screens/session_auth_screen.dart';
+import 'screens/search_results_screen.dart';
 
 import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
@@ -42,7 +45,13 @@ import 'screens/verify_id_screen.dart';
 
 import 'providers/preferences_provider.dart';
 
-void main() => runApp(App());
+void main() {
+  // Pass all uncaught errors from the framework to Crashlytics.
+  FlutterError.onError = Crashlytics.instance.recordFlutterError;
+  runZoned(() {
+    runApp(App());
+  }, onError: Crashlytics.instance.recordError);
+}
 
 class App extends StatelessWidget {
   MaterialColor generateMaterialColor(Color color) {
@@ -117,14 +126,14 @@ class App extends StatelessWidget {
                 return MenuScreen();
               }
               return provider.hasAccount
-              ? SessionLoginScreen()
-              : FutureBuilder(
-                  future: provider.getAccount(),
-                  builder: (ctx, snapshot) =>
-                      snapshot.connectionState == ConnectionState.waiting
-                          ? SplashScreen()
-                          : PreferencesScreen(),
-                );
+                  ? SessionLoginScreen()
+                  : FutureBuilder(
+                      future: provider.getAccount(),
+                      builder: (ctx, snapshot) =>
+                          snapshot.connectionState == ConnectionState.waiting
+                              ? SplashScreen()
+                              : PreferencesScreen(),
+                    );
             },
           ),
           routes: {
@@ -156,6 +165,7 @@ class App extends StatelessWidget {
             CategoryScreen.routeName: (ctx) => CategoryScreen(),
             SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
             GalleryScreen.routeName: (ctx) => GalleryScreen(),
+            SearchResultsScreen.routeName: (ctx) => SearchResultsScreen(),
           },
         ),
       ),

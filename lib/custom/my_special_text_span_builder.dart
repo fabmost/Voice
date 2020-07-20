@@ -6,10 +6,11 @@ import 'at_span.dart';
 import 'tag_span.dart';
 
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
-  MySpecialTextSpanBuilder({this.showAtBackground = false});
+  MySpecialTextSpanBuilder({this.showAtBackground = false, this.canClick = false});
 
   /// whether show background for @somebody
   final bool showAtBackground;
+  final bool canClick;
   @override
   TextSpan build(String data,
       {TextStyle textStyle, SpecialTextGestureTapCallback onTap}) {
@@ -31,14 +32,14 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
     if (isStart(flag, AtText.flag)) {
       return AtText(
         textStyle,
-        onTap,
+        canClick ? onTap : null,
         start: index - (AtText.flag.length - 1),
         showAtBackground: showAtBackground,
       );
     }else if (isStart(flag, TagText.flag)) {
       return TagText(
         textStyle,
-        onTap,
+        canClick ? onTap : null,
         start: index - (TagText.flag.length - 1),
         showAtBackground: showAtBackground,
       );

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:video_compress/video_compress.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 import 'package:video_trimmer/video_viewer.dart';
+
+import '../translations.dart';
 
 class TrimmerView extends StatefulWidget {
   final Trimmer _trimmer;
@@ -22,25 +25,31 @@ class _TrimmerViewState extends State<TrimmerView> {
       _progressVisibility = true;
     });
 
-    String _value;
+    //final _path = await widget._trimmer
+      //  .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
 
-    await widget._trimmer
-        .saveTrimmedVideo(startValue: _startValue, endValue: _endValue)
-        .then((value) {
-      setState(() {
-        _progressVisibility = false;
-        _value = value;
-      });
+    int duration = (_endValue - _startValue).toInt();
+    MediaInfo _originalInfo = await VideoCompress.getMediaInfo(widget._trimmer.getVideoFile().path);
+    final info = await VideoCompress.compressVideo(
+      widget._trimmer.getVideoFile().path,
+      //quality: VideoQuality.HighestQuality,
+      startTime: _startValue.toInt(),
+      duration: duration,
+      deleteOrigin: false,
+    );
+
+    setState(() {
+      _progressVisibility = false;
     });
 
-    return _value;
+    return info.path;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar'),
+        title: Text(Translations.of(context).text('title_edit')),
       ),
       body: Builder(
         builder: (context) => Center(
@@ -65,7 +74,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                             Navigator.of(context).pop(outputPath);
                           });
                         },
-                  child: Text('SAVE'),
+                  child: Text(Translations.of(context).text('button_save')),
                 ),
                 Expanded(
                   child: VideoViewer(),

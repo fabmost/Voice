@@ -15,12 +15,13 @@ class TagText extends SpecialText {
           flag,
           " ",
           textStyle,
+          onTap: onTap,
         );
 
   @override
   InlineSpan finishText() {
     TextStyle textStyle =
-        this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
+        this.textStyle?.copyWith(color: Color(0xFF722282), fontWeight: FontWeight.bold);
 
     final String atText = toString();
 
@@ -32,7 +33,7 @@ class TagText extends SpecialText {
             start: start,
 
             ///caret can move into special text
-            deleteAll: true,
+            deleteAll: false,
             style: textStyle,
             recognizer: (TapGestureRecognizer()
               ..onTap = () {
@@ -43,6 +44,7 @@ class TagText extends SpecialText {
             actualText: atText,
             start: start,
             style: textStyle,
+            deleteAll: false,
             recognizer: (TapGestureRecognizer()
               ..onTap = () {
                 if (onTap != null) onTap(atText);

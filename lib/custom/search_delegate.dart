@@ -28,16 +28,17 @@ class CustomSearchDelegate extends SearchDelegate {
     final time = Timestamp(
         doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
     return SearchPoll(
-        reference: Firestore.instance.collection('content').document(id),
-        myId: userId,
-        userId: doc['user_id'],
-        creatorName: doc['user_name'],
-        creatorImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        options: doc['options'],
-        images: doc['images'] ?? [],
-        influencer: doc['influencer'] ?? '',
-        date: time.toDate());
+      reference: Firestore.instance.collection('content').document(id),
+      userId: doc['user_id'],
+      description: doc['description'] ?? '',
+      creatorName: doc['user_name'],
+      creatorImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      options: doc['options'],
+      images: doc['images'] ?? [],
+      influencer: doc['influencer'] ?? '',
+      date: time.toDate(),
+    );
   }
 
   Widget _challengeWidget(id, doc) {
@@ -45,7 +46,6 @@ class CustomSearchDelegate extends SearchDelegate {
         doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
     return SearchChallenge(
       reference: Firestore.instance.collection('content').document(id),
-      myId: userId,
       userId: doc['user_id'],
       creatorName: doc['user_name'],
       creatorImage: doc['user_image'] ?? '',
@@ -59,7 +59,6 @@ class CustomSearchDelegate extends SearchDelegate {
   Widget _causeWidget(id, doc) {
     return SearchCause(
       reference: Firestore.instance.collection('content').document(id),
-      myId: userId,
       title: doc['title'],
       creator: doc['creator'],
       info: doc['info'],
