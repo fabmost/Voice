@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:video_compress/video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -293,13 +293,13 @@ class _NewPollScreenState extends State<NewPollScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoThumbnail.thumbnailFile(
-          video: value,
-          imageFormat: ImageFormat.JPEG,
+        final mFile = await VideoCompress.getFileThumbnail(
+          value,
+          //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
-          _videoThumb = File(mFile);
+          _videoThumb = mFile;
           _videoFile = File(value);
           _isVideo = true;
         });
@@ -903,6 +903,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   spanBuilder: _mySpecialTextSpanBuilder,
                   controller: _descriptionController,
                   focusNode: _descFocus,
+                  maxLines: null,
+                  maxLength: 240,
                   decoration: InputDecoration(labelText: 'Descripción'),
                 ),
                 suggestionsCallback: (pattern) {

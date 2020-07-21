@@ -43,10 +43,18 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   Animation<double> _iconAnimationTween;
   int _selectedPageIndex = 0;
   List<Widget> _pages = [
-    PollsScreen(),
-    SearchScreen(),
-    MessagesScreen(),
-    ProfileScreen(),
+    PollsScreen(
+      key: PageStorageKey('Page1'),
+    ),
+    SearchScreen(
+      key: PageStorageKey('Page2'),
+    ),
+    MessagesScreen(
+      key: PageStorageKey('Page3'),
+    ),
+    ProfileScreen(
+      key: PageStorageKey('Page4'),
+    ),
   ];
   List<FabMenuItem> items = [];
 
@@ -92,8 +100,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title:
-            Text(Translations.of(context).text('dialog_need_account')),
+        title: Text(Translations.of(context).text('dialog_need_account')),
         actions: <Widget>[
           FlatButton(
             onPressed: () {
@@ -385,7 +392,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
-            _pages[_selectedPageIndex],
+            IndexedStack(
+              index: _selectedPageIndex,
+              children: _pages,
+            ),
             _isOpen ? _buildBlurWidget() : Container(),
             _isOpen ? _buildMenuItemList() : Container(),
           ],

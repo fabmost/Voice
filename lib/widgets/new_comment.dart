@@ -149,7 +149,7 @@ class _NewCommentState extends State<NewComment> {
                 textCapitalization: TextCapitalization.sentences,
                 autocorrect: true,
                 maxLines: null,
-                maxLength: 120,
+                maxLength: 240,
                 decoration: InputDecoration(
                     counterText: '',
                     hintText: Translations.of(context).text('hint_comment')),

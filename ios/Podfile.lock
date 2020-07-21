@@ -523,6 +523,8 @@ PODS:
   - video_thumbnail (0.0.1):
     - Flutter
     - libwebp
+  - wakelock (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
@@ -561,6 +563,7 @@ DEPENDENCIES:
   - video_player (from `.symlinks/plugins/video_player/ios`)
   - video_player_web (from `.symlinks/plugins/video_player_web/ios`)
   - video_thumbnail (from `.symlinks/plugins/video_thumbnail/ios`)
+  - wakelock (from `.symlinks/plugins/wakelock/ios`)
 
 SPEC REPOS:
   trunk:
@@ -676,6 +679,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_web/ios"
   video_thumbnail:
     :path: ".symlinks/plugins/video_thumbnail/ios"
+  wakelock:
+    :path: ".symlinks/plugins/wakelock/ios"
 
 SPEC CHECKSUMS:
   abseil: 6c8eb7892aefa08d929b39f9bb108e5367e3228f
@@ -752,6 +757,7 @@ SPEC CHECKSUMS:
   video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
   video_player_web: da8cadb8274ed4f8dbee8d7171b420dedd437ce7
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
+  wakelock: 0d4a70faf8950410735e3f61fb15d517c8a6efc4
 
 PODFILE CHECKSUM: 5b18a73fc036d4a41ce1dcd030d2bc9538bf8b85
 

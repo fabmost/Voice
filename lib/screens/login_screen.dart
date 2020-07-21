@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'menu_screen.dart';
 import 'auth_screen.dart';
 import 'forgot_password_screen.dart';
+import '../api.dart';
 import '../translations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,14 +34,20 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submit() async {
+    String salt = API().getSalt(_password);
+
     try {
       setState(() {
         _isLoading = true;
       });
-      await _auth.signInWithEmailAndPassword(
+      final authResult = await _auth.signInWithEmailAndPassword(
         email: _email,
         password: _password,
       );
+      await Firestore.instance
+          .collection('users')
+          .document(authResult.user.uid)
+          .updateData({'salt': salt});
       Navigator.of(context).pushNamedAndRemoveUntil(
           MenuScreen.routeName, (Route<dynamic> route) => false);
     } on PlatformException catch (err) {

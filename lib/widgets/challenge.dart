@@ -41,6 +41,7 @@ class Challenge extends StatelessWidget with ShareContent {
   final String influencer;
   final bool isVideo;
   final List images;
+  final String description;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -63,6 +64,7 @@ class Challenge extends StatelessWidget with ShareContent {
     @required this.influencer,
     @required this.isVideo,
     @required this.images,
+    @required this.description,
   });
 
   void _toProfile(context) {
@@ -409,30 +411,39 @@ class Challenge extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ExtendedText(
+              child: Text(
                 title,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
-                specialTextSpanBuilder:
-                    MySpecialTextSpanBuilder(canClick: true),
-                onSpecialTextTap: (parameter) {
-                  if (parameter.toString().startsWith('@')) {
-                    String atText = parameter.toString();
-                    int start = atText.indexOf('[');
-                    int finish = atText.indexOf(']');
-                    String toRemove = atText.substring(start + 1, finish);
-                    _toTaggedProfile(context, toRemove);
-                  } else if (parameter.toString().startsWith('#')) {
-                    _toHash(context, parameter.toString());
-                  }
-                },
               ),
             ),
             SizedBox(height: 16),
             _challengeGoal(context),
             SizedBox(height: 16),
+            if (description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ExtendedText(
+                  description,
+                  style: TextStyle(fontSize: 16),
+                  specialTextSpanBuilder:
+                      MySpecialTextSpanBuilder(canClick: true),
+                  onSpecialTextTap: (parameter) {
+                    if (parameter.toString().startsWith('@')) {
+                      String atText = parameter.toString();
+                      int start = atText.indexOf('[');
+                      int finish = atText.indexOf(']');
+                      String toRemove = atText.substring(start + 1, finish);
+                      _toTaggedProfile(context, toRemove);
+                    } else if (parameter.toString().startsWith('#')) {
+                      _toHash(context, parameter.toString());
+                    }
+                  },
+                ),
+              ),
+            if (description.isNotEmpty) SizedBox(height: 16),
             Container(
               color: color,
               child: Row(

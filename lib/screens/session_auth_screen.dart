@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'menu_screen.dart';
 import 'countries_screen.dart';
+import '../api.dart';
 import '../translations.dart';
 
 class SessionAuthScreen extends StatefulWidget {
@@ -168,6 +169,8 @@ class _AuthScreenState extends State<SessionAuthScreen> {
      
       WriteBatch batch = Firestore.instance.batch();
 
+      String salt = API().getSalt(_passwordController.text);
+
       batch.setData(
         Firestore.instance.collection('users').document(authResult.user.uid),
         {
@@ -178,6 +181,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
           'email': _email,
           'country': _countryController.text,
           'birthday': _birthController.text,
+          'salt': salt,
         },
         merge: true,
       );

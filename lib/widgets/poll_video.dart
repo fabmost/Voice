@@ -1,3 +1,4 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -13,6 +14,7 @@ class PollVideo extends StatefulWidget {
 
 class _PollVideoState extends State<PollVideo> {
   VideoPlayerController _controller;
+  ChewieController _chewieController;
   bool _isPlaying = false;
 
   @override
@@ -24,6 +26,7 @@ class _PollVideoState extends State<PollVideo> {
   void dispose() {
     super.dispose();
     if (_controller != null) _controller.dispose();
+    if (_chewieController != null) _chewieController.dispose();
   }
 
   void _startVideo() {
@@ -33,6 +36,12 @@ class _PollVideoState extends State<PollVideo> {
         setState(() {
           _isPlaying = true;
           _controller.play();
+          _chewieController = ChewieController(
+            videoPlayerController: _controller,
+            aspectRatio: _controller.value.aspectRatio,
+            autoPlay: true,
+            looping: true,
+          );
         });
       });
   }
@@ -45,7 +54,7 @@ class _PollVideoState extends State<PollVideo> {
           _startVideo();
         } else {
           setState(() {
-            _isPlaying = !_controller.value.isPlaying;
+            //_isPlaying = !_controller.value.isPlaying;
             _controller.value.isPlaying
                 ? _controller.pause()
                 : _controller.play();
@@ -64,19 +73,21 @@ class _PollVideoState extends State<PollVideo> {
                       aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(_controller))
                   : Image.network(widget.videoThumb),
-              Icon(
-                _isPlaying ? Icons.pause : Icons.play_arrow,
-                size: 42,
-              ),
-              if (_controller != null && _controller.value.initialized)
+              if (!_isPlaying)
+                CircleAvatar(
+                  backgroundColor: Colors.white,
+                  radius: 18,
+                  child: Icon(
+                    Icons.play_arrow,
+                    color: Colors.black,
+                    size: 32,
+                  ),
+                ),
+              if (_chewieController != null && _controller != null && _controller.value.initialized)
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: VideoProgressIndicator(
-                    _controller,
-                    allowScrubbing: true,
-                    colors: VideoProgressColors(
-                      playedColor: Theme.of(context).primaryColor,
-                    ),
+                  child: Chewie(
+                    controller: _chewieController,
                   ),
                 ),
             ],

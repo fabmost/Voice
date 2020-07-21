@@ -22,6 +22,7 @@ import '../widgets/saved_list.dart';
 import '../widgets/influencer_badge.dart';
 
 class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({Key key}) : super(key: key);
   void _toFollowers(context, id) {
     Navigator.push(
       context,

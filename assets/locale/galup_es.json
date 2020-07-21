@@ -80,12 +80,14 @@
     "flag_1": "Falso o spam",
     "flag_2": "Violento o gráfico",
     "flag_3": "Inapropiado",
-    "onboarding_title_1": "Encuestas, Causas y Retos",
-    "onboarding_title_2": "Crea cientos de encuestas para saber qué opinan tus amigos",
-    "onboarding_title_3": "¡Lo retos nunca fueron tan divertidos!",
-    "onboarding_title_4": "Únete a miles de personas que ya están compartiendo encuestas, retos y videos",
-    "onboarding_subtitle_1": "¡Esto es Galup! Un espacio en el que tu voz, tu motivación y lo que más importa se puede medir. Bienvenido a esta nueva comunidad que busca generar cambios reales a través de una divertida forma de expresarte y sumar voluntades.",
-    "onboarding_subtitle_2": "Crea encuestas divertidas y conoce mejor la opinión de los tuyos. Ahora es posible medir y conocer opiniones masivas en cuestión de segundos gracias a esta aplicación. Diviértete y conoce la mente y el corazón de tus amigos.",
-    "onboarding_subtitle_3": "Defiende tus causas. Apoya las causas que te mueven y suma a los demás para generar esos cambios que quieres ver en el mundo.",
-    "onboarding_subtitle_4": "Crea retos divertidos y positivos. Reúne likes para lograr resultados que tengan un impacto positivo en tu comunidad. Reta a los tuyos para que juntos generen el cambio que el mundo necesita."
+    "onboarding_title_1": "Encuestas, retos y causas",
+    "onboarding_title_2": "Crea encuestas o retos",
+    "onboarding_title_3": "Buscar",
+    "onboarding_title_4": "Chatea",
+    "onboarding_title_5": "Perfil",
+    "onboarding_subtitle_1": "¡Vota por la opción de tu preferencia! REGALUPEA y comparte con tus amigos, apoya la causa que te mueve",
+    "onboarding_subtitle_2": "¡Lo que se te ocurra! La diversión está aquí, comparte, disfruta incluso puedes responder causas y mucho más!",
+    "onboarding_subtitle_3": "Chatea con cualquiera de tus seguidores, comparte en tiempo real toda la diversión que hay en Galup",
+    "onboarding_subtitle_4": "Chatea con cualquiera de tus seguidores, comparte en tiempo real toda la diversión que hay en Galup",
+    "onboarding_subtitle_5": "Podrás tener tu propio perfil, con toda la información de encuestas y retos generados y guardados"
 }

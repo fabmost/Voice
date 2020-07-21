@@ -8,6 +8,8 @@ import '../widgets/filtered_content.dart';
 import '../widgets/categories_list.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({Key key}) : super(key: key);
+  
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }

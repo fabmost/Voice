@@ -142,6 +142,12 @@
 @import video_thumbnail;
 #endif
 
+#if __has_include(<wakelock/WakelockPlugin.h>)
+#import <wakelock/WakelockPlugin.h>
+#else
+@import wakelock;
+#endif
+
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
@@ -168,6 +174,7 @@
   [VideoCompressPlugin registerWithRegistrar:[registry registrarForPlugin:@"VideoCompressPlugin"]];
   [FLTVideoPlayerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTVideoPlayerPlugin"]];
   [VideoThumbnailPlugin registerWithRegistrar:[registry registrarForPlugin:@"VideoThumbnailPlugin"]];
+  [WakelockPlugin registerWithRegistrar:[registry registrarForPlugin:@"WakelockPlugin"]];
 }
 
 @end

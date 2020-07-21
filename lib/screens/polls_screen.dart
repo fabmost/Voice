@@ -14,6 +14,8 @@ import '../widgets/repost_cause.dart';
 import '../widgets/cause_tile.dart';
 
 class PollsScreen extends StatelessWidget {
+  const PollsScreen({Key key}) : super(key: key);
+
   Widget _pollWidget(doc, userId) {
     int vote = -1;
     bool hasVoted = false;
@@ -96,6 +98,7 @@ class PollsScreen extends StatelessWidget {
         userName: doc['user_name'],
         userImage: doc['user_image'] ?? '',
         title: doc['title'],
+        description: doc['description'] ?? '',
         metric: doc['metric_type'],
         goal: doc['metric_goal'],
         isVideo: doc['is_video'] ?? false,

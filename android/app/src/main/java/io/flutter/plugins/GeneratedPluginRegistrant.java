@@ -39,5 +39,6 @@ public final class GeneratedPluginRegistrant {
       com.example.video_compress.VideoCompressPlugin.registerWith(shimPluginRegistry.registrarFor("com.example.video_compress.VideoCompressPlugin"));
     flutterEngine.getPlugins().add(new io.flutter.plugins.videoplayer.VideoPlayerPlugin());
       xyz.justsoft.video_thumbnail.VideoThumbnailPlugin.registerWith(shimPluginRegistry.registrarFor("xyz.justsoft.video_thumbnail.VideoThumbnailPlugin"));
+    flutterEngine.getPlugins().add(new creativecreatorormaybenot.wakelock.WakelockPlugin());
   }
 }

@@ -34,6 +34,7 @@ class ChallengeList extends StatelessWidget {
         userName: doc['user_name'],
         userImage: doc['user_image'] ?? '',
         title: doc['title'],
+        description: doc['description'] ?? '',
         metric: doc['metric_type'],
         goal: doc['metric_goal'],
         isVideo: doc['is_video'] ?? false,

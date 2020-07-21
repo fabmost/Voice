@@ -20,6 +20,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     'assets/onboarding_2.png',
     'assets/onboarding_3.png',
     'assets/onboarding_4.png',
+    'assets/onboarding_5.png',
   ];
 
   @override
@@ -62,18 +63,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final titles = [
-    Translations.of(context).text('onboarding_title_1'),
-    Translations.of(context).text('onboarding_title_2'),
-    Translations.of(context).text('onboarding_title_3'),
-    Translations.of(context).text('onboarding_title_4'),
-  ];
-  
-  final contents = [
-    Translations.of(context).text('onboarding_subtitle_1'),
-    Translations.of(context).text('onboarding_subtitle_2'),
-    Translations.of(context).text('onboarding_subtitle_3'),
-    Translations.of(context).text('onboarding_subtitle_4'),
-  ];
+      Translations.of(context).text('onboarding_title_1'),
+      Translations.of(context).text('onboarding_title_2'),
+      Translations.of(context).text('onboarding_title_3'),
+      Translations.of(context).text('onboarding_title_4'),
+      Translations.of(context).text('onboarding_title_5'),
+    ];
+
+    final contents = [
+      Translations.of(context).text('onboarding_subtitle_1'),
+      Translations.of(context).text('onboarding_subtitle_2'),
+      Translations.of(context).text('onboarding_subtitle_3'),
+      Translations.of(context).text('onboarding_subtitle_4'),
+      Translations.of(context).text('onboarding_subtitle_5'),
+    ];
     return Scaffold(
       body: WillPopScope(
         onWillPop: _preventPopIfOpen,

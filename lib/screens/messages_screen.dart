@@ -9,6 +9,7 @@ import '../translations.dart';
 import '../widgets/appbar.dart';
 
 class MessagesScreen extends StatelessWidget {
+  const MessagesScreen({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(

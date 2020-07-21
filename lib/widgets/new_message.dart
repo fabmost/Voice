@@ -118,7 +118,7 @@ class _NewMessageState extends State<NewMessage> {
               autocorrect: true,
               enableSuggestions: true,
               maxLines: null,
-              maxLength: 120,
+              maxLength: 240,
               decoration: InputDecoration(
                   counterText: '',
                   hintText: Translations.of(context).text('hint_comment')),

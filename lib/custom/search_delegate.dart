@@ -88,8 +88,10 @@ class CustomSearchDelegate extends SearchDelegate {
   Widget _userTile(context, id, doc) {
     return ListTile(
       onTap: () {
-        Navigator.of(context)
-            .pushNamed(ViewProfileScreen.routeName, arguments: id);
+        if (userId != id) {
+          Navigator.of(context)
+              .pushNamed(ViewProfileScreen.routeName, arguments: id);
+        }
       },
       leading: CircleAvatar(
         backgroundImage: NetworkImage(doc['user_image'] ?? ''),
