@@ -454,7 +454,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 style: TextStyle(fontSize: 22),
               ),
               SizedBox(height: 16),
-              _title('Imágen a revelar'),
+              _title(Translations.of(context).text('label_media_challenge')),
               SizedBox(height: 16),
               Align(
                 alignment: Alignment.center,
@@ -475,7 +475,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              _title('Meta a cumplir'),
+              _title(Translations.of(context).text('label_goal')),
               SizedBox(height: 16),
               Row(
                 children: <Widget>[
@@ -512,7 +512,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 ],
               ),
               SizedBox(height: 16),
-              _title('Categoría'),
+              _title(Translations.of(context).text('hint_category')),
               SizedBox(height: 8),
               InkWell(
                 onTap: _selectCategory,
@@ -533,7 +533,9 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   focusNode: _descFocus,
                   maxLines: null,
                   maxLength: 240,
-                  decoration: InputDecoration(labelText: 'Descripción'),
+                  decoration: InputDecoration(
+                    labelText: Translations.of(context).text('hint_description'),
+                  ),
                 ),
                 suggestionsCallback: (pattern) {
                   //TextSelection selection = _descriptionController.selection;

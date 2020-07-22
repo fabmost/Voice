@@ -35,7 +35,7 @@ class AppDrawer extends StatelessWidget {
           Divider(),
           ListTile(
             onTap: ()=> _signOut(context),
-            title: Text('Cerrar sesión'),
+            title: Text(Translations.of(context).text('button_sign_out')),
           )
         ],
       ),

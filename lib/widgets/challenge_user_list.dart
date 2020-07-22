@@ -27,22 +27,26 @@ class ChallengeUserList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return UserChallenge(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        metric: doc['metric_type'],
-        goal: doc['metric_goal'],
-        comments: doc['comments'],
-        likes: likes,
-        hasLiked: hasLiked,
-        reposts: reposts,
-        hasSaved: hasSaved,
-        date: doc['createdAt'].toDate(),
-        likesList: doc['likes'] ?? [],
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      images: doc['images'],
+      isVideo: doc['is_video'] ?? false,
+      metric: doc['metric_type'],
+      goal: doc['metric_goal'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
+      likesList: doc['likes'] ?? [],
+      influencer: doc['influencer'] ?? '',
+    );
   }
 
   Widget _repostChallengeWidget(doc, userId) {

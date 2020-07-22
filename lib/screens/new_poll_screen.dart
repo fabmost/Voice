@@ -791,7 +791,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 style: TextStyle(fontSize: 22),
               ),
               SizedBox(height: 16),
-              _title('Imágenes o video (opcional)'),
+              _title(Translations.of(context).text('label_media_poll')),
               SizedBox(height: 16),
               if (_isVideo)
                 Align(
@@ -884,7 +884,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   label: Text('Agregar opción'),
                 ),
               SizedBox(height: 16),
-              _title('Categoría'),
+              _title(Translations.of(context).text('hint_category')),
               SizedBox(height: 8),
               InkWell(
                 onTap: _selectCategory,
@@ -905,7 +905,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   focusNode: _descFocus,
                   maxLines: null,
                   maxLength: 240,
-                  decoration: InputDecoration(labelText: 'Descripción'),
+                  decoration: InputDecoration(
+                    labelText: Translations.of(context).text('hint_description'),
+                  ),
                 ),
                 suggestionsCallback: (pattern) {
                   //TextSelection selection = _descriptionController.selection;

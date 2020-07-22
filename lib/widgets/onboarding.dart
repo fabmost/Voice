@@ -45,18 +45,22 @@ class OnBoarding extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   SizedBox(height: 16),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
+                      ),
                     ),
                   ),
                   SizedBox(height: 22),
                   Expanded(
                     child: AutoSizeText(
                       content,
-                      style: TextStyle(fontSize: 42),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 22),
                     ),
                   ),
                   SizedBox(height: 22),

@@ -29,7 +29,7 @@ class ShareContent {
     Uri url = shortLink.shortUrl;
 
     Share.share(
-        'Te invito a divertirte conociendo la opinión de muchos , descargate nuestra aplicación y se parte de la comunidad GALUP. $url');
+        'Te invito a divertirte conociendo la opinión de muchos. Descárgate nuestra aplicación y sé parte de la comunidad GALUP. $url');
   }
 
   void shareChallenge(id, title) async {
@@ -59,7 +59,7 @@ class ShareContent {
     Uri url = shortLink.shortUrl;
 
     Share.share(
-        'Te invito a divertirte conociendo la opinión de muchos , descargate nuestra aplicación y se parte de la comunidad GALUP. $url');
+        'Te invito a divertirte conociendo la opinión de muchos. Descárgate nuestra aplicación y sé parte de la comunidad GALUP. $url');
   }
 
   void shareCause(id, title) async {
@@ -89,6 +89,6 @@ class ShareContent {
     Uri url = shortLink.shortUrl;
 
     Share.share(
-        'Te invito a divertirte conociendo la opinión de muchos , descargate nuestra aplicación y se parte de la comunidad GALUP. $url');
+        'Te invito a divertirte conociendo la opinión de muchos. Descárgate nuestra aplicación y sé parte de la comunidad GALUP. $url');
   }
 }

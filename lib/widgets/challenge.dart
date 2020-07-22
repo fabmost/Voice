@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'poll_video.dart';
 import 'influencer_badge.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
@@ -20,7 +21,6 @@ import '../screens/view_profile_screen.dart';
 import '../screens/flag_screen.dart';
 import '../screens/search_results_screen.dart';
 import '../screens/poll_gallery_screen.dart';
-import '../screens/detail_video_screen.dart';
 
 class Challenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
@@ -84,6 +84,19 @@ class Challenge extends StatelessWidget with ShareContent {
   void _toHash(context, hashtag) {
     Navigator.of(context)
         .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
+
+  void _toGallery(context, position) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: reference,
+          galleryItems: images,
+          initialIndex: position,
+        ),
+      ),
+    );
   }
 
   void _anonymousAlert(context, text) {
@@ -322,8 +335,98 @@ class Challenge extends StatelessWidget with ShareContent {
         }
         break;
     }
-    final totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    var totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    if (totalPercentage > 1) totalPercentage = 1;
     final format = NumberFormat('###.##');
+
+    return Column(
+      children: <Widget>[
+        if (isVideo) PollVideo('', images[0]),
+        if (!isVideo)
+          Align(
+            alignment: Alignment.center,
+            child: InkWell(
+              onTap: () => _toGallery(context, 0),
+              child: Hero(
+                tag: images[0],
+                child: Container(
+                  width: 144,
+                  height: 144,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.black),
+                      image: DecorationImage(
+                        image: NetworkImage(images[0]),
+                        fit: BoxFit.cover,
+                      )),
+                ),
+              ),
+            ),
+          ),
+        Container(
+          height: 42,
+          margin: EdgeInsets.all(16),
+          child: Stack(
+            children: <Widget>[
+              FractionallySizedBox(
+                widthFactor: totalPercentage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xAAA4175D),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                      topRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                      bottomRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        metric.toUpperCase(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: SizedBox(),
+                      ),
+                      Text(
+                        '${format.format(totalPercentage * 100)}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    );
+
+    /*
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 42,
@@ -360,6 +463,7 @@ class Challenge extends StatelessWidget with ShareContent {
             : '${format.format(totalPercentage * 100)}% completado'),
       ),
     );
+    */
   }
 
   @override
