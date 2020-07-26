@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 
 import 'auth_screen.dart';
 import 'login_screen.dart';
@@ -22,7 +23,11 @@ import '../widgets/saved_list.dart';
 import '../widgets/influencer_badge.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key key}) : super(key: key);
+  final Function stopVideo;
+  VideoPlayerController _controller;
+
+  ProfileScreen({Key key, this.stopVideo}) : super(key: key);
+  
   void _toFollowers(context, id) {
     Navigator.push(
       context,
@@ -47,6 +52,14 @@ class ProfileScreen extends StatelessWidget {
 
   void _toEdit(context) {
     Navigator.of(context).pushNamed(EditProfileScreen.routeName);
+  }
+
+  void _playVideo(VideoPlayerController controller) {
+    if(_controller != null){
+      _controller.pause();
+    }
+    _controller = controller;
+    stopVideo(_controller);
   }
 
   void _imageOptions(context) {
@@ -245,9 +258,19 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   Align(
                     alignment: Alignment.topRight,
-                    child: IconButton(
-                      icon: Icon(Icons.camera_alt),
-                      onPressed: () => _imageOptions(context),
+                    child: Container(
+                      margin: EdgeInsets.only(
+                        right: 8,
+                        top: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.camera_alt),
+                        onPressed: () => _imageOptions(context),
+                      ),
                     ),
                   ),
                   Align(
@@ -444,9 +467,9 @@ class ProfileScreen extends StatelessWidget {
               },
               body: TabBarView(
                 children: [
-                  PollUserList(userSnap.data.uid),
+                  PollUserList(userSnap.data.uid, _playVideo),
                   ChallengeUserList(userSnap.data.uid),
-                  SavedList(),
+                  SavedList(_playVideo),
                 ],
               ),
             ),

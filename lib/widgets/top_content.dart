@@ -7,6 +7,10 @@ import 'challenge.dart';
 import 'cause.dart';
 
 class TopContent extends StatelessWidget {
+  final Function setVideo;
+
+  TopContent(this.setVideo);
+
   Widget _pollWidget(doc, userId) {
     int vote = -1;
     bool hasVoted = false;
@@ -39,29 +43,31 @@ class TopContent extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Poll(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        comments: doc['comments'],
-        options: doc['options'],
-        votes: doc['results'],
-        images: doc['images'] ?? [],
-        video: doc['video'] ?? '',
-        thumb: doc['video_thumb'] ?? '',
-        hasVoted: hasVoted,
-        hasSaved: hasSaved,
-        vote: vote,
-        voters: voters,
-        likes: likes,
-        hasLiked: hasLiked,
-        reposts: reposts,
-        hasReposted: hasReposted,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      comments: doc['comments'],
+      options: doc['options'],
+      votes: doc['results'],
+      images: doc['images'] ?? [],
+      video: doc['video'] ?? '',
+      thumb: doc['video_thumb'] ?? '',
+      hasVoted: hasVoted,
+      hasSaved: hasSaved,
+      vote: vote,
+      voters: voters,
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
   }
 
   Widget _challengeWidget(doc, userId) {
@@ -82,25 +88,27 @@ class TopContent extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        metric: doc['metric_type'],
-        goal: doc['metric_goal'],
-        isVideo: doc['is_video'] ?? false,
-        images: doc['images'],
-        comments: doc['comments'],
-        likes: likes,
-        hasLiked: hasLiked,
-        hasSaved: hasSaved,
-        reposts: reposts,
-        hasReposted: hasReposted,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      metric: doc['metric_type'],
+      goal: doc['metric_goal'],
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      hasSaved: hasSaved,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
   }
 
   Widget _causeWidget(doc, userId) {

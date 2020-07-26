@@ -208,7 +208,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
 
   void _openGallery(file, isOption) {
     Navigator.of(context).pop();
-    if (isOption)
+    if (isOption || file > 0)
       _getPicture(file, isOption);
     else {
       Navigator.of(context)

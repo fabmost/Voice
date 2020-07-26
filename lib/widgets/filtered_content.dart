@@ -8,8 +8,9 @@ import 'cause.dart';
 
 class FilteredContent extends StatelessWidget {
   final String category;
+  final Function setVideo;
 
-  FilteredContent(this.category);
+  FilteredContent(this.category, this.setVideo);
 
   Widget _pollWidget(doc, userId) {
     int vote = -1;
@@ -66,6 +67,7 @@ class FilteredContent extends StatelessWidget {
       influencer: doc['influencer'] ?? '',
       video: doc['video'] ?? '',
       thumb: doc['video_thumb'] ?? '',
+      videoFunction: setVideo,
     );
   }
 
@@ -87,25 +89,27 @@ class FilteredContent extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        metric: doc['metric_type'],
-        goal: doc['metric_goal'],
-        isVideo: doc['is_video'] ?? false,
-        images: doc['images'],
-        comments: doc['comments'],
-        likes: likes,
-        hasLiked: hasLiked,
-        hasSaved: hasSaved,
-        reposts: reposts,
-        hasReposted: hasReposted,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      metric: doc['metric_type'],
+      goal: doc['metric_goal'],
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      hasSaved: hasSaved,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
   }
 
   Widget _causeWidget(doc, userId) {

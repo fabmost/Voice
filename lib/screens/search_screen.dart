@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../translations.dart';
 import '../custom/search_delegate.dart';
@@ -8,7 +9,9 @@ import '../widgets/filtered_content.dart';
 import '../widgets/categories_list.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key key}) : super(key: key);
+  final Function stopVideo;
+
+  const SearchScreen({Key key, this.stopVideo}) : super(key: key);
   
   @override
   _SearchScreenState createState() => _SearchScreenState();
@@ -17,6 +20,8 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen>
     with SingleTickerProviderStateMixin {
   TabController _controller;
+  VideoPlayerController _videoController;
+
 
   @override
   void initState() {
@@ -29,6 +34,14 @@ class _SearchScreenState extends State<SearchScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _playVideo(VideoPlayerController controller) {
+    if(_videoController != null){
+      _videoController.pause();
+    }
+    _videoController = controller;
+    widget.stopVideo(_videoController);
   }
 
   void _startSearch(ct) {
@@ -91,11 +104,11 @@ class _SearchScreenState extends State<SearchScreen>
             Expanded(
               child: TabBarView(
                 children: [
-                  TopContent(),
-                  FilteredContent('Salud'),
-                  FilteredContent('Tecnología'),
-                  FilteredContent('Deportes'),
-                  FilteredContent('Política'),
+                  TopContent(_playVideo),
+                  FilteredContent('Salud', _playVideo),
+                  FilteredContent('Tecnología', _playVideo),
+                  FilteredContent('Deportes', _playVideo),
+                  FilteredContent('Política', _playVideo),
                   CategoriesList(),
                 ],
               ),

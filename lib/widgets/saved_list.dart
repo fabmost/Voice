@@ -8,6 +8,10 @@ import 'cause.dart';
 import '../custom/galup_font_icons.dart';
 
 class SavedList extends StatelessWidget {
+  final Function setVideo;
+
+  SavedList(this.setVideo);
+
   Widget _pollWidget(doc, userId) {
     int vote = -1;
     bool hasVoted = false;
@@ -40,29 +44,31 @@ class SavedList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Poll(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        comments: doc['comments'],
-        options: doc['options'],
-        votes: doc['results'],
-        images: doc['images'] ?? [],
-        video: doc['video'] ?? '',
-        thumb: doc['video_thumb'] ?? '',
-        hasVoted: hasVoted,
-        vote: vote,
-        voters: voters,
-        likes: likes,
-        hasLiked: hasLiked,
-        reposts: reposts,
-        hasReposted: hasReposted,
-        hasSaved: hasSaved,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      comments: doc['comments'],
+      options: doc['options'],
+      votes: doc['results'],
+      images: doc['images'] ?? [],
+      video: doc['video'] ?? '',
+      thumb: doc['video_thumb'] ?? '',
+      hasVoted: hasVoted,
+      vote: vote,
+      voters: voters,
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
   }
 
   Widget _challengeWidget(doc, userId) {
@@ -83,25 +89,27 @@ class SavedList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        metric: doc['metric_type'],
-        goal: doc['metric_goal'],
-        isVideo: doc['is_video'] ?? false,
-        images: doc['images'],
-        comments: doc['comments'],
-        likes: likes,
-        hasLiked: hasLiked,
-        reposts: reposts,
-        hasReposted: hasReposted,
-        hasSaved: hasSaved,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      metric: doc['metric_type'],
+      goal: doc['metric_goal'],
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
   }
 
   Widget _causeWidget(doc, userId) {
@@ -168,6 +176,7 @@ class SavedList extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       'Aún no guardas ningún reto o encuesta',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
                         color: Color(0xFF8E8EAB),

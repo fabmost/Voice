@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../widgets/appbar.dart';
 import '../widgets/poll.dart';
@@ -14,7 +15,29 @@ import '../widgets/repost_cause.dart';
 import '../widgets/cause_tile.dart';
 
 class PollsScreen extends StatelessWidget {
-  const PollsScreen({Key key}) : super(key: key);
+  final ScrollController homeController;
+  final Function stopVideo;
+  VideoPlayerController _controller;
+
+  PollsScreen({Key key, this.homeController, this.stopVideo}) : super(key: key);
+
+  void _scrollToTop() {
+    homeController.animateTo(
+      0.0,
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  void _playVideo(VideoPlayerController controller) {
+    if(_controller != null){
+      _controller.pause();
+    }
+    _controller = controller;
+    stopVideo(_controller);
+  }
+
+
 
   Widget _pollWidget(doc, userId) {
     int vote = -1;
@@ -71,6 +94,7 @@ class PollsScreen extends StatelessWidget {
       thumb: doc['video_thumb'] ?? '',
       date: doc['createdAt'].toDate(),
       influencer: doc['influencer'] ?? '',
+      videoFunction: _playVideo,
     );
   }
 
@@ -92,25 +116,27 @@ class PollsScreen extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return Challenge(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        metric: doc['metric_type'],
-        goal: doc['metric_goal'],
-        isVideo: doc['is_video'] ?? false,
-        images: doc['images'],
-        comments: doc['comments'],
-        likes: likes,
-        hasLiked: hasLiked,
-        reposts: reposts,
-        hasReposted: hasReposted,
-        hasSaved: hasSaved,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      metric: doc['metric_type'],
+      goal: doc['metric_goal'],
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: _playVideo,
+    );
   }
 
   Widget _causeWidget(doc, userId) {
@@ -270,9 +296,10 @@ class PollsScreen extends StatelessWidget {
 
   Widget _contentList(documents, userId) {
     return ListView.builder(
+      controller: homeController,
       itemCount: documents.length + 1,
       itemBuilder: (ctx, i) {
-        if(i == 6){
+        if (i == 6) {
           return _causesList();
         }
         final doc = (i > 6) ? documents[i - 1] : documents[i];
@@ -304,9 +331,12 @@ class PollsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        Image.asset(
-          'assets/logo.png',
-          width: 42,
+        GestureDetector(
+          onTap: _scrollToTop,
+          child: Image.asset(
+            'assets/logo.png',
+            width: 42,
+          ),
         ),
         true,
       ),

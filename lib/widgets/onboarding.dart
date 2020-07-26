@@ -15,12 +15,12 @@ class OnBoarding extends StatelessWidget {
     return Stack(
       children: <Widget>[
         FractionallySizedBox(
-          heightFactor: 0.6,
+          heightFactor: 0.5,
           child: Container(
             width: double.infinity,
-            color: Color(0xFFF8F8FF),
+            color: Color(0xFF581365),
             child: Align(
-              alignment: Alignment.center,
+              alignment: Alignment.bottomCenter,
               child: Image.asset(
                 img,
                 fit: BoxFit.contain,
@@ -31,7 +31,7 @@ class OnBoarding extends StatelessWidget {
         Align(
           alignment: Alignment.bottomCenter,
           child: FractionallySizedBox(
-            heightFactor: 0.4,
+            heightFactor: 0.5,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),

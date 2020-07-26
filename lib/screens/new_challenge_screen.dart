@@ -477,35 +477,44 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               SizedBox(height: 16),
               _title(Translations.of(context).text('label_goal')),
               SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: Slider(
+                  activeColor: Color(0xFFA4175D),
+                  value: goal,
+                  onChanged: (newValue) {
+                    setState(() {
+                      goal = newValue;
+                    });
+                  },
+                  min: 0,
+                  max: 5000,
+                  divisions: 50,
+                  label: '${NumberFormat.compact().format(goal)}',
+                ),
+              ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   Expanded(
-                    child: Slider(
-                      activeColor: Color(0xFFA4175D),
-                      value: goal,
-                      onChanged: (newValue) {
-                        setState(() {
-                          goal = newValue;
-                        });
-                      },
-                      min: 0,
-                      max: 5000,
-                      divisions: 50,
-                      label: '${NumberFormat.compact().format(goal)}',
+                    child: Text(
+                      '${goal.toInt()}',
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  InkWell(
-                    onTap: _metricSelected,
-                    child: Container(
-                      height: 42,
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        children: <Widget>[
-                          Text(metric),
-                          SizedBox(width: 5),
-                          Icon(Icons.arrow_drop_down),
-                        ],
+                  Expanded(
+                    child: InkWell(
+                      onTap: _metricSelected,
+                      child: Container(
+                        height: 42,
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            Text(metric),
+                            Icon(Icons.arrow_drop_down),
+                          ],
+                        ),
                       ),
                     ),
                   )
@@ -534,7 +543,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   maxLines: null,
                   maxLength: 240,
                   decoration: InputDecoration(
-                    labelText: Translations.of(context).text('hint_description'),
+                    labelText:
+                        Translations.of(context).text('hint_description'),
                   ),
                 ),
                 suggestionsCallback: (pattern) {

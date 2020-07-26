@@ -43,6 +43,8 @@ class Challenge extends StatelessWidget with ShareContent {
   final List images;
   final String description;
 
+  final videoFunction;
+
   final Color color = Color(0xFFFFF5FB);
 
   Challenge({
@@ -65,6 +67,7 @@ class Challenge extends StatelessWidget with ShareContent {
     @required this.isVideo,
     @required this.images,
     @required this.description,
+    @required this.videoFunction,
   });
 
   void _toProfile(context) {
@@ -313,26 +316,29 @@ class Challenge extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
-    bool goalReached = false;
+    //bool goalReached = false;
     int amount;
     switch (metric) {
       case 'likes':
         amount = likes;
+        /*
         if (likes >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
       case 'comentarios':
         amount = comments;
+        /*
         if (comments >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
       case 'regalups':
         amount = reposts;
+        /*
         if (reposts >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
     }
     var totalPercentage = (amount == 0) ? 0.0 : amount / goal;
@@ -341,7 +347,7 @@ class Challenge extends StatelessWidget with ShareContent {
 
     return Column(
       children: <Widget>[
-        if (isVideo) PollVideo('', images[0]),
+        if (isVideo) PollVideo('', images[0], videoFunction),
         if (!isVideo)
           Align(
             alignment: Alignment.center,

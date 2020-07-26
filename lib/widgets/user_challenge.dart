@@ -192,26 +192,30 @@ class UserChallenge extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
-    bool goalReached = false;
+    //bool goalReached = false;
     int amount;
     switch (metric) {
       case 'likes':
         amount = likes;
+        /*
         if (likes >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
       case 'comentarios':
         amount = comments;
+        /*
         if (comments >= goal) {
           goalReached = true;
         }
+        */
         break;
       case 'regalups':
         amount = reposts;
+        /*
         if (reposts >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
     }
     var totalPercentage = (amount == 0) ? 0.0 : amount / goal;
@@ -220,7 +224,7 @@ class UserChallenge extends StatelessWidget with ShareContent {
 
     return Column(
       children: <Widget>[
-        if (isVideo) PollVideo('', images[0]),
+        if (isVideo) PollVideo('', images[0], null),
         if (!isVideo)
           Align(
             alignment: Alignment.center,

@@ -47,6 +47,8 @@ class Poll extends StatelessWidget with ShareContent {
   final String video;
   final String description;
 
+  final videoFunction;
+
   final Color color = Color(0xFFF8F8FF);
 
   Poll({
@@ -73,6 +75,7 @@ class Poll extends StatelessWidget with ShareContent {
     @required this.thumb,
     @required this.video,
     @required this.description,
+    @required this.videoFunction,
   });
 
   void _toProfile(context) {
@@ -521,7 +524,7 @@ class Poll extends StatelessWidget with ShareContent {
             if (images.isNotEmpty) SizedBox(height: 16),
             if (images.isNotEmpty) _images(context),
             if (video.isNotEmpty) SizedBox(height: 16),
-            if (video.isNotEmpty) PollVideo(thumb, video),
+            if (video.isNotEmpty) PollVideo(thumb, video, videoFunction),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,

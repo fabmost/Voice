@@ -10,6 +10,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import 'package:voice_inc/translations.dart';
 
 import '../custom/galup_font_icons.dart';
@@ -35,6 +36,7 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
+  static ScrollController _homeController = ScrollController();
   bool _triggeredOnboarding = false;
   bool _isOpen = false;
   bool _showBadge = false;
@@ -45,21 +47,41 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   List<Widget> _pages = [
     PollsScreen(
       key: PageStorageKey('Page1'),
+      homeController: _homeController,
+      stopVideo: _playVideo,
     ),
     SearchScreen(
       key: PageStorageKey('Page2'),
+      stopVideo: _playVideo,
     ),
     MessagesScreen(
       key: PageStorageKey('Page3'),
     ),
     ProfileScreen(
       key: PageStorageKey('Page4'),
+      stopVideo: _playVideo,
     ),
   ];
   List<FabMenuItem> items = [];
 
+  static VideoPlayerController _controller;
+
+  static void _playVideo(VideoPlayerController controller) {
+    _controller = controller;
+  }
+
   void _selectPage(int index) {
     setState(() {
+      if(_controller != null){
+        _controller.pause();
+      }
+      if (_selectedPageIndex == index && index == 0) {
+        _homeController.animateTo(
+          0.0,
+          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 300),
+        );
+      }
       _selectedPageIndex = index;
       if (index == 2) {
         _showBadge = false;
@@ -202,6 +224,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     });
 
     _checkVersion();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (_controller != null) _controller.dispose();
   }
 
   void _checkVersion() async {

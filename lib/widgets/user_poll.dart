@@ -39,6 +39,7 @@ class UserPoll extends StatelessWidget with ShareContent {
   final String influencer;
   final String video;
   final String thumb;
+  final videoFunction;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -65,6 +66,7 @@ class UserPoll extends StatelessWidget with ShareContent {
     @required this.influencer,
     @required this.video,
     @required this.thumb,
+    @required this.videoFunction,
   });
 
   void _toProfile(context) {
@@ -527,7 +529,7 @@ class UserPoll extends StatelessWidget with ShareContent {
             if (images.isNotEmpty) SizedBox(height: 16),
             if (images.isNotEmpty) _images(),
             if (video.isNotEmpty) SizedBox(height: 16),
-            if (video.isNotEmpty) PollVideo(thumb,video),
+            if (video.isNotEmpty) PollVideo(thumb,video, videoFunction),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,

@@ -5,8 +5,13 @@ import 'package:video_player/video_player.dart';
 class PollVideo extends StatefulWidget {
   final String videoUrl;
   final String videoThumb;
+  final Function _playVideo;
 
-  PollVideo(this.videoThumb, this.videoUrl);
+  PollVideo(
+    this.videoThumb,
+    this.videoUrl,
+    this._playVideo,
+  );
 
   @override
   _PollVideoState createState() => _PollVideoState();
@@ -32,6 +37,7 @@ class _PollVideoState extends State<PollVideo> {
   void _startVideo() {
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
+        if (widget._playVideo != null) widget._playVideo(_controller);
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         setState(() {
           _isPlaying = true;
@@ -40,7 +46,7 @@ class _PollVideoState extends State<PollVideo> {
             videoPlayerController: _controller,
             aspectRatio: _controller.value.aspectRatio,
             autoPlay: true,
-            looping: true,
+            looping: false,
           );
         });
       });
@@ -83,7 +89,9 @@ class _PollVideoState extends State<PollVideo> {
                     size: 32,
                   ),
                 ),
-              if (_chewieController != null && _controller != null && _controller.value.initialized)
+              if (_chewieController != null &&
+                  _controller != null &&
+                  _controller.value.initialized)
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Chewie(

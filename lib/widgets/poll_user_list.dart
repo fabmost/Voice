@@ -8,8 +8,9 @@ import '../custom/galup_font_icons.dart';
 
 class PollUserList extends StatelessWidget {
   final String userId;
+  final Function setVideo;
 
-  PollUserList(this.userId);
+  PollUserList(this.userId, this.setVideo);
 
   Widget _pollWidget(doc, userId) {
     int voters = 0;
@@ -31,28 +32,30 @@ class PollUserList extends StatelessWidget {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
     return UserPoll(
-        reference: doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        userImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        comments: doc['comments'],
-        options: doc['options'],
-        votes: doc['results'],
-        votersList: doc['voters'] ?? [],
-        images: doc['images'] ?? [],
-        video: doc['video'] ?? '',
-        thumb: doc['video_thumb'] ?? '',
-        voters: voters,
-        likesList: doc['likes'] ?? [],
-        likes: likes,
-        hasLiked: hasLiked,
-        reposts: reposts,
-        repostedList: doc['reposts'] ?? [],
-        hasSaved: hasSaved,
-        date: doc['createdAt'].toDate(),
-        influencer: doc['influencer'] ?? '');
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      comments: doc['comments'],
+      options: doc['options'],
+      votes: doc['results'],
+      votersList: doc['voters'] ?? [],
+      images: doc['images'] ?? [],
+      video: doc['video'] ?? '',
+      thumb: doc['video_thumb'] ?? '',
+      voters: voters,
+      likesList: doc['likes'] ?? [],
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      repostedList: doc['reposts'] ?? [],
+      hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
   }
 
   Widget _repostPollWidget(doc, userId) {

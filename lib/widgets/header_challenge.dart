@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,15 +9,17 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'poll_video.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
 import '../screens/flag_screen.dart';
 import '../screens/poll_gallery_screen.dart';
-import '../screens/detail_video_screen.dart';
+import '../screens/search_results_screen.dart';
 
 class HeaderChallenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
@@ -30,6 +33,28 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
     }
+  }
+
+  void _toTaggedProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
+
+  void _toGallery(context, images) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: reference,
+          galleryItems: images,
+          initialIndex: 0,
+        ),
+      ),
+    );
   }
 
   void _noExists(context) {
@@ -281,65 +306,120 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     isVideo,
     images,
   ) {
-    bool goalReached = false;
+    //bool goalReached = false;
     int amount;
     switch (metric) {
       case 'likes':
         amount = likes;
+        /*
         if (likes >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
       case 'comentarios':
         amount = comments;
+        /*
         if (comments >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
       case 'regalups':
         amount = reposts;
+        /*
         if (reposts >= goal) {
           goalReached = true;
-        }
+        }*/
         break;
     }
-    final totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    var totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    if (totalPercentage > 1) totalPercentage = 1;
     final format = NumberFormat('###.##');
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      height: 42,
-      width: double.infinity,
-      child: OutlineButton(
-        highlightColor: Color(0xFFA4175D),
-        onPressed: goalReached
-            ? () {
-                if (isVideo) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailVideo(
-                        images[0],
-                      ),
+
+    return Column(
+      children: <Widget>[
+        if (isVideo) PollVideo('', images[0], null),
+        if (!isVideo)
+          Align(
+            alignment: Alignment.center,
+            child: InkWell(
+              onTap: () => _toGallery(context, images),
+              child: Hero(
+                tag: images[0],
+                child: Container(
+                  width: 144,
+                  height: 144,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.black),
+                      image: DecorationImage(
+                        image: NetworkImage(images[0]),
+                        fit: BoxFit.cover,
+                      )),
+                ),
+              ),
+            ),
+          ),
+        Container(
+          height: 42,
+          margin: EdgeInsets.all(16),
+          child: Stack(
+            children: <Widget>[
+              FractionallySizedBox(
+                widthFactor: totalPercentage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xAAA4175D),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                      topRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                      bottomRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
                     ),
-                  );
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PollGalleryScreen(
-                        reference: reference,
-                        galleryItems: images,
-                        initialIndex: 0,
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        metric.toUpperCase(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  );
-                }
-              }
-            : null,
-        child: Text(goalReached
-            ? 'Ver'
-            : '${format.format(totalPercentage * 100)}% completado'),
-      ),
+                      Expanded(
+                        child: SizedBox(),
+                      ),
+                      Text(
+                        '${format.format(totalPercentage * 100)}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        )
+      ],
     );
   }
 
@@ -377,6 +457,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
 
           final creatorId = document['user_id'];
           final userImage = document['user_image'] ?? '';
+          final description = document['description'] ?? '';
 
           final date = document['createdAt'].toDate();
           final now = new DateTime.now();
@@ -430,16 +511,37 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
               ),
               SizedBox(height: 16),
               _challengeGoal(
-                context,
-                document['metric_type'],
-                document['metric_goal'],
-                likes,
-                document['comments'],
-                reposts,
-                document['is_video'] ?? false,
-                document['images']
-              ),
+                  context,
+                  document['metric_type'],
+                  document['metric_goal'],
+                  likes,
+                  document['comments'],
+                  reposts,
+                  document['is_video'] ?? false,
+                  document['images']),
               SizedBox(height: 16),
+              if (description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ExtendedText(
+                  description,
+                  style: TextStyle(fontSize: 16),
+                  specialTextSpanBuilder:
+                      MySpecialTextSpanBuilder(canClick: true),
+                  onSpecialTextTap: (parameter) {
+                    if (parameter.toString().startsWith('@')) {
+                      String atText = parameter.toString();
+                      int start = atText.indexOf('[');
+                      int finish = atText.indexOf(']');
+                      String toRemove = atText.substring(start + 1, finish);
+                      _toTaggedProfile(context, toRemove);
+                    } else if (parameter.toString().startsWith('#')) {
+                      _toHash(context, parameter.toString());
+                    }
+                  },
+                ),
+              ),
+            if (description.isNotEmpty) SizedBox(height: 16),
               Container(
                 color: color,
                 child: Row(

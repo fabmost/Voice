@@ -22,7 +22,34 @@ class _TrimmerViewState extends State<TrimmerView> {
   bool _isPlaying = false;
   bool _progressVisibility = false;
 
+  void _alertError() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text('Tu video debe durar menos de 60 segundos'),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Ok'),
+          )
+        ],
+      ),
+    );
+  }
+
   Future<String> _saveVideo() async {
+    int duration;
+    if (Platform.isIOS) duration = (_endValue - _startValue).toInt();
+    else{
+      MediaInfo _originalInfo = await VideoCompress.getMediaInfo(widget._trimmer.getVideoFile().path);
+      duration = _originalInfo.duration.toInt(); 
+    }
+    if (duration > 60000) {
+      _alertError();
+      return null;
+    }
     setState(() {
       _progressVisibility = true;
     });
@@ -41,7 +68,7 @@ class _TrimmerViewState extends State<TrimmerView> {
         //duration: duration,
         deleteOrigin: false,
       );
-    }else if(Platform.isAndroid){
+    } else if (Platform.isAndroid) {
       info = await VideoCompress.compressVideo(
         widget._trimmer.getVideoFile().path,
         quality: VideoQuality.HighestQuality,
@@ -83,7 +110,8 @@ class _TrimmerViewState extends State<TrimmerView> {
                       ? null
                       : () async {
                           _saveVideo().then((outputPath) {
-                            Navigator.of(context).pop(outputPath);
+                            if (outputPath != null)
+                              Navigator.of(context).pop(outputPath);
                           });
                         },
                   child: Text(Translations.of(context).text('button_save')),
