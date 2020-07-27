@@ -1,7 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 import 'package:video_trimmer/video_viewer.dart';
@@ -41,11 +39,8 @@ class _TrimmerViewState extends State<TrimmerView> {
 
   Future<String> _saveVideo() async {
     int duration;
-    if (Platform.isIOS) duration = (_endValue - _startValue).toInt();
-    else{
-      MediaInfo _originalInfo = await VideoCompress.getMediaInfo(widget._trimmer.getVideoFile().path);
-      duration = _originalInfo.duration.toInt(); 
-    }
+    duration = (_endValue - _startValue).toInt();
+
     if (duration > 60000) {
       _alertError();
       return null;
@@ -55,7 +50,8 @@ class _TrimmerViewState extends State<TrimmerView> {
     });
 
     //int duration = (_endValue - _startValue).toInt();
-    MediaInfo info;
+    //MediaInfo info;
+    /*
     if (Platform.isIOS) {
       final _path = await widget._trimmer
           .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
@@ -77,6 +73,14 @@ class _TrimmerViewState extends State<TrimmerView> {
         deleteOrigin: false,
       );
     }
+    */
+    final _path = await widget._trimmer
+        .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
+    final info = await FlutterVideoCompress().compressVideo(
+      _path,
+      quality: VideoQuality.HighestQuality,
+      deleteOrigin: true,
+    );
     setState(() {
       _progressVisibility = false;
     });
@@ -119,24 +123,23 @@ class _TrimmerViewState extends State<TrimmerView> {
                 Expanded(
                   child: VideoViewer(),
                 ),
-                if (Platform.isIOS)
-                  Center(
-                    child: TrimEditor(
-                      viewerHeight: 50.0,
-                      viewerWidth: MediaQuery.of(context).size.width,
-                      onChangeStart: (value) {
-                        _startValue = value;
-                      },
-                      onChangeEnd: (value) {
-                        _endValue = value;
-                      },
-                      onChangePlaybackState: (value) {
-                        setState(() {
-                          _isPlaying = value;
-                        });
-                      },
-                    ),
+                Center(
+                  child: TrimEditor(
+                    viewerHeight: 50.0,
+                    viewerWidth: MediaQuery.of(context).size.width,
+                    onChangeStart: (value) {
+                      _startValue = value;
+                    },
+                    onChangeEnd: (value) {
+                      _endValue = value;
+                    },
+                    onChangePlaybackState: (value) {
+                      setState(() {
+                        _isPlaying = value;
+                      });
+                    },
                   ),
+                ),
                 FlatButton(
                   child: _isPlaying
                       ? Icon(

@@ -5,8 +5,9 @@ import '../screens/detail_cause_screen.dart';
 class CauseTile extends StatelessWidget {
   final objId;
   final String title;
+  final bool liked;
 
-  CauseTile(this.objId, this.title);
+  CauseTile(this.objId, this.title, this.liked);
 
   final Color color = Color(0xFFE0E0E0);
 
@@ -35,10 +36,10 @@ class CauseTile extends StatelessWidget {
             width: double.infinity,
             height: 50,
             decoration: BoxDecoration(
-              color: color,
+              color: liked ? Color(0xAA722282) : color,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+                topLeft: Radius.circular(7),
+                topRight: Radius.circular(7),
               ),
             ),
             alignment: Alignment.center,
@@ -72,16 +73,17 @@ class CauseTile extends StatelessWidget {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: color,
+              color: liked ? Color(0xAA722282) : color,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
+                bottomLeft: Radius.circular(7),
+                bottomRight: Radius.circular(7),
               ),
             ),
             child: ListTile(
               title: OutlineButton(
-                textColor: Colors.black,
-                borderSide: BorderSide(color: Colors.black),
+                textColor: liked ? Colors.white : Colors.black,
+                borderSide:
+                    BorderSide(color: liked ? Colors.white : Colors.black),
                 onPressed: () => _toDetail(context),
                 child: Text('Ver más'),
               ),

@@ -425,8 +425,9 @@ class ProfileScreen extends StatelessWidget {
                     pinned: true,
                     title: Text(Translations.of(context).text('title_profile')),
                     actions: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.edit),
+                      FlatButton(
+                        textColor: Colors.white,
+                        child: Text(Translations.of(context).text('button_edit_profile')),
                         onPressed: () => _toEdit(context),
                       )
                     ],

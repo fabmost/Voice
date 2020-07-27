@@ -5,10 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:video_compress/video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -293,7 +293,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoCompress.getFileThumbnail(
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,

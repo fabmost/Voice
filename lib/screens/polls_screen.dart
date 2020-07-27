@@ -30,14 +30,12 @@ class PollsScreen extends StatelessWidget {
   }
 
   void _playVideo(VideoPlayerController controller) {
-    if(_controller != null){
+    if (_controller != null) {
       _controller.pause();
     }
     _controller = controller;
     stopVideo(_controller);
   }
-
-
 
   Widget _pollWidget(doc, userId) {
     int vote = -1;
@@ -212,7 +210,7 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
-  Widget _causesList() {
+  Widget _causesList(userId) {
     return StreamBuilder(
       stream: Firestore.instance
           .collection('content')
@@ -227,15 +225,21 @@ class PollsScreen extends StatelessWidget {
         return Container(
           height: 192,
           child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            separatorBuilder: (context, index) => SizedBox(width: 16),
-            itemCount: documents.length,
-            itemBuilder: (context, i) => CauseTile(
-              documents[i].documentID,
-              documents[i]['title'],
-            ),
-          ),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              separatorBuilder: (context, index) => SizedBox(width: 16),
+              itemCount: documents.length,
+              itemBuilder: (context, i) {
+                bool hasLiked = false;
+                if (documents[i]['likes'] != null) {
+                  hasLiked = (documents[i]['likes'] as List).contains(userId);
+                }
+                return CauseTile(
+                  documents[i].documentID,
+                  documents[i]['title'],
+                  hasLiked,
+                );
+              }),
         );
       },
     );
@@ -300,7 +304,7 @@ class PollsScreen extends StatelessWidget {
       itemCount: documents.length + 1,
       itemBuilder: (ctx, i) {
         if (i == 6) {
-          return _causesList();
+          return _causesList(userId);
         }
         final doc = (i > 6) ? documents[i - 1] : documents[i];
         final List flagArray = doc['flag'] ?? [];
