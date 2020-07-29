@@ -479,10 +479,16 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                   ),
                   title: Row(
                     children: <Widget>[
-                      Text(
-                        document['user_name'],
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                      Flexible(
+                        child: Text(
+                          document['user_name'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       SizedBox(width: 8),
                       InfluencerBadge(document['influencer'] ?? '', 16),
@@ -521,27 +527,27 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                   document['images']),
               SizedBox(height: 16),
               if (description.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ExtendedText(
-                  description,
-                  style: TextStyle(fontSize: 16),
-                  specialTextSpanBuilder:
-                      MySpecialTextSpanBuilder(canClick: true),
-                  onSpecialTextTap: (parameter) {
-                    if (parameter.toString().startsWith('@')) {
-                      String atText = parameter.toString();
-                      int start = atText.indexOf('[');
-                      int finish = atText.indexOf(']');
-                      String toRemove = atText.substring(start + 1, finish);
-                      _toTaggedProfile(context, toRemove);
-                    } else if (parameter.toString().startsWith('#')) {
-                      _toHash(context, parameter.toString());
-                    }
-                  },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExtendedText(
+                    description,
+                    style: TextStyle(fontSize: 16),
+                    specialTextSpanBuilder:
+                        MySpecialTextSpanBuilder(canClick: true),
+                    onSpecialTextTap: (parameter) {
+                      if (parameter.toString().startsWith('@')) {
+                        String atText = parameter.toString();
+                        int start = atText.indexOf('[');
+                        int finish = atText.indexOf(']');
+                        String toRemove = atText.substring(start + 1, finish);
+                        _toTaggedProfile(context, toRemove);
+                      } else if (parameter.toString().startsWith('#')) {
+                        _toHash(context, parameter.toString());
+                      }
+                    },
+                  ),
                 ),
-              ),
-            if (description.isNotEmpty) SizedBox(height: 16),
+              if (description.isNotEmpty) SizedBox(height: 16),
               Container(
                 color: color,
                 child: Row(

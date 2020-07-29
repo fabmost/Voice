@@ -272,10 +272,16 @@ class RepostPoll extends StatelessWidget {
                       ),
                       title: Row(
                         children: <Widget>[
-                          Text(
-                            creatorName,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
+                          Flexible(
+                            child: Text(
+                              creatorName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           SizedBox(width: 8),
                           InfluencerBadge(influencer, 16),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+//import 'package:video_compress/video_compress.dart';
 import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -49,31 +50,22 @@ class _TrimmerViewState extends State<TrimmerView> {
       _progressVisibility = true;
     });
 
-    //int duration = (_endValue - _startValue).toInt();
-    //MediaInfo info;
+    //iOs
     /*
-    if (Platform.isIOS) {
-      final _path = await widget._trimmer
-          .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
-      await VideoCompress.deleteAllCache();
-      MediaInfo _originalInfo = await VideoCompress.getMediaInfo(_path);
-      info = await VideoCompress.compressVideo(
-        _originalInfo.path,
-        quality: VideoQuality.HighestQuality,
-        //startTime: _startValue.toInt(),
-        //duration: duration,
-        deleteOrigin: false,
-      );
-    } else if (Platform.isAndroid) {
-      info = await VideoCompress.compressVideo(
-        widget._trimmer.getVideoFile().path,
-        quality: VideoQuality.HighestQuality,
-        //startTime: _startValue.toInt(),
-        //duration: duration,
-        deleteOrigin: false,
-      );
-    }
+    final _path = await widget._trimmer
+        .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
+    await VideoCompress.deleteAllCache();
+    //MediaInfo _originalInfo = await VideoCompress.getMediaInfo(_path);
+    MediaInfo info = await VideoCompress.compressVideo(
+      _path,
+      quality: VideoQuality.HighestQuality,
+      //startTime: _startValue.toInt(),
+      //duration: duration,
+      deleteOrigin: true,
+    );
     */
+
+    //Android
     final _path = await widget._trimmer
         .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
     final info = await FlutterVideoCompress().compressVideo(

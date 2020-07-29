@@ -154,7 +154,7 @@ class TopContent extends StatelessWidget {
           stream: Firestore.instance
               .collection('content')
               .orderBy('interactions', descending: true)
-              .limit(10)
+              .limit(30)
               .snapshots(),
           builder: (ctx, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {

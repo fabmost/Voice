@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -14,8 +15,9 @@ import '../widgets/challenge_list.dart';
 import '../widgets/influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
+import '../mixins/share_mixin.dart';
 
-class ViewProfileScreen extends StatelessWidget {
+class ViewProfileScreen extends StatelessWidget with ShareContent {
   static const routeName = '/profile';
 
   void _toChat(context, userId) async {
@@ -56,6 +58,13 @@ class ViewProfileScreen extends StatelessWidget {
       builder: (ctx) {
         return SimpleDialog(
           children: <Widget>[
+            SimpleDialogOption(
+              child: Text(
+                Translations.of(context).text('button_share_profile'),
+                style: TextStyle(fontSize: 16),
+              ),
+              onPressed: () => shareProfile(userId),
+            ),
             SimpleDialogOption(
               child: Text(
                 Translations.of(context).text('button_block'),
@@ -365,11 +374,13 @@ class ViewProfileScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Padding(
+                  Container(
+                    height: 50,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
+                    child: AutoSizeText(
                       document['bio'] ?? '',
                       textAlign: TextAlign.center,
+                      maxLines: 3,
                       style: TextStyle(
                         color: Colors.grey,
                         fontSize: 16,
@@ -508,8 +519,8 @@ class ViewProfileScreen extends StatelessWidget {
               SliverPersistentHeader(
                 pinned: false,
                 delegate: _SliverHeaderDelegate(
-                  370 + containerHeight - 70,
-                  370 + containerHeight - 70,
+                  378 + containerHeight - 70,
+                  378 + containerHeight - 70,
                   _newHeader(context, profileId),
                 ),
               ),

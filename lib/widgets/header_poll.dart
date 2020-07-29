@@ -507,10 +507,16 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                   ),
                   title: Row(
                     children: <Widget>[
-                      Text(
-                        document['user_name'],
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                      Flexible(
+                        child: Text(
+                          document['user_name'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       SizedBox(width: 8),
                       InfluencerBadge(document['influencer'] ?? '', 16),

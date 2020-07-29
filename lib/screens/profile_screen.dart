@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -27,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
   VideoPlayerController _controller;
 
   ProfileScreen({Key key, this.stopVideo}) : super(key: key);
-  
+
   void _toFollowers(context, id) {
     Navigator.push(
       context,
@@ -55,14 +56,14 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _playVideo(VideoPlayerController controller) {
-    if(_controller != null){
+    if (_controller != null) {
       _controller.pause();
     }
     _controller = controller;
     stopVideo(_controller);
   }
 
-  void _imageOptions(context) {
+  void _imageOptions(context, isProfile) {
     //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
@@ -72,14 +73,14 @@ class ProfileScreen extends StatelessWidget {
           child: new Wrap(
             children: <Widget>[
               new ListTile(
-                onTap: () => _openCamera(context),
+                onTap: () => _openCamera(context, isProfile),
                 leading: new Icon(
                   Icons.camera_alt,
                 ),
                 title: Text("Cámara"),
               ),
               new ListTile(
-                onTap: () => _openGallery(context),
+                onTap: () => _openGallery(context, isProfile),
                 leading: new Icon(
                   Icons.image,
                 ),
@@ -92,60 +93,83 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _openCamera(context) {
+  void _openCamera(context, isProfile) {
     Navigator.of(context).pop();
-    _takePicture();
+    _takePicture(isProfile);
   }
 
-  void _openGallery(context) {
+  void _openGallery(context, isProfile) {
     Navigator.of(context).pop();
-    _getPicture();
+    _getPicture(isProfile);
   }
 
-  Future<void> _takePicture() async {
+  Future<void> _takePicture(isProfile) async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 600,
     );
     if (imageFile != null) {
-      _cropImage(imageFile.path);
+      _cropImage(imageFile.path, isProfile);
     }
   }
 
-  Future<void> _getPicture() async {
+  Future<void> _getPicture(isProfile) async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 600,
     );
     if (imageFile != null) {
-      _cropImage(imageFile.path);
+      _cropImage(imageFile.path, isProfile);
     }
   }
 
-  void _cropImage(pathFile) async {
+  void _cropImage(pathFile, isProfile) async {
     File cropped = await ImageCropper.cropImage(
       sourcePath: pathFile,
-      aspectRatio: CropAspectRatio(ratioX: 25, ratioY: 8),
+      aspectRatio: isProfile
+          ? CropAspectRatio(ratioX: 1, ratioY: 1)
+          : CropAspectRatio(ratioX: 25, ratioY: 8),
     );
     if (cropped != null) {
-      _saveCover(cropped);
+      _saveCover(cropped, isProfile);
     }
   }
 
-  void _saveCover(file) async {
+  void _saveCover(file, isProfile) async {
     final user = await FirebaseAuth.instance.currentUser();
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('user_covers')
-        .child(user.uid + '.jpg');
+    StorageReference ref;
+
+    if (isProfile) {
+      ref = FirebaseStorage.instance
+          .ref()
+          .child('user_images')
+          .child(user.uid + '.jpg');
+    } else {
+      ref = FirebaseStorage.instance
+          .ref()
+          .child('user_covers')
+          .child(user.uid + '.jpg');
+    }
 
     await ref.putFile(file).onComplete;
 
     final url = await ref.getDownloadURL();
 
-    await Firestore.instance.collection('users').document(user.uid).updateData(
-      {'cover': url},
-    );
+    if (isProfile) {
+      await Firestore.instance
+          .collection('users')
+          .document(user.uid)
+          .updateData(
+        {'image': url},
+      );
+    } else {
+      await Firestore.instance
+          .collection('users')
+          .document(user.uid)
+          .updateData(
+        {'cover': url},
+      );
+    }
   }
 
   Widget _usersWidget(amount, type, action) {
@@ -269,15 +293,40 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       child: IconButton(
                         icon: Icon(Icons.camera_alt),
-                        onPressed: () => _imageOptions(context),
+                        onPressed: () => _imageOptions(context, false),
                       ),
                     ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: CircleAvatar(
-                      radius: 60,
-                      backgroundImage: NetworkImage(document['image'] ?? ''),
+                    child: Container(
+                      height: 122,
+                      width: 122,
+                      child: Stack(
+                        children: <Widget>[
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundImage:
+                                NetworkImage(document['image'] ?? ''),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () => _imageOptions(context, true),
+                              child: CircleAvatar(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                radius: 15,
+                                child: Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -310,12 +359,15 @@ class ProfileScreen extends StatelessWidget {
             ),
             if (document['bio'] != null && document['bio'].isNotEmpty)
               SizedBox(height: 16),
-            Text(
-              document['bio'] ?? '',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
+            Container(
+              height: 50,
+              child: AutoSizeText(
+                document['bio'] ?? '',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                ),
               ),
             ),
             SizedBox(height: 16),
@@ -427,7 +479,8 @@ class ProfileScreen extends StatelessWidget {
                     actions: <Widget>[
                       FlatButton(
                         textColor: Colors.white,
-                        child: Text(Translations.of(context).text('button_edit_profile')),
+                        child: Text(Translations.of(context)
+                            .text('button_edit_profile')),
                         onPressed: () => _toEdit(context),
                       )
                     ],
@@ -435,8 +488,8 @@ class ProfileScreen extends StatelessWidget {
                   SliverPersistentHeader(
                     pinned: false,
                     delegate: _SliverHeaderDelegate(
-                      360 + containerHeight - 80,
-                      360 + containerHeight - 80,
+                      365 + containerHeight - 80,
+                      365 + containerHeight - 80,
                       _header(context, userSnap.data.uid),
                     ),
                   ),

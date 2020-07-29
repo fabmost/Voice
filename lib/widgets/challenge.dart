@@ -499,10 +499,16 @@ class Challenge extends StatelessWidget with ShareContent {
                 ),
                 title: Row(
                   children: <Widget>[
-                    Text(
-                      userName,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    Flexible(
+                      child: Text(
+                        userName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     SizedBox(width: 8),
                     InfluencerBadge(influencer, 16),

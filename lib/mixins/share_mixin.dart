@@ -21,7 +21,7 @@ class ShareContent {
       socialMetaTagParameters: SocialMetaTagParameters(
         title: title,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/WhatsApp%20Image%202020-07-17%20at%208.23.43%20PM.jpeg?alt=media&token=8c8e6eb8-a87c-4320-8da0-9b000ce3e66e'),
+        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -51,7 +51,7 @@ class ShareContent {
       socialMetaTagParameters: SocialMetaTagParameters(
         title: title,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/WhatsApp%20Image%202020-07-17%20at%208.23.43%20PM.jpeg?alt=media&token=8c8e6eb8-a87c-4320-8da0-9b000ce3e66e'),
+        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -81,7 +81,37 @@ class ShareContent {
       socialMetaTagParameters: SocialMetaTagParameters(
         title: title,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/WhatsApp%20Image%202020-07-17%20at%208.23.43%20PM.jpeg?alt=media&token=8c8e6eb8-a87c-4320-8da0-9b000ce3e66e'),
+        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+      ),
+    );
+
+    final ShortDynamicLink shortLink = await parameters.buildShortLink();
+    Uri url = shortLink.shortUrl;
+
+    Share.share(
+        'Te invito a conocer la opinión de muchos. Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
+  }
+
+  void shareProfile(id) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: 'https://galup.page.link',
+      link: Uri.parse('https://galup.app/profile/$id'),
+      androidParameters: AndroidParameters(
+        packageName: 'com.galup.app',
+        minimumVersion: 0,
+      ),
+      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
+        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
+      ),
+      iosParameters: IosParameters(
+        bundleId: 'com.galup.app',
+        minimumVersion: '0',
+        appStoreId: '1521345975',
+      ),
+      socialMetaTagParameters: SocialMetaTagParameters(
+        title: 'Conoce este perfil',
+        description: 'En Galup tu opinión cuenta',
+        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
