@@ -76,31 +76,40 @@ class _PollOptionsState extends State<PollOptions> {
     final userData =
         await Firestore.instance.collection('users').document(user.uid).get();
 
-    Firestore.instance.collection('users').document(user.uid).updateData({
+    await Firestore.instance.collection('users').document(user.uid).updateData({
       'voted': FieldValue.arrayUnion(
         [widget.reference.documentID],
       )
+    });
+    await widget.reference.updateData({
+      'interactions': FieldValue.increment(1),
+      "voters": FieldValue.arrayUnion([
+        {widget.userId: position}
+      ])
     });
     await Firestore.instance.runTransaction((transaction) {
       return transaction.get(widget.reference).then((value) {
         List results = value.data['results'];
         Map result = results[position];
         result['votes']++;
-        if (userData.data['country'] != null && userData.data['country'].isNotEmpty) {
+        if (userData.data['country'] != null &&
+            userData.data['country'].isNotEmpty) {
           if (result['countries'].containsKey(userData.data['country'])) {
             result['countries'][userData.data['country']]++;
           } else {
             result['countries'][userData.data['country']] = 1;
           }
         }
-        if (userData.data['gender'] != null && userData.data['gender'].isNotEmpty) {
+        if (userData.data['gender'] != null &&
+            userData.data['gender'].isNotEmpty) {
           if (result['gender'].containsKey(userData.data['gender'])) {
             result['gender'][userData.data['gender']]++;
           } else {
             result['gender'][userData.data['gender']] = 1;
           }
         }
-        if (userData.data['birthday'] != null && userData.data['birthday'].isNotEmpty) {
+        if (userData.data['birthday'] != null &&
+            userData.data['birthday'].isNotEmpty) {
           DateTime userDate =
               DateFormat('dd-MM-yyyy').parse(userData.data['birthday']);
           int years =
@@ -123,10 +132,6 @@ class _PollOptionsState extends State<PollOptions> {
         }
         transaction.update(widget.reference, {
           "results": results,
-          'interactions': FieldValue.increment(1),
-          "voters": FieldValue.arrayUnion([
-            {widget.userId: position}
-          ])
         });
       });
     });
@@ -193,7 +198,10 @@ class _PollOptionsState extends State<PollOptions> {
 
   Widget _voted(option, position) {
     final int amount = widget.votes[position]['votes'];
-    final totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.voters;
+    var totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.voters;
+    if (totalPercentage > 1) {
+      totalPercentage = 1;
+    }
     final format = NumberFormat('###.##');
     return Container(
       height: 42,
@@ -226,35 +234,38 @@ class _PollOptionsState extends State<PollOptions> {
           ),
           Align(
             alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
+            child: ListTile(
+              dense: true,
+              title: Row(
                 children: <Widget>[
-                  Text(
-                    option,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (widget.vote == position)
                     Padding(
-                      padding: const EdgeInsets.only(left: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Icon(
                         Icons.check_circle,
                         color: Colors.black,
                         size: 16,
                       ),
                     ),
-                  Expanded(
-                    child: SizedBox(),
-                  ),
-                  Text(
-                    '${format.format(totalPercentage * 100)}%',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ],
+              ),
+              trailing: Text(
+                '${format.format(totalPercentage * 100)}%',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           )

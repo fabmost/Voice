@@ -175,6 +175,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
   }
 
   Widget _followButton(profileId, followers) {
+    if(profileId == userId){
+      return Text('');
+    }
     if (followers == null || !followers.contains(userId)) {
       return RaisedButton(
         onPressed: () => _follow(context, profileId, userId, false),

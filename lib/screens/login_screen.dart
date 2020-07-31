@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
       final authResult = await _auth.signInWithEmailAndPassword(
-        email: _email,
+        email: _email.trim(),
         password: _password,
       );
       await Firestore.instance

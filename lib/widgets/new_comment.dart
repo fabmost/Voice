@@ -21,6 +21,7 @@ class NewComment extends StatefulWidget {
 class _NewCommentState extends State<NewComment> {
   final _controller = TextEditingController();
   var _enteredMessage = '';
+  var _toCheck = '';
   Algolia algolia;
   AlgoliaQuery searchQuery;
   bool _isSearching = false;
@@ -90,7 +91,7 @@ class _NewCommentState extends State<NewComment> {
         Firestore.instance.collection('comments').document(commentId), {
       'comments': 0,
       'parent': widget.reference,
-      'text': _enteredMessage,
+      'text': _controller.text,
       'createdAt': Timestamp.now(),
       'userId': user.uid,
       'userImage': userData['image'],
@@ -156,6 +157,7 @@ class _NewCommentState extends State<NewComment> {
                 onChanged: (value) {
                   setState(() {
                     _enteredMessage = value;
+                    _toCheck = value;
                   });
                 },
               ),
@@ -195,7 +197,7 @@ class _NewCommentState extends State<NewComment> {
           IconButton(
             color: Theme.of(context).primaryColor,
             icon: Icon(Icons.send),
-            onPressed: _enteredMessage.trim().isEmpty ? null : _sendComment,
+            onPressed: _toCheck.trim().isEmpty ? null : _sendComment,
           )
         ],
       ),

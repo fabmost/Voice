@@ -10,6 +10,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'influencer_badge.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
+import 'poll_images.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/preferences_provider.dart';
@@ -293,147 +294,6 @@ class HeaderPoll extends StatelessWidget with ShareContent {
     );
   }
 
-  Widget _images(context, images) {
-    if (images.length == 1) {
-      return Align(
-        alignment: Alignment.center,
-        child: InkWell(
-          onTap: () => _toGallery(context, images, 0),
-          child: Hero(
-            tag: images[0],
-            child: Container(
-              width: 144,
-              height: 144,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[0]),
-                    fit: BoxFit.cover,
-                  )),
-            ),
-          ),
-        ),
-      );
-    } else if (images.length == 2) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          InkWell(
-            onTap: () => _toGallery(context, images, 0),
-            child: Hero(
-              tag: images[0],
-              child: Container(
-                width: 144,
-                height: 144,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    bottomLeft: Radius.circular(24),
-                  ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[0]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          InkWell(
-            onTap: () => _toGallery(context, images, 1),
-            child: Hero(
-              tag: images[1],
-              child: Container(
-                width: 144,
-                height: 144,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[1]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          )
-        ],
-      );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          InkWell(
-            onTap: () => _toGallery(context, images, 0),
-            child: Hero(
-              tag: images[0],
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    bottomLeft: Radius.circular(24),
-                  ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[0]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          InkWell(
-            onTap: () => _toGallery(context, images, 1),
-            child: Hero(
-              tag: images[1],
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[1]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          InkWell(
-            onTap: () => _toGallery(context, images, 2),
-            child: Hero(
-              tag: images[2],
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[2]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          )
-        ],
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -544,7 +404,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                 ),
               ),
               if (images.isNotEmpty) SizedBox(height: 16),
-              if (images.isNotEmpty) _images(context, images),
+              if (images.isNotEmpty) PollImages(images, reference),
               if (video.isNotEmpty) SizedBox(height: 16),
               if (video.isNotEmpty) PollVideo(thumb, video, null),
               Padding(

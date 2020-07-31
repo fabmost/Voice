@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'poll_images.dart';
 import '../screens/detail_poll_screen.dart';
 import '../custom/my_special_text_span_builder.dart';
 
@@ -97,111 +98,6 @@ class SearchPoll extends StatelessWidget {
     );
   }
 
-  Widget _images() {
-    if (images.length == 1) {
-      return Align(
-        alignment: Alignment.center,
-        child: Container(
-          width: 144,
-          height: 144,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[0]),
-                fit: BoxFit.cover,
-              )),
-        ),
-      );
-    } else if (images.length == 2) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            width: 144,
-            height: 144,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                bottomLeft: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[0]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          Container(
-            width: 144,
-            height: 144,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[1]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-        ],
-      );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            width: 110,
-            height: 110,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                bottomLeft: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[0]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          Container(
-            width: 110,
-            height: 110,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[1]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          Container(
-            width: 110,
-            height: 110,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[2]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-        ],
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final now = new DateTime.now();
@@ -254,7 +150,12 @@ class SearchPoll extends StatelessWidget {
                 ),
               ),
               if (images.isNotEmpty) SizedBox(height: 16),
-              if (images.isNotEmpty) _images(),
+              if (images.isNotEmpty)
+                PollImages(
+                  images,
+                  reference,
+                  isClickable: false,
+                ),
               Padding(
                 padding: const EdgeInsets.only(
                   left: 16,

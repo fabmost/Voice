@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'poll_images.dart';
 import 'poll_video.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -257,114 +258,6 @@ class UserPoll extends StatelessWidget with ShareContent {
     );
   }
 
-  Widget _images() {
-    if (images.length == 1) {
-      return Align(
-        alignment: Alignment.center,
-        child: InkWell(
-          //onTap: () => _imageOptions(2, false),
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
-                  fit: BoxFit.cover,
-                )),
-          ),
-        ),
-      );
-    } else if (images.length == 2) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                bottomLeft: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[0]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[1]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-        ],
-      );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                bottomLeft: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[0]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[1]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              border: Border.all(color: Colors.black),
-              image: DecorationImage(
-                image: NetworkImage(images[2]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-        ],
-      );
-    }
-  }
-
   Widget _getOptions() {
     int pos = -1;
     return Column(
@@ -527,9 +420,14 @@ class UserPoll extends StatelessWidget with ShareContent {
               ),
             ),
             if (images.isNotEmpty) SizedBox(height: 16),
-            if (images.isNotEmpty) _images(),
+            if (images.isNotEmpty)
+              PollImages(
+                images,
+                reference,
+                isClickable: false,
+              ),
             if (video.isNotEmpty) SizedBox(height: 16),
-            if (video.isNotEmpty) PollVideo(thumb,video, videoFunction),
+            if (video.isNotEmpty) PollVideo(thumb, video, videoFunction),
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,

@@ -1,17 +1,34 @@
 import 'package:flutter/material.dart';
 
+import '../screens/view_profile_screen.dart';
+
 class MessageBubble extends StatelessWidget {
   final Key key;
   final String message;
+  final String userId;
   final String username;
   final String userimage;
   final bool isMe;
 
-  MessageBubble(this.message, this.username, this.userimage, this.isMe,
-      {this.key});
+  MessageBubble(
+    this.message,
+    this.userId,
+    this.username,
+    this.userimage,
+    this.isMe, {
+    this.key,
+  });
+
+  void _toProfile(context) {
+    if (!isMe) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     return Stack(
       overflow: Overflow.visible,
       children: <Widget>[
@@ -20,7 +37,7 @@ class MessageBubble extends StatelessWidget {
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: <Widget>[
             Container(
-              constraints: BoxConstraints(minWidth: 100, maxWidth: 350),
+              constraints: BoxConstraints(minWidth: 100, maxWidth: width - 50),
               padding: EdgeInsets.symmetric(
                 vertical: 10,
                 horizontal: 16,
@@ -45,17 +62,20 @@ class MessageBubble extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      if(!isMe) SizedBox(width: 32),
+                      if (!isMe) SizedBox(width: 32),
                       Text(
                         username,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: isMe
                               ? Colors.black
-                              : Theme.of(context).accentTextTheme.headline1.color,
+                              : Theme.of(context)
+                                  .accentTextTheme
+                                  .headline1
+                                  .color,
                         ),
                       ),
-                      if(isMe) SizedBox(width: 32),
+                      if (isMe) SizedBox(width: 32),
                     ],
                   ),
                   Text(
@@ -76,8 +96,11 @@ class MessageBubble extends StatelessWidget {
           top: 0,
           left: isMe ? null : 10,
           right: isMe ? 10 : null,
-          child: CircleAvatar(
-            backgroundImage: NetworkImage(userimage),
+          child: GestureDetector(
+            onTap: () => _toProfile(context),
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(userimage),
+            ),
           ),
         )
       ],
