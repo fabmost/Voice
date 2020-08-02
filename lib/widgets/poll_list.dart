@@ -51,7 +51,7 @@ class PollList extends StatelessWidget {
       description: doc['description'] ?? '',
       comments: doc['comments'],
       options: doc['options'],
-      votes: doc['results'],
+      votes: doc['voters'],
       images: doc['images'] ?? [],
       video: doc['video'] ?? '',
       thumb: doc['video_thumb'] ?? '',

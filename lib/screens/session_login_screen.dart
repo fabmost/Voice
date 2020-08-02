@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -45,6 +46,13 @@ class _LoginScreenState extends State<SessionLoginScreen> {
           .collection('users')
           .document(authResult.user.uid)
           .updateData({'salt': salt});
+      final userData =
+          await Firestore.instance.collection('users').document(authResult.user.uid).get();
+
+      List following = userData['following'] ?? [];
+      following.forEach((element) async {
+        await FirebaseMessaging().subscribeToTopic(element);
+      });
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {

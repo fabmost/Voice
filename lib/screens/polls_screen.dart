@@ -78,7 +78,7 @@ class PollsScreen extends StatelessWidget {
       description: doc['description'] ?? '',
       comments: doc['comments'],
       options: doc['options'],
-      votes: doc['results'],
+      votes: doc['voters'],
       hasVoted: hasVoted,
       vote: vote,
       voters: voters,
@@ -211,12 +211,11 @@ class PollsScreen extends StatelessWidget {
   }
 
   Widget _causesList(userId) {
-    return StreamBuilder(
-      stream: Firestore.instance
+    return FutureBuilder(
+      future: Firestore.instance
           .collection('content')
           .where('type', isEqualTo: 'cause')
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+          .orderBy('createdAt', descending: true).getDocuments(),
       builder: (ctx, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -245,6 +244,7 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
+/*
   Widget _likesHome(userId, userLikes) {
     return StreamBuilder(
       stream: Firestore.instance
@@ -261,6 +261,7 @@ class PollsScreen extends StatelessWidget {
       },
     );
   }
+  */
 
   Widget _topHome(userId) {
     return StreamBuilder(

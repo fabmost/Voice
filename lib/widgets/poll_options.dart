@@ -73,68 +73,35 @@ class _PollOptionsState extends State<PollOptions> {
     setState(() {
       _isLoading = true;
     });
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
 
-    await Firestore.instance.collection('users').document(user.uid).updateData({
+    WriteBatch batch = Firestore.instance.batch();
+
+    batch
+        .updateData(Firestore.instance.collection('users').document(user.uid), {
       'voted': FieldValue.arrayUnion(
         [widget.reference.documentID],
       )
     });
-    await widget.reference.updateData({
+    batch.updateData(widget.reference, {
       'interactions': FieldValue.increment(1),
-      "voters": FieldValue.arrayUnion([
+      'voters': FieldValue.arrayUnion([
         {widget.userId: position}
-      ])
+      ]),
     });
+
+    await batch.commit();
+    /*
     await Firestore.instance.runTransaction((transaction) {
       return transaction.get(widget.reference).then((value) {
         List results = value.data['results'];
         Map result = results[position];
         result['votes']++;
-        if (userData.data['country'] != null &&
-            userData.data['country'].isNotEmpty) {
-          if (result['countries'].containsKey(userData.data['country'])) {
-            result['countries'][userData.data['country']]++;
-          } else {
-            result['countries'][userData.data['country']] = 1;
-          }
-        }
-        if (userData.data['gender'] != null &&
-            userData.data['gender'].isNotEmpty) {
-          if (result['gender'].containsKey(userData.data['gender'])) {
-            result['gender'][userData.data['gender']]++;
-          } else {
-            result['gender'][userData.data['gender']] = 1;
-          }
-        }
-        if (userData.data['birthday'] != null &&
-            userData.data['birthday'].isNotEmpty) {
-          DateTime userDate =
-              DateFormat('dd-MM-yyyy').parse(userData.data['birthday']);
-          int years =
-              ((DateTime.now().difference(userDate).inDays) / 365).floor();
-          String yearsString;
-          if (years <= 18) {
-            yearsString = '-18';
-          } else if (years > 18 && years <= 30) {
-            yearsString = '18-30';
-          } else if (years > 30 && years <= 40) {
-            yearsString = '30-40';
-          } else {
-            yearsString = '40+';
-          }
-          if (result['age'].containsKey(yearsString)) {
-            result['age'][yearsString]++;
-          } else {
-            result['age'][yearsString] = 1;
-          }
-        }
         transaction.update(widget.reference, {
           "results": results,
         });
       });
     });
+    */
     Provider.of<Preferences>(context, listen: false).setInteractions();
     setState(() {
       _isLoading = false;
@@ -197,7 +164,13 @@ class _PollOptionsState extends State<PollOptions> {
   }
 
   Widget _voted(option, position) {
-    final int amount = widget.votes[position]['votes'];
+    int amount = 0;
+    widget.votes.forEach((element) {
+      int vote = int.parse((element as Map).values.first.toString());
+      if (vote == position) {
+        amount++;
+      }
+    });
     var totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.voters;
     if (totalPercentage > 1) {
       totalPercentage = 1;

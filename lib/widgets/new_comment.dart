@@ -20,7 +20,7 @@ class NewComment extends StatefulWidget {
 
 class _NewCommentState extends State<NewComment> {
   final _controller = TextEditingController();
-  var _enteredMessage = '';
+  //var _enteredMessage = '';
   var _toCheck = '';
   Algolia algolia;
   AlgoliaQuery searchQuery;
@@ -106,7 +106,7 @@ class _NewCommentState extends State<NewComment> {
     });
     batch.commit();
     setState(() {
-      _enteredMessage = '';
+      //_enteredMessage = '';
       _controller.clear();
     });
   }
@@ -156,7 +156,7 @@ class _NewCommentState extends State<NewComment> {
                     hintText: Translations.of(context).text('hint_comment')),
                 onChanged: (value) {
                   setState(() {
-                    _enteredMessage = value;
+                    //_enteredMessage = value;
                     _toCheck = value;
                   });
                 },

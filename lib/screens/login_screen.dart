@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -48,6 +49,16 @@ class _LoginScreenState extends State<LoginScreen> {
           .collection('users')
           .document(authResult.user.uid)
           .updateData({'salt': salt});
+
+      final userData = await Firestore.instance
+          .collection('users')
+          .document(authResult.user.uid)
+          .get();
+
+      List following = userData['following'] ?? [];
+      following.forEach((element) async {
+        await FirebaseMessaging().subscribeToTopic(element);
+      });
       Navigator.of(context).pushNamedAndRemoveUntil(
           MenuScreen.routeName, (Route<dynamic> route) => false);
     } on PlatformException catch (err) {

@@ -74,7 +74,6 @@ class _TrimmerViewState extends State<TrimmerView> {
     );
     */
 
-
     setState(() {
       _progressVisibility = false;
     });

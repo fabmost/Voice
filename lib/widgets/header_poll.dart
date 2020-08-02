@@ -18,7 +18,6 @@ import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
-import '../screens/poll_gallery_screen.dart';
 import '../screens/flag_screen.dart';
 import '../screens/search_results_screen.dart';
 
@@ -40,19 +39,6 @@ class HeaderPoll extends StatelessWidget with ShareContent {
   void _toHash(context, hashtag) {
     Navigator.of(context)
         .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
-  }
-
-  void _toGallery(context, images, position) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PollGalleryScreen(
-          galleryItems: images,
-          initialIndex: position,
-          reference: reference,
-        ),
-      ),
-    );
   }
 
   void _noExists(context) {
@@ -417,7 +403,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                 child: PollOptions(
                   reference: reference,
                   userId: userId,
-                  votes: document['results'],
+                  votes: document['voters'],
                   options: document['options'],
                   hasVoted: hasVoted,
                   vote: vote,
