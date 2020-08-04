@@ -29,7 +29,12 @@ class _FollowersScreenState extends State<FollowersScreen> {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.uid != userId) {
       Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+          .pushNamed(ViewProfileScreen.routeName, arguments: userId)
+          .then((value) {
+        if (value) {
+          _getData();
+        }
+      });
     }
   }
 
@@ -175,7 +180,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
   }
 
   Widget _followButton(profileId, followers) {
-    if(profileId == userId){
+    if (profileId == userId) {
       return Text('');
     }
     if (followers == null || !followers.contains(userId)) {

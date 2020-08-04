@@ -22,11 +22,120 @@ class PollImages extends StatelessWidget {
     );
   }
 
+  Widget _noClickImages(width) {
+    if (images.length == 1) {
+      return Align(
+        alignment: Alignment.center,
+        child: Container(
+          width: 144,
+          height: 144,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.black),
+            image: DecorationImage(
+              image: NetworkImage(images[0]),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    } else if (images.length == 2) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            width: width,
+            height: width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          Container(
+            width: width,
+            height: width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[1]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            width: width,
+            height: width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[0]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          Container(
+            width: width,
+            height: width,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[1]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 5),
+          Container(
+            width: width,
+            height: width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: Colors.black),
+              image: DecorationImage(
+                image: NetworkImage(images[2]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width =
         (MediaQuery.of(context).size.width - 52 - (5 * images.length)) /
             images.length;
+    if (!isClickable) {
+      return _noClickImages(width);
+    }
     if (images.length == 1) {
       return Align(
         alignment: Alignment.center,

@@ -21,7 +21,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   int _selection = -1;
   String _title;
   List _options;
-  List _votes;
+  //List _votes;
   List _results;
   List _voters;
 
@@ -48,7 +48,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       _isLoading = false;
       _title = pollDoc.data['title'];
       _options = pollDoc.data['options'];
-      _votes = pollDoc.data['results'];
+      //_votes = pollDoc.data['results'];
       _results = pollDoc.data['voters'] ?? [];
       _voters = usersSnap.documents ?? [];
     });
@@ -102,13 +102,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     scrollDirection: Axis.horizontal,
                     separatorBuilder: (context, index) => SizedBox(width: 8),
-                    itemCount: _votes.length,
+                    itemCount: _options.length,
                     itemBuilder: (context, i) {
                       Map option = _options[i];
-                      Map results = _votes[i];
+                      int amount = 0;
+                      _results.forEach((element) {
+                        int vote =
+                            int.parse((element as Map).values.first.toString());
+                        if (vote == i) {
+                          amount++;
+                        }
+                      });
                       return VoteCard(
                         option['text'],
-                        results['votes'],
+                        amount,
                         _selection == i,
                         () => _selectOption(i),
                       );

@@ -19,6 +19,7 @@ import '../mixins/share_mixin.dart';
 
 class ViewProfileScreen extends StatelessWidget with ShareContent {
   static const routeName = '/profile';
+  bool _hasSaved = false;
 
   void _toChat(context, userId) async {
     final user = await FirebaseAuth.instance.currentUser();
@@ -161,6 +162,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
   }
 
   void _follow(context, userId, myId, isFollowing) async {
+    _hasSaved = true;
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(context);
@@ -495,62 +497,68 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
     final containerHeight = (screenWidth * 8) / 25;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: DefaultTabController(
-        length: 2,
-        child: NestedScrollView(
-          headerSliverBuilder: (ctx, isScrolled) {
-            return <Widget>[
-              SliverAppBar(
-                pinned: true,
-                title: Text(Translations.of(context).text('title_profile')),
-                actions: <Widget>[
-                  IconButton(
-                    icon: Icon(GalupFont.message),
-                    onPressed: () => _toChat(context, profileId),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert),
-                    onPressed: () => _menu(context, profileId),
-                  ),
-                  //_header(context, profileId),
-                ],
-                //flexibleSpace: _header(context, statusBarHeight, profileId),
-              ),
-              SliverPersistentHeader(
-                pinned: false,
-                delegate: _SliverHeaderDelegate(
-                  378 + containerHeight - 70,
-                  378 + containerHeight - 70,
-                  _newHeader(context, profileId),
+      body: WillPopScope(
+        onWillPop: () {
+          Navigator.pop(context, _hasSaved);
+          return new Future(() => false);
+        },
+        child: DefaultTabController(
+          length: 2,
+          child: NestedScrollView(
+            headerSliverBuilder: (ctx, isScrolled) {
+              return <Widget>[
+                SliverAppBar(
+                  pinned: true,
+                  title: Text(Translations.of(context).text('title_profile')),
+                  actions: <Widget>[
+                    IconButton(
+                      icon: Icon(GalupFont.message),
+                      onPressed: () => _toChat(context, profileId),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.more_vert),
+                      onPressed: () => _menu(context, profileId),
+                    ),
+                    //_header(context, profileId),
+                  ],
+                  //flexibleSpace: _header(context, statusBarHeight, profileId),
                 ),
-              ),
-              SliverPersistentHeader(
-                delegate: _SliverAppBarDelegate(
-                  TabBar(
-                    labelColor: Theme.of(context).accentColor,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
-                    tabs: [
-                      Tab(
-                        icon: Icon(GalupFont.survey),
-                        text: 'Encuestas',
-                      ),
-                      Tab(
-                        icon: Icon(GalupFont.challenge),
-                        text: 'Retos',
-                      ),
-                    ],
+                SliverPersistentHeader(
+                  pinned: false,
+                  delegate: _SliverHeaderDelegate(
+                    378 + containerHeight - 70,
+                    378 + containerHeight - 70,
+                    _newHeader(context, profileId),
                   ),
                 ),
-                pinned: true,
-              ),
-            ];
-          },
-          body: TabBarView(
-            children: [
-              PollList(profileId),
-              ChallengeList(profileId),
-            ],
+                SliverPersistentHeader(
+                  delegate: _SliverAppBarDelegate(
+                    TabBar(
+                      labelColor: Theme.of(context).accentColor,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
+                      tabs: [
+                        Tab(
+                          icon: Icon(GalupFont.survey),
+                          text: 'Encuestas',
+                        ),
+                        Tab(
+                          icon: Icon(GalupFont.challenge),
+                          text: 'Retos',
+                        ),
+                      ],
+                    ),
+                  ),
+                  pinned: true,
+                ),
+              ];
+            },
+            body: TabBarView(
+              children: [
+                PollList(profileId),
+                ChallengeList(profileId),
+              ],
+            ),
           ),
         ),
       ),

@@ -69,7 +69,7 @@ class _TrimmerViewState extends State<TrimmerView> {
         .saveTrimmedVideo(startValue: _startValue, endValue: _endValue);
     final info = await FlutterVideoCompress().compressVideo(
       _path,
-      quality: VideoQuality.HighestQuality,
+      //quality: VideoQuality.HighestQuality,
       deleteOrigin: true,
     );
     */

@@ -155,21 +155,25 @@ class ProfileScreen extends StatelessWidget {
 
     final url = await ref.getDownloadURL();
 
+    WriteBatch batch = Firestore.instance.batch();
     if (isProfile) {
-      await Firestore.instance
-          .collection('users')
-          .document(user.uid)
-          .updateData(
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
         {'image': url},
       );
+
+      batch.updateData(
+        Firestore.instance.collection('hash').document(user.uid),
+        {'user_image': url},
+      );
     } else {
-      await Firestore.instance
-          .collection('users')
-          .document(user.uid)
-          .updateData(
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
         {'cover': url},
       );
     }
+
+    await batch.commit();
   }
 
   Widget _usersWidget(amount, type, action) {

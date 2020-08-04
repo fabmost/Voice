@@ -297,8 +297,17 @@ class UserPoll extends StatelessWidget with ShareContent {
   }
 
   Widget _voted(option, position) {
-    final int amount = votes[position]['votes'];
-    final totalPercentage = (amount == 0.0) ? 0.0 : amount / voters;
+    int amount = 0;
+    votersList.forEach((element) {
+      int vote = int.parse((element as Map).values.first.toString());
+      if (vote == position) {
+        amount++;
+      }
+    });
+    var totalPercentage = (amount == 0.0) ? 0.0 : amount / voters;
+    if (totalPercentage > 1) {
+      totalPercentage = 1;
+    }
     final format = NumberFormat('###.##');
     return Container(
       height: 42,
