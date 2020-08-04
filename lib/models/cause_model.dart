@@ -1,16 +1,11 @@
 import 'content_model.dart';
-import 'resource_model.dart';
-import 'poll_answer_model.dart';
 
-class PollModel extends ContentModel {
-  final String body;
-  final int votes;
-  final bool hasVoted;
-  final List<PollAnswerModel> answers;
-  final List<ResourceModel> resources;
-  final int comments;
+class CauseModel extends ContentModel {
+  final String by;
+  final String cause;
+  final String info;
 
-  PollModel({
+  CauseModel({
     id,
     type,
     user,
@@ -22,12 +17,9 @@ class PollModel extends ContentModel {
     hasLiked,
     hasRegalup,
     hasSaved,
-    this.body,
-    this.votes,
-    this.hasVoted,
-    this.answers,
-    this.resources,
-    this.comments,
+    this.by,
+    this.cause,
+    this.info,
   }) : super(
             id: id,
             type: type,
