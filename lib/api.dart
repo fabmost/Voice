@@ -4,7 +4,8 @@ import 'package:crypto/crypto.dart';
 
 class API {
   final String salt = '3=\$:ndTxmFK@LEZL~7n.';
-  static const baseURL = '';
+  static const baseURL = 'https://secure.galup.app/api-app-v1';
+  static const sessionToken = 'token';
 
   String getSalt(String value) {
     String union = salt + value;

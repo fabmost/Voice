@@ -43,7 +43,11 @@ import 'screens/verify_type_screen.dart';
 import 'screens/verify_category_screen.dart';
 import 'screens/verify_id_screen.dart';
 
+import 'screens/test_screen.dart';
+import 'providers/auth_provider.dart';
+import 'providers/config_provider.dart';
 import 'providers/preferences_provider.dart';
+import 'providers/content_provider.dart';
 
 void main() {
   // Pass all uncaught errors from the framework to Crashlytics.
@@ -91,9 +95,17 @@ class App extends StatelessWidget {
   Widget build(context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (ctx) => AuthProvider()),
+        ChangeNotifierProvider(create: (ctx) => ConfigurationProvider()),
         ChangeNotifierProvider(create: (ctx) => Preferences()),
+        ChangeNotifierProxyProvider<AuthProvider, ContentProvider>(
+          create: (ctx) => ContentProvider(null),
+          update: (ctx, auth, previous) => ContentProvider(
+            auth.geToken,
+          ),
+        ),
       ],
-      child: Consumer<Preferences>(
+      child: Consumer<AuthProvider>(
         builder: (ctx, provider, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Galup',
@@ -116,7 +128,16 @@ class App extends StatelessWidget {
             const Locale('en', ''),
             const Locale('es', ''),
           ],
-          home: StreamBuilder(
+          home: provider.isAuth
+              ? TestScreen()
+              : FutureBuilder(
+                  future: provider.hasToken(),
+                  builder: (ctx, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? SplashScreen()
+                          : PreferencesScreen(),
+                ),
+          /*StreamBuilder(
             stream: FirebaseAuth.instance.onAuthStateChanged,
             builder: (ctx, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -135,7 +156,7 @@ class App extends StatelessWidget {
                               : PreferencesScreen(),
                     );
             },
-          ),
+          ),*/
           routes: {
             MenuScreen.routeName: (ctx) => MenuScreen(),
             OnboardingScreen.routeName: (ctx) => OnboardingScreen(),

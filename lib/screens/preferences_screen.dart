@@ -1,10 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
-import '../models/category.dart';
+import '../providers/auth_provider.dart';
+import '../providers/config_provider.dart';
 import '../widgets/category_tile.dart';
+import '../models/category_model.dart';
 
 class PreferencesScreen extends StatefulWidget {
   @override
@@ -13,29 +14,21 @@ class PreferencesScreen extends StatefulWidget {
 
 class _PreferencesScreenState extends State<PreferencesScreen> {
   bool _isLoading = false;
-  List<String> _categories = [];
+  List<CategoryModel> _selected = [];
+  List<CategoryModel> _categories = [];
 
   void _signIn(context) async {
-    setState(() {
-      _isLoading = true;
-    });
-    final authResult = await FirebaseAuth.instance.signInAnonymously();
-    await Firestore.instance
-        .collection('users')
-        .document(authResult.user.uid)
-        .setData({
-      'categories': [],
-    });
+    Provider.of<AuthProvider>(context, listen: false).registerAnonymous();
   }
 
   void _setSelected(value) {
-    if (_categories.contains(value)) {
+    if (_selected.contains(value)) {
       setState(() {
-        _categories.remove(value);
+        _selected.remove(value);
       });
     } else {
       setState(() {
-        _categories.add(value);
+        _selected.add(value);
       });
     }
   }
@@ -44,18 +37,35 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     setState(() {
       _isLoading = true;
     });
-    final authResult = await FirebaseAuth.instance.signInAnonymously();
-    await Firestore.instance
-        .collection('users')
-        .document(authResult.user.uid)
-        .setData({
-      'categories': _categories,
+    List categories = _categories.map((e) {
+      Map map = {};
+      map['id'] = e.id;
+      return map;
+    }).toList();
+    Provider.of<AuthProvider>(context, listen: false)
+        .savePreferences(categories);
+  }
+
+  void getCategories() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final cats =
+        await Provider.of<AuthProvider>(context, listen: false).installation();
+    setState(() {
+      _isLoading = false;
+      _categories = cats;
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    getCategories();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final categoryList = Category.categoriesList;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -96,10 +106,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   SizedBox(height: 8),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: categoryList.length,
+                      itemCount: _categories.length,
                       itemBuilder: (ctx, i) => CategoryTile(
-                        categoryList[i].name,
-                        _categories.contains(categoryList[i].name),
+                        _categories[i],
+                        _selected.contains(_categories[i]),
                         _setSelected,
                       ),
                     ),

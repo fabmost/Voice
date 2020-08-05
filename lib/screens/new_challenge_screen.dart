@@ -298,7 +298,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       ref = FirebaseStorage.instance
           .ref()
           .child('challenges')
-          .child('$challengeId.mp3');
+          .child('$challengeId.mp4');
 
       await ref.putFile(_videoFile).onComplete;
     } else {

@@ -76,6 +76,18 @@
 @import flutter_keyboard_visibility;
 #endif
 
+#if __has_include(<flutter_secure_storage/FlutterSecureStoragePlugin.h>)
+#import <flutter_secure_storage/FlutterSecureStoragePlugin.h>
+#else
+@import flutter_secure_storage;
+#endif
+
+#if __has_include(<flutter_user_agent/FlutterUserAgentPlugin.h>)
+#import <flutter_user_agent/FlutterUserAgentPlugin.h>
+#else
+@import flutter_user_agent;
+#endif
+
 #if __has_include(<image_cropper/ImageCropperPlugin.h>)
 #import <image_cropper/ImageCropperPlugin.h>
 #else
@@ -163,6 +175,8 @@
   [FLTFirebaseStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseStoragePlugin"]];
   [FlutterFFmpegPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterFFmpegPlugin"]];
   [FlutterKeyboardVisibilityPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterKeyboardVisibilityPlugin"]];
+  [FlutterSecureStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterSecureStoragePlugin"]];
+  [FlutterUserAgentPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterUserAgentPlugin"]];
   [FLTImageCropperPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImageCropperPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [FLTPackageInfoPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTPackageInfoPlugin"]];

@@ -551,7 +551,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
           .ref()
           .child('polls')
           .child(pollId)
-          .child('video.mp3');
+          .child('video.mp4');
 
       await ref2.putFile(_videoFile).onComplete;
 
