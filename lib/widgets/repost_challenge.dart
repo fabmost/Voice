@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/detail_challenge_screen.dart';
 
@@ -127,12 +129,14 @@ class RepostChallenge extends StatelessWidget {
               SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
+                child: ExtendedText(
                   title,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  specialTextSpanBuilder:
+                      MySpecialTextSpanBuilder(),
                 ),
               ),
               SizedBox(height: 16),

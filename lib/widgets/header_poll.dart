@@ -381,12 +381,25 @@ class HeaderPoll extends StatelessWidget with ShareContent {
               SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
+                child: ExtendedText(
                   document['title'],
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  specialTextSpanBuilder:
+                      MySpecialTextSpanBuilder(canClick: true),
+                  onSpecialTextTap: (parameter) {
+                    if (parameter.toString().startsWith('@')) {
+                      String atText = parameter.toString();
+                      int start = atText.indexOf('[');
+                      int finish = atText.indexOf(']');
+                      String toRemove = atText.substring(start + 1, finish);
+                      _toProfile(context, toRemove);
+                    } else if (parameter.toString().startsWith('#')) {
+                      _toHash(context, parameter.toString());
+                    }
+                  },
                 ),
               ),
               if (images.isNotEmpty) SizedBox(height: 16),

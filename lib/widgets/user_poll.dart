@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'poll_images.dart';
 import 'poll_video.dart';
 import '../translations.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../mixins/share_mixin.dart';
@@ -420,12 +422,14 @@ class UserPoll extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
+              child: ExtendedText(
                 title,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
+                specialTextSpanBuilder:
+                    MySpecialTextSpanBuilder(canClick: false),
               ),
             ),
             if (images.isNotEmpty) SizedBox(height: 16),

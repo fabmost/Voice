@@ -141,12 +141,13 @@ class SearchPoll extends StatelessWidget {
               SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
+                child: ExtendedText(
                   title,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  specialTextSpanBuilder: MySpecialTextSpanBuilder(),
                 ),
               ),
               if (images.isNotEmpty) SizedBox(height: 16),

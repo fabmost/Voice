@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../screens/detail_challenge_screen.dart';
 
 class SearchChallenge extends StatelessWidget {
@@ -15,6 +17,7 @@ class SearchChallenge extends StatelessWidget {
   final String creatorImage;
   final DateTime date;
   final String influencer;
+  final String description;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -28,6 +31,7 @@ class SearchChallenge extends StatelessWidget {
     this.creatorName,
     this.date,
     @required this.influencer,
+    @required this.description,
   });
 
   void _toDetail(context) {
@@ -91,17 +95,27 @@ class SearchChallenge extends StatelessWidget {
               SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
+                child: ExtendedText(
                   title,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  specialTextSpanBuilder: MySpecialTextSpanBuilder(),
                 ),
               ),
               SizedBox(height: 16),
               _challengeGoal(),
               SizedBox(height: 16),
+              if (description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExtendedText(
+                    description,
+                    specialTextSpanBuilder: MySpecialTextSpanBuilder(),
+                  ),
+                ),
+              if (description.isNotEmpty) SizedBox(height: 16),
             ],
           ),
         ),

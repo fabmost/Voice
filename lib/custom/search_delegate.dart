@@ -50,6 +50,7 @@ class CustomSearchDelegate extends SearchDelegate {
       creatorName: doc['user_name'],
       creatorImage: doc['user_image'] ?? '',
       title: doc['title'],
+      description: doc['description'] ?? '',
       metric: doc['metric_type'],
       influencer: doc['influencer'] ?? '',
       date: time.toDate(),

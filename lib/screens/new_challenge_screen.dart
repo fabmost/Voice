@@ -9,8 +9,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -157,8 +157,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        final mFile = await VideoCompress.getFileThumbnail(
+        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -320,8 +320,15 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
 
     List<String> hashes = [];
     RegExp exp = new RegExp(r"\B#\w\w+");
+    exp.allMatches(_titleController.text).forEach((match) {
+      if (!hashes.contains(match.group(0))) {
+        hashes.add(match.group(0));
+      }
+    });
     exp.allMatches(_descriptionController.text).forEach((match) {
-      hashes.add(match.group(0));
+      if (!hashes.contains(match.group(0))) {
+        hashes.add(match.group(0));
+      }
     });
 
     batch.setData(
@@ -442,18 +449,49 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextField(
-                controller: _titleController,
-                autofocus: true,
-                maxLines: null,
-                maxLength: 120,
-                decoration: InputDecoration(
-                  counterText: '',
-                  border: InputBorder.none,
-                  hintText:
-                      Translations.of(context).text('hint_challenge_title'),
+              SuggestionField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: _titleController,
+                  spanBuilder: MySpecialTextSpanBuilder(),
+                  autofocus: true,
+                  maxLines: null,
+                  maxLength: 120,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    border: InputBorder.none,
+                    hintText:
+                        Translations.of(context).text('hint_challenge_title'),
+                  ),
+                  style: TextStyle(fontSize: 22),
                 ),
-                style: TextStyle(fontSize: 22),
+                suggestionsCallback: (pattern) {
+                  //TextSelection selection = _descriptionController.selection;
+                  //String toCheck = pattern.substring(0, selection.end);
+                  if (_isSearching) {
+                    return _getSuggestions(pattern);
+                  }
+                  if (pattern.endsWith('@')) {
+                    _isSearching = true;
+                  }
+                  return null;
+                },
+                itemBuilder: (context, itemData) {
+                  AlgoliaObjectSnapshot result = itemData;
+                  if (result.data['interactions'] == null) {
+                    return _userTile(context, result.objectID, result.data);
+                  }
+                  return Container();
+                },
+                onSuggestionSelected: (suggestion) {
+                  _isSearching = false;
+                  int index = _titleController.text.lastIndexOf('@');
+                  String subs = _titleController.text.substring(0, index);
+                  _titleController.text =
+                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                  _titleController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _titleController.text.length));
+                },
+                autoFlipDirection: true,
               ),
               SizedBox(height: 16),
               _title(Translations.of(context).text('label_media_challenge')),
