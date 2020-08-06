@@ -1,5 +1,8 @@
+import 'package:intl/intl.dart';
+
 import 'content_model.dart';
 import 'resource_model.dart';
+import 'user_model.dart';
 
 class ChallengeModel extends ContentModel {
   final String body;
@@ -37,4 +40,26 @@ class ChallengeModel extends ContentModel {
             hasLiked: hasLiked,
             hasRegalup: hasRegalup,
             hasSaved: hasSaved);
+
+  static ChallengeModel fromJson(Map content) {
+    return ChallengeModel(
+      id: content['id'],
+      type: 'challenge',
+      user: UserModel(
+        userName: content['user']['user_name'],
+        icon: content['user']['icon'],
+      ),
+      title: content['body'],
+      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
+      parameter: content['med_param'],
+      goal: content['goal'],
+      likes: content['likes'],
+      regalups: content['regalups'],
+      comments: content['comments'],
+      hasLiked: content['is_like'],
+      hasRegalup: content['is_regalup'] ?? false,
+      hasSaved: content['is_save'],
+      resources: ResourceModel.listFromJson(content['resource']),
+    );
+  }
 }

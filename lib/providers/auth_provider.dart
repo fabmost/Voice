@@ -28,6 +28,12 @@ class AuthProvider with ChangeNotifier {
     return true;
   }
 
+  Future<void> signOut() async {
+    _storage.delete(key: API.sessionToken);
+    _token = null;
+    notifyListeners();
+  }
+
   Future<List> installation() async {
     var url = '${API.baseURL}/installation';
 

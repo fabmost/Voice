@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -44,6 +43,8 @@ import 'screens/verify_category_screen.dart';
 import 'screens/verify_id_screen.dart';
 
 import 'screens/test_screen.dart';
+import 'screens/home_screen.dart';
+
 import 'providers/auth_provider.dart';
 import 'providers/config_provider.dart';
 import 'providers/preferences_provider.dart';
@@ -98,12 +99,7 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => AuthProvider()),
         ChangeNotifierProvider(create: (ctx) => ConfigurationProvider()),
         ChangeNotifierProvider(create: (ctx) => Preferences()),
-        ChangeNotifierProxyProvider<AuthProvider, ContentProvider>(
-          create: (ctx) => ContentProvider(null),
-          update: (ctx, auth, previous) => ContentProvider(
-            auth.geToken,
-          ),
-        ),
+        ChangeNotifierProvider(create: (ctx) => ContentProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (ctx, provider, _) => MaterialApp(
@@ -129,7 +125,7 @@ class App extends StatelessWidget {
             const Locale('es', ''),
           ],
           home: provider.isAuth
-              ? TestScreen()
+              ? HomeScreen()
               : FutureBuilder(
                   future: provider.hasToken(),
                   builder: (ctx, snapshot) =>
@@ -158,6 +154,7 @@ class App extends StatelessWidget {
             },
           ),*/
           routes: {
+            TestScreen.routeName: (ctx) => TestScreen(),
             MenuScreen.routeName: (ctx) => MenuScreen(),
             OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
             AuthScreen.routeName: (ctx) => AuthScreen(),

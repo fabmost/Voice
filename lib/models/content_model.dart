@@ -1,7 +1,7 @@
 import 'user_model.dart';
 
 class ContentModel {
-  final int id;
+  final String id;
   final UserModel user;
   final UserModel creator;
   final DateTime createdAt;
