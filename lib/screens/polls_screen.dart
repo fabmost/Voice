@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../widgets/appbar.dart';
 import '../widgets/poll.dart';
 import '../widgets/challenge.dart';
+import '../widgets/tip.dart';
 import '../widgets/cause.dart';
 
 import '../widgets/repost_poll.dart';
@@ -137,6 +138,45 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
+  Widget _tipWidget(doc, userId) {
+    int likes = 0;
+    bool hasLiked = false;
+    if (doc['likes'] != null) {
+      likes = doc['likes'].length;
+      hasLiked = (doc['likes'] as List).contains(userId);
+    }
+    int reposts = 0;
+    bool hasReposted = false;
+    if (doc['reposts'] != null) {
+      reposts = doc['reposts'].length;
+      hasReposted = (doc['reposts'] as List).contains(userId);
+    }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
+    return Tip(
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      hasSaved: hasSaved,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: _playVideo,
+    );
+  }
+
   Widget _causeWidget(doc, userId) {
     int likes = 0;
     bool hasLiked = false;
@@ -215,7 +255,8 @@ class PollsScreen extends StatelessWidget {
       future: Firestore.instance
           .collection('content')
           .where('type', isEqualTo: 'cause')
-          .orderBy('createdAt', descending: true).getDocuments(),
+          .orderBy('createdAt', descending: true)
+          .getDocuments(),
       builder: (ctx, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -317,6 +358,8 @@ class PollsScreen extends StatelessWidget {
             return _pollWidget(doc, userId);
           case 'challenge':
             return _challengeWidget(doc, userId);
+          case 'tip':
+            return _tipWidget(doc, userId);
           case 'cause':
             return _causeWidget(doc, userId);
           case 'repost-poll':

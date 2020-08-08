@@ -25,6 +25,7 @@ import 'messages_screen.dart';
 import 'profile_screen.dart';
 import 'new_poll_screen.dart';
 import 'new_challenge_screen.dart';
+import 'new_tip_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
 
@@ -118,6 +119,15 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     Navigator.of(context).pushNamed(NewChallengeScreen.routeName);
   }
 
+  void _newTip() async {
+    final user = await FirebaseAuth.instance.currentUser();
+    if (user.isAnonymous) {
+      _anonymousAlert();
+      return;
+    }
+    Navigator.of(context).pushNamed(NewTipScreen.routeName);
+  }
+
   void _anonymousAlert() {
     showDialog(
       context: context,
@@ -167,6 +177,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         icon: Icon(GalupFont.challenge),
         label: 'Reto',
         ontap: _newChallenge,
+        color: Color(0xFFA4175D),
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.challenge),
+        label: 'Tip',
+        ontap: _newTip,
         color: Color(0xFFA4175D),
       )
     ];
