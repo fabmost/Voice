@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../api.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 
@@ -25,6 +26,18 @@ class TestScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  Provider.of<AuthProvider>(context, listen: false).signUp(
+                    name: 'Test',
+                    last: 'Amazon',
+                    email: 'test_server@galup.com',
+                    password: API().getSalt('holamundo'),
+                    user: 'test_server'
+                  );
+                },
+                child: Text('SignUp'),
+              ),
               RaisedButton(
                 onPressed: () {
                   Provider.of<AuthProvider>(context, listen: false)
