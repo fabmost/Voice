@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../providers/auth_provider.dart';
-import '../providers/config_provider.dart';
 import '../widgets/category_tile.dart';
 import '../models/category_model.dart';
 
@@ -16,9 +15,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   bool _isLoading = false;
   List<CategoryModel> _selected = [];
   List<CategoryModel> _categories = [];
+  String _token;
 
   void _signIn(context) async {
-    Provider.of<AuthProvider>(context, listen: false).registerAnonymous();
+    Provider.of<AuthProvider>(context, listen: false).registerAnonymous(_token);
   }
 
   void _setSelected(value) {
@@ -50,11 +50,12 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     setState(() {
       _isLoading = true;
     });
-    final cats =
+    final mMap =
         await Provider.of<AuthProvider>(context, listen: false).installation();
     setState(() {
       _isLoading = false;
-      _categories = cats;
+      _categories = mMap['categories'];
+      _token = mMap['token'];
     });
   }
 

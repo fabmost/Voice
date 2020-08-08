@@ -125,7 +125,7 @@ class App extends StatelessWidget {
             const Locale('es', ''),
           ],
           home: provider.isAuth
-              ? HomeScreen()
+              ? TestScreen()
               : FutureBuilder(
                   future: provider.hasToken(),
                   builder: (ctx, snapshot) =>

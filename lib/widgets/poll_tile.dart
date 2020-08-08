@@ -1,11 +1,15 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'poll_options.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/content_provider.dart';
 
 class PollTile extends StatelessWidget {
+  final String id;
   final String userName;
   final String userImage;
   final String title;
@@ -17,8 +21,10 @@ class PollTile extends StatelessWidget {
   final bool hasVoted;
   final bool hasLiked;
   final bool hasRegalup;
+  final List answers;
 
   PollTile({
+    @required this.id,
     @required this.title,
     @required this.date,
     @required this.userName,
@@ -30,9 +36,14 @@ class PollTile extends StatelessWidget {
     @required this.hasVoted,
     @required this.hasLiked,
     @required this.hasRegalup,
+    @required this.answers,
   });
 
   final Color color = Color(0xFFF8F8FF);
+
+  void _setLike(context){
+    Provider.of<ContentProvider>(context, listen: false).likeContent('poll', id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +114,6 @@ class PollTile extends StatelessWidget {
             if (video.isNotEmpty) SizedBox(height: 16),
             if (video.isNotEmpty) PollVideo(thumb, video, videoFunction),
             */
-            /*
             Padding(
               padding: const EdgeInsets.only(
                 left: 16,
@@ -112,16 +122,12 @@ class PollTile extends StatelessWidget {
                 bottom: 8,
               ),
               child: PollOptions(
-                reference: reference,
-                userId: myId,
+                id: id,
                 votes: votes,
-                options: options,
                 hasVoted: hasVoted,
-                vote: vote,
-                voters: voters,
+                answers: answers,
               ),
             ),
-            */
             if (votes > 0)
               Padding(
                 padding: const EdgeInsets.only(
@@ -167,7 +173,7 @@ class PollTile extends StatelessWidget {
                     label: Text(comments == 0 ? '' : '$comments'),
                   ),
                   FlatButton.icon(
-                    //onPressed: () => _like(context),
+                    onPressed: () => _setLike(context),
                     icon: Icon(
                       GalupFont.like,
                       color: hasLiked

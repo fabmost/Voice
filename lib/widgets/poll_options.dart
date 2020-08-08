@@ -1,29 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../models/poll_answer_model.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 
 class PollOptions extends StatefulWidget {
-  final DocumentReference reference;
-  final String userId;
-  final List options;
-  final List votes;
+  final String id;
+  final int votes;
   final bool hasVoted;
-  final int vote;
-  final int voters;
+  final List<PollAnswerModel> answers;
 
   PollOptions({
-    this.reference,
-    this.userId,
-    this.options,
-    this.votes,
-    this.hasVoted,
-    this.vote,
-    this.voters,
+    @required this.id,
+    @required this.votes,
+    @required this.hasVoted,
+    @required this.answers,
   });
 
   @override
@@ -60,6 +53,7 @@ class _PollOptionsState extends State<PollOptions> {
   }
 
   void _setVote(position) async {
+    /*
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       final interactions =
@@ -106,28 +100,29 @@ class _PollOptionsState extends State<PollOptions> {
     setState(() {
       _isLoading = false;
     });
+    */
   }
 
   Widget _getOptions() {
     int pos = -1;
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: widget.options.map(
+        children: widget.answers.map(
           (option) {
             pos++;
-            if (option.containsKey('image')) {
+            if (option.url != null) {
               return Column(
                 children: <Widget>[
                   Row(
                     children: <Widget>[
                       CircleAvatar(
-                        backgroundImage: NetworkImage(option['image']),
+                        backgroundImage: NetworkImage(option.url),
                       ),
                       SizedBox(width: 8),
                       Expanded(
                         child: widget.hasVoted
-                            ? _voted(option['text'], pos)
-                            : _poll(option['text'], pos),
+                            ? _voted(option.answer, option.isVote, pos)
+                            : _poll(option.answer, pos),
                       ),
                     ],
                   ),
@@ -140,9 +135,9 @@ class _PollOptionsState extends State<PollOptions> {
                 Container(
                   width: double.infinity,
                   child: widget.hasVoted
-                      ? _voted(option['text'], pos)
+                      ? _voted(option.answer, option.isVote, pos)
                       : _poll(
-                          option['text'],
+                          option.answer,
                           pos,
                         ),
                 ),
@@ -163,15 +158,15 @@ class _PollOptionsState extends State<PollOptions> {
     );
   }
 
-  Widget _voted(option, position) {
+  Widget _voted(answer, isVote, position) {
     int amount = 0;
-    widget.votes.forEach((element) {
-      int vote = int.parse((element as Map).values.first.toString());
+    widget.answers.forEach((element) {
+      int vote = element.count;
       if (vote == position) {
         amount++;
       }
     });
-    var totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.voters;
+    var totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.votes;
     if (totalPercentage > 1) {
       totalPercentage = 1;
     }
@@ -214,7 +209,7 @@ class _PollOptionsState extends State<PollOptions> {
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      option,
+                      answer,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -222,7 +217,7 @@ class _PollOptionsState extends State<PollOptions> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (widget.vote == position)
+                  if (isVote)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Icon(

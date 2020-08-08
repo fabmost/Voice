@@ -6,6 +6,7 @@ class API {
   final String salt = '3=\$:ndTxmFK@LEZL~7n.';
   static const baseURL = 'https://secure.galup.app/api-app-v1';
   static const sessionToken = 'token';
+  static const userHash = 'hash';
 
   String getSalt(String value) {
     String union = salt + value;

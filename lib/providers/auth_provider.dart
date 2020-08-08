@@ -13,6 +13,7 @@ import '../models/category_model.dart';
 class AuthProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
   String _token;
+  String _hash;
 
   String get geToken => _token;
   bool get isAuth {
@@ -34,7 +35,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List> installation() async {
+  Future<Map> installation() async {
     var url = '${API.baseURL}/installation';
 
     final hash = UniqueKey().toString();
@@ -67,27 +68,36 @@ class AuthProvider with ChangeNotifier {
 
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return [];
+      return {};
     }
 
     if (dataMap['status'] == 'success') {
-      _token = dataMap['session']['token'];
-      List categories = dataMap['categories'];
-      return categories.map((e) {
+      saveHash(hash);
+      List aux = dataMap['categories'];
+      List categories = aux.map((e) {
         Map dataMap = e as Map;
         return CategoryModel(
           id: dataMap['id'],
           name: dataMap['name'],
         );
       }).toList();
+      return {
+        'token': dataMap['session']['token'],
+        'categories': categories,
+      };
     } else {
-      return [];
+      return {};
     }
   }
 
-  Future<void> registerAnonymous() async {
-    await _storage.write(key: API.sessionToken, value: _token);
+  Future<void> registerAnonymous(token) async {
+    await _storage.write(key: API.sessionToken, value: token);
     notifyListeners();
+    return;
+  }
+
+  Future<void> saveHash(hash) async {
+    await _storage.write(key: API.userHash, value: hash);
     return;
   }
 
@@ -114,8 +124,41 @@ class AuthProvider with ChangeNotifier {
 
     if (dataMap['status'] == 'success') {
       _token = dataMap['session']['token'];
+      registerAnonymous(_token);
+    }
+    return;
+  }
+
+  Future<void> renewToken() async {
+    var url = '${API.baseURL}/token';
+    final hash = await _storage.read(key: API.userHash) ?? null;
+    final datetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader:
+            'Bearer ${API().getHash(hash, datetime)}'
+      },
+      body: jsonEncode({
+        'hash': hash,
+        'datetime': datetime,
+      }),
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+
+    if (dataMap['status'] == 'success') {
+      _token = dataMap['session']['token'];
       await _storage.write(key: API.sessionToken, value: _token);
-      notifyListeners();
     }
     return;
   }

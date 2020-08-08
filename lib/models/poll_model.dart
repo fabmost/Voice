@@ -62,6 +62,7 @@ class PollModel extends ContentModel {
       hasLiked: content['is_like'],
       hasRegalup: content['is_regalup'] ?? false,
       hasSaved: content['is_save'],
+      answers: PollAnswerModel.listFromJson(content['answer']),
       resources: ResourceModel.listFromJson(content['resource']),
     );
   }

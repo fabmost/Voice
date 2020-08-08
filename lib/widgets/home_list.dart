@@ -6,6 +6,7 @@ import 'challenge_tile.dart';
 import '../providers/content_provider.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
+import '../models/challenge_model.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
@@ -25,6 +26,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
+      id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
@@ -36,12 +38,22 @@ class _HomeListState extends State<HomeList> {
       hasVoted: content.hasVoted,
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
+      answers: content.answers,
     );
   }
 
-  Widget _challengeWidget(content) {
+  Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
-      
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
     );
   }
 

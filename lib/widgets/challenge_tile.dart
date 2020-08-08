@@ -6,7 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../custom/galup_font_icons.dart';
 
 class ChallengeTile extends StatelessWidget {
-
+  final String id;
   final String userName;
   final String userImage;
   final String title;
@@ -18,6 +18,7 @@ class ChallengeTile extends StatelessWidget {
   final bool hasRegalup;
 
   ChallengeTile({
+    @required this.id,
     @required this.title,
     @required this.date,
     @required this.userName,

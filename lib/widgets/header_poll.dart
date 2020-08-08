@@ -393,6 +393,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
               if (images.isNotEmpty) PollImages(images, reference),
               if (video.isNotEmpty) SizedBox(height: 16),
               if (video.isNotEmpty) PollVideo(thumb, video, null),
+              /*
               Padding(
                 padding: const EdgeInsets.only(
                   left: 16,
@@ -410,6 +411,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                   voters: voters,
                 ),
               ),
+              */
               if (voters > 0)
                 Padding(
                   padding: const EdgeInsets.only(
