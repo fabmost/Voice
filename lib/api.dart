@@ -19,4 +19,9 @@ class API {
     String utf1 = md5.convert(utf8.encode(union)).toString();
     return sha1.convert(utf8.encode(utf1)).toString();
   }
+
+  String getLog(String email, String password) {
+    String union = salt + email + password;
+    return sha1.convert(utf8.encode(union)).toString();
+  }
 }

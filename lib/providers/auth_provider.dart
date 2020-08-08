@@ -169,6 +169,42 @@ class AuthProvider with ChangeNotifier {
     return;
   }
 
+  Future<void> login({email, password}) async {
+    var url = '${API.baseURL}/login';
+    _token = await _storage.read(key: API.sessionToken) ?? null;
+
+    final body = jsonEncode({
+      'email': email,
+      'password': API().getSalt(password),
+    });
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader:
+            'Bearer ${API().getLog(email, password)}'
+      },
+      body: body,
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+
+    if (dataMap['status'] == 'success') {
+      _token = dataMap['session']['token'];
+      await _storage.write(key: API.sessionToken, value: _token);
+      saveHash(dataMap['hash_user']);
+    }
+    return;
+  }
+
   Future<void> renewToken() async {
     var url = '${API.baseURL}/token';
     final hash = await _storage.read(key: API.userHash) ?? null;

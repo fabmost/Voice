@@ -40,6 +40,15 @@ class TestScreen extends StatelessWidget {
               ),
               RaisedButton(
                 onPressed: () {
+                  Provider.of<AuthProvider>(context, listen: false).login(
+                    email: 'fabmost@gmail.com',
+                    password: 'holamundo',
+                  );
+                },
+                child: Text('Login'),
+              ),
+              RaisedButton(
+                onPressed: () {
                   Provider.of<AuthProvider>(context, listen: false)
                       .renewToken();
                 },
