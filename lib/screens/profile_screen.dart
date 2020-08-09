@@ -20,6 +20,7 @@ import '../custom/galup_font_icons.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
+import '../widgets/tip_user_list.dart';
 import '../widgets/saved_list.dart';
 import '../widgets/influencer_badge.dart';
 
@@ -473,7 +474,7 @@ class ProfileScreen extends StatelessWidget {
           backgroundColor: Colors.white,
           drawer: AppDrawer(),
           body: DefaultTabController(
-            length: 3,
+            length: 4,
             child: NestedScrollView(
               headerSliverBuilder: (ctx, isScrolled) {
                 return <Widget>[
@@ -513,6 +514,10 @@ class ProfileScreen extends StatelessWidget {
                             text: 'Retos',
                           ),
                           Tab(
+                            icon: Icon(GalupFont.tips),
+                            text: 'Tips',
+                          ),
+                          Tab(
                             icon: Icon(GalupFont.saved),
                             text: 'Guardados',
                           ),
@@ -527,6 +532,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   PollUserList(userSnap.data.uid, _playVideo),
                   ChallengeUserList(userSnap.data.uid),
+                  TipUserList(userSnap.data.uid),
                   SavedList(_playVideo),
                 ],
               ),

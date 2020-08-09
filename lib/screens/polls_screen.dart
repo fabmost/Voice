@@ -11,6 +11,7 @@ import '../widgets/cause.dart';
 
 import '../widgets/repost_poll.dart';
 import '../widgets/repost_challenge.dart';
+import '../widgets/repost_tip.dart';
 import '../widgets/repost_cause.dart';
 
 import '../widgets/cause_tile.dart';
@@ -238,6 +239,19 @@ class PollsScreen extends StatelessWidget {
         influencer: doc['influencer'] ?? '');
   }
 
+  Widget _repostTipWidget(doc, userId) {
+    return RepostTip(
+        reference: doc['parent'] ?? doc.reference,
+        myId: userId,
+        userId: doc['user_id'],
+        userName: doc['user_name'],
+        title: doc['title'],
+        creatorName: doc['creator_name'],
+        creatorImage: doc['creator_image'] ?? '',
+        date: doc['originalDate'].toDate(),
+        influencer: doc['influencer'] ?? '');
+  }
+
   Widget _repostCauseWidget(doc, userId) {
     return RespostCause(
       reference: doc['parent'] ?? doc.reference,
@@ -366,6 +380,8 @@ class PollsScreen extends StatelessWidget {
             return _repostPollWidget(doc, userId);
           case 'repost-challenge':
             return _repostChallengeWidget(doc, userId);
+          case 'repost-tip':
+            return _repostTipWidget(doc, userId);
           case 'repost-cause':
             return _repostCauseWidget(doc, userId);
           default:

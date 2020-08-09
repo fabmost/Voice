@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'poll_video.dart';
 import 'influencer_badge.dart';
+import 'poll_video.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
@@ -17,11 +17,10 @@ import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
-import '../screens/flag_screen.dart';
-import '../screens/search_results_screen.dart';
 import '../screens/poll_gallery_screen.dart';
+import '../screens/search_results_screen.dart';
 
-class Tip extends StatelessWidget with ShareContent {
+class UserTip extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
   final String myId;
@@ -31,20 +30,18 @@ class Tip extends StatelessWidget with ShareContent {
   final int comments;
   final bool hasLiked;
   final int likes;
-  final bool hasReposted;
   final int reposts;
   final bool hasSaved;
   final DateTime date;
   final String influencer;
+  final List likesList;
   final bool isVideo;
   final List images;
   final String description;
 
-  final videoFunction;
-
   final Color color = Color(0xFFC1F2FF);
 
-  Tip({
+  UserTip({
     this.reference,
     this.userName,
     this.myId,
@@ -55,14 +52,13 @@ class Tip extends StatelessWidget with ShareContent {
     this.likes,
     this.hasLiked,
     this.reposts,
-    this.hasReposted,
     this.hasSaved,
     this.date,
     @required this.influencer,
+    @required this.likesList,
     @required this.isVideo,
     @required this.images,
     @required this.description,
-    @required this.videoFunction,
   });
 
   void _toProfile(context) {
@@ -160,119 +156,11 @@ class Tip extends StatelessWidget with ShareContent {
     batch.commit();
   }
 
-  void _repost(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-          Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-tip',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'creator_name': userName,
-        'creator_image': userImage,
-        'influencer': influencer,
-        'originalDate': Timestamp.fromDate(date),
-        'parent': reference,
-        'home': userData['followers'] ?? [],
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
   void _share() async {
     shareTip(reference.documentID, title);
   }
 
-  void _flag(context) {
-    Navigator.of(context)
-        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
-  }
-
-  void _save(context) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasSaved) {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-
-    Navigator.of(context).pop();
-  }
-
   void _options(context) {
-    FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -280,24 +168,14 @@ class Tip extends StatelessWidget with ShareContent {
           color: Colors.transparent,
           child: Wrap(
             children: <Widget>[
-              if (myId != userId)
-                ListTile(
-                  onTap: () => _save(context),
-                  leading: Icon(
-                    GalupFont.saved,
-                  ),
-                  title: Text(hasSaved
-                      ? Translations.of(context).text('button_delete')
-                      : Translations.of(context).text('button_save')),
-                ),
               ListTile(
-                onTap: () => _flag(context),
+                onTap: () => _deleteAlert(context),
                 leading: new Icon(
-                  Icons.flag,
+                  Icons.delete,
                   color: Colors.red,
                 ),
                 title: Text(
-                  Translations.of(context).text('title_flag'),
+                  Translations.of(context).text('button_delete'),
                   style: TextStyle(color: Colors.red),
                 ),
               ),
@@ -309,28 +187,88 @@ class Tip extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
-    if (isVideo) return PollVideo('', images[0], videoFunction);
+    if (isVideo) return PollVideo('', images[0], null);
 
     return Align(
       alignment: Alignment.center,
       child: InkWell(
         onTap: () => _toGallery(context, 0),
-        child: Hero(
-          tag: images[0],
-          child: Container(
-            width: 144,
-            height: 144,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black),
-                image: DecorationImage(
-                  image: NetworkImage(images[0]),
-                  fit: BoxFit.cover,
-                )),
+        child: Container(
+          width: 144,
+          height: 144,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.black),
+            image: DecorationImage(
+              image: NetworkImage(images[0]),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _deleteAlert(context) {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        content: Text('¿Seguro que deseas borrar esta encuesta?'),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              'Borrar',
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              _deleteContent();
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteContent() async {
+    QuerySnapshot snapArray = await Firestore.instance
+        .collection('content')
+        .where('parent', isEqualTo: reference)
+        .getDocuments();
+
+    WriteBatch batch = Firestore.instance.batch();
+
+    batch.delete(reference);
+    snapArray.documents.forEach((element) {
+      batch.delete(element.reference);
+    });
+
+    batch.updateData(Firestore.instance.collection('users').document(myId), {
+      'created': FieldValue.arrayRemove([reference.documentID])
+    });
+
+    likesList.forEach((element) {
+      batch.updateData(
+        Firestore.instance.collection('users').document(element),
+        {
+          'liked': FieldValue.arrayRemove([reference.documentID]),
+        },
+      );
+    });
+
+    batch.commit();
   }
 
   @override
@@ -360,16 +298,10 @@ class Tip extends StatelessWidget with ShareContent {
                 ),
                 title: Row(
                   children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        userName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Text(
+                      userName,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     SizedBox(width: 8),
                     InfluencerBadge(influencer, 16),
@@ -451,9 +383,8 @@ class Tip extends StatelessWidget with ShareContent {
                     label: Text(likes == 0 ? '' : '$likes'),
                   ),
                   FlatButton.icon(
-                    onPressed: () => _repost(context),
-                    icon: Icon(GalupFont.repost,
-                        color: hasReposted ? Color(0xFF00B2E3) : Colors.black),
+                    onPressed: () => null,
+                    icon: Icon(GalupFont.repost, color: Colors.black),
                     label: Text(reposts == 0 ? '' : '$reposts'),
                   ),
                   IconButton(

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/search_poll.dart';
 import '../widgets/search_challenge.dart';
+import '../widgets/search_tip.dart';
 import '../widgets/search_cause.dart';
 import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
@@ -52,6 +53,21 @@ class CustomSearchDelegate extends SearchDelegate {
       title: doc['title'],
       description: doc['description'] ?? '',
       metric: doc['metric_type'],
+      influencer: doc['influencer'] ?? '',
+      date: time.toDate(),
+    );
+  }
+
+  Widget _tipWidget(id, doc) {
+    final time = Timestamp(
+        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
+    return SearchTip(
+      reference: Firestore.instance.collection('content').document(id),
+      userId: doc['user_id'],
+      creatorName: doc['user_name'],
+      creatorImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
       influencer: doc['influencer'] ?? '',
       date: time.toDate(),
     );
@@ -173,6 +189,8 @@ class CustomSearchDelegate extends SearchDelegate {
                 return _pollWidget(result.objectID, result.data);
               case 'challenge':
                 return _challengeWidget(result.objectID, result.data);
+              case 'tip':
+                return _tipWidget(result.objectID, result.data);
               case 'cause':
                 return _causeWidget(result.objectID, result.data);
               default:

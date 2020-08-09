@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/search_poll.dart';
 import '../widgets/search_challenge.dart';
+import '../widgets/search_tip.dart';
 import '../widgets/search_cause.dart';
 
 class SearchResultsScreen extends StatelessWidget {
@@ -41,6 +42,21 @@ class SearchResultsScreen extends StatelessWidget {
     );
   }
 
+  Widget _tipWidget(id, doc) {
+    final time = Timestamp(
+        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
+    return SearchTip(
+      reference: Firestore.instance.collection('content').document(id),
+      userId: doc['user_id'],
+      creatorName: doc['user_name'],
+      creatorImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      influencer: doc['influencer'] ?? '',
+      date: time.toDate(),
+    );
+  }
+
   Widget _causeWidget(id, doc) {
     return SearchCause(
       reference: Firestore.instance.collection('content').document(id),
@@ -49,7 +65,7 @@ class SearchResultsScreen extends StatelessWidget {
       info: doc['info'],
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     String query = ModalRoute.of(context).settings.arguments;
@@ -85,6 +101,8 @@ class SearchResultsScreen extends StatelessWidget {
                   return _pollWidget(result.objectID, result.data);
                 case 'challenge':
                   return _challengeWidget(result.objectID, result.data);
+                case 'tip':
+                  return _tipWidget(result.objectID, result.data);
                 case 'cause':
                   return _causeWidget(result.objectID, result.data);
                 default:

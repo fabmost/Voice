@@ -26,6 +26,7 @@ import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
+import 'screens/detail_tip_screen.dart';
 import 'screens/detail_cause_screen.dart';
 import 'screens/flag_screen.dart';
 import 'screens/user_name_screen.dart';
@@ -157,6 +158,7 @@ class App extends StatelessWidget {
                 NewContentCategoryScreen(),
             DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
             DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
+            DetailTipScreen.routeName: (ctx) => DetailTipScreen(),
             DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
             VerifyTypeScreen.routeName: (ctx) => VerifyTypeScreen(),
             VerifyCategoryScreen.routeName: (ctx) => VerifyCategoryScreen(),

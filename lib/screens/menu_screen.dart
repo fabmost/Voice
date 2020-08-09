@@ -180,10 +180,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         color: Color(0xFFA4175D),
       ),
       FabMenuItem(
-        icon: Icon(GalupFont.challenge),
+        icon: Icon(GalupFont.tips),
         label: 'Tip',
         ontap: _newTip,
-        color: Color(0xFFA4175D),
+        color: Color(0xFF00B2E3),
       )
     ];
 

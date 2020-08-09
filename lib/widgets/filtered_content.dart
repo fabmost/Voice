@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'poll.dart';
 import 'challenge.dart';
+import 'tip.dart';
 import 'cause.dart';
 
 class FilteredContent extends StatelessWidget {
@@ -112,6 +113,45 @@ class FilteredContent extends StatelessWidget {
     );
   }
 
+  Widget _tipWidget(doc, userId) {
+    int likes = 0;
+    bool hasLiked = false;
+    if (doc['likes'] != null) {
+      likes = doc['likes'].length;
+      hasLiked = (doc['likes'] as List).contains(userId);
+    }
+    int reposts = 0;
+    bool hasReposted = false;
+    if (doc['reposts'] != null) {
+      reposts = doc['reposts'].length;
+      hasReposted = (doc['reposts'] as List).contains(userId);
+    }
+    bool hasSaved = false;
+    if (doc['saved'] != null) {
+      hasSaved = (doc['saved'] as List).contains(userId);
+    }
+    return Tip(
+      reference: doc.reference,
+      myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
+      title: doc['title'],
+      description: doc['description'] ?? '',
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
+      comments: doc['comments'],
+      likes: likes,
+      hasLiked: hasLiked,
+      hasSaved: hasSaved,
+      reposts: reposts,
+      hasReposted: hasReposted,
+      date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      videoFunction: setVideo,
+    );
+  }
+
   Widget _causeWidget(doc, userId) {
     int likes = 0;
     bool hasLiked = false;
@@ -171,6 +211,8 @@ class FilteredContent extends StatelessWidget {
                     return _pollWidget(doc, userSnap.data.uid);
                   case 'challenge':
                     return _challengeWidget(doc, userSnap.data.uid);
+                  case 'tip':
+                    return _tipWidget(doc, userSnap.data.uid);
                   case 'cause':
                     return _causeWidget(doc, userSnap.data.uid);
                   default:

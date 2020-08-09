@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
+//import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -24,10 +24,10 @@ class NewTipScreen extends StatefulWidget {
   static const routeName = '/new-tip';
 
   @override
-  _NewChallengeScreenState createState() => _NewChallengeScreenState();
+  _NewTipScreenState createState() => _NewTipScreenState();
 }
 
-class _NewChallengeScreenState extends State<NewTipScreen> {
+class _NewTipScreenState extends State<NewTipScreen> {
   final Trimmer _trimmer = Trimmer();
   bool _isLoading = false;
   bool _isVideo = false;
@@ -51,30 +51,20 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
           color: Colors.transparent,
           child: new Wrap(
             children: <Widget>[
-              if (Platform.isIOS)
-                ListTile(
-                  onTap: () => _openCamera(),
-                  leading: Icon(
-                    Icons.camera_alt,
-                  ),
-                  title: Text("Cámara"),
+              ListTile(
+                onTap: () => _openCamera(),
+                leading: Icon(
+                  Icons.camera_alt,
                 ),
-              if (Platform.isAndroid)
-                ListTile(
-                  onTap: () => _openCamera(),
-                  leading: Icon(
-                    Icons.camera_alt,
-                  ),
-                  title: Text("Foto"),
+                title: Text("Foto"),
+              ),
+              ListTile(
+                onTap: () => _takeVideo(),
+                leading: Icon(
+                  Icons.videocam,
                 ),
-              if (Platform.isAndroid)
-                ListTile(
-                  onTap: () => _takeVideo(),
-                  leading: Icon(
-                    Icons.videocam,
-                  ),
-                  title: Text("Video"),
-                ),
+                title: Text("Video"),
+              ),
               ListTile(
                 onTap: () => _openGallery(),
                 leading: Icon(
@@ -96,24 +86,21 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
 
   void _openGallery() {
     Navigator.of(context).pop();
-    if (Platform.isIOS)
-      _getPicture();
-    else {
-      Navigator.of(context)
-          .pushNamed(GalleryScreen.routeName)
-          .then((value) async {
-        if (value != null) {
-          AssetEntity asset = value as AssetEntity;
-          if (asset.type == AssetType.video) {
-            File videoFile = await asset.file;
-            _trimVideo(videoFile);
-          } else {
-            File imgFile = await asset.file;
-            _cropImage(imgFile.path);
-          }
+
+    Navigator.of(context)
+        .pushNamed(GalleryScreen.routeName)
+        .then((value) async {
+      if (value != null) {
+        AssetEntity asset = value as AssetEntity;
+        if (asset.type == AssetType.video) {
+          File videoFile = await asset.file;
+          _trimVideo(videoFile);
+        } else {
+          File imgFile = await asset.file;
+          _cropImage(imgFile.path);
         }
-      });
-    }
+      }
+    });
   }
 
   Future<void> _getPicture() async {
@@ -154,8 +141,8 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoCompress.getFileThumbnail(
-        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -195,6 +182,7 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
 
   void _validate() {
     if (_titleController.text.isNotEmpty &&
+        _imageFile != null &&
         category != null) {
       _saveChallenge();
       return;
@@ -220,7 +208,7 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
       barrierDismissible: false,
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Tu reto se ha creado correctamente'),
+        title: Text('Tu tip se ha creado correctamente'),
         actions: <Widget>[
           FlatButton(
             child: Text('Ok'),
@@ -251,14 +239,14 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
     if (_isVideo) {
       ref = FirebaseStorage.instance
           .ref()
-          .child('challenges')
+          .child('tips')
           .child('$challengeId.mp4');
 
       await ref.putFile(_videoFile).onComplete;
     } else {
       ref = FirebaseStorage.instance
           .ref()
-          .child('challenges')
+          .child('tips')
           .child(challengeId + '.jpg');
 
       await ref.putFile(_imageFile).onComplete;
@@ -411,8 +399,7 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
                   decoration: InputDecoration(
                     counterText: '',
                     border: InputBorder.none,
-                    hintText:
-                        Translations.of(context).text('hint_tip_title'),
+                    hintText: Translations.of(context).text('hint_tip_title'),
                   ),
                   style: TextStyle(fontSize: 22),
                 ),
@@ -532,7 +519,7 @@ class _NewChallengeScreenState extends State<NewTipScreen> {
                       width: double.infinity,
                       height: 42,
                       child: RaisedButton(
-                        color: Color(0xFFA4175D),
+                        color: Color(0xFF00B2E3),
                         textColor: Colors.white,
                         child:
                             Text(Translations.of(context).text('button_save')),
