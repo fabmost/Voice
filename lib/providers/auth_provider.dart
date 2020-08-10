@@ -7,8 +7,8 @@ import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import 'database_provider.dart';
 import '../api.dart';
-import '../models/category_model.dart';
 
 class AuthProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
@@ -35,7 +35,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map> installation() async {
+  Future<String> installation() async {
     var url = '${API.baseURL}/installation';
 
     final hash = UniqueKey().toString();
@@ -68,30 +68,41 @@ class AuthProvider with ChangeNotifier {
 
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return {};
+      return null;
     }
 
     if (dataMap['status'] == 'success') {
+      DatabaseProvider dbProvider = DatabaseProvider();
+      await dbProvider.deleteAll();
       saveHash(hash);
-      List aux = dataMap['categories'];
-      List categories = aux.map((e) {
+      dataMap['categories'].forEach((e) async {
         Map dataMap = e as Map;
-        return CategoryModel(
+
+        await dbProvider.saveCategory(
           id: dataMap['id'],
           name: dataMap['name'],
+          icon: dataMap['icon'],
         );
-      }).toList();
-      return {
-        'token': dataMap['session']['token'],
-        'categories': categories,
-      };
+      });
+      dataMap['configs']['countries'].forEach((e) async {
+        Map dataMap = e as Map;
+
+        await dbProvider.saveCountry(
+          name: dataMap['name'],
+          code: dataMap['country_code'],
+          flag: dataMap['flag'],
+          phone: dataMap['code_phone'],
+        );
+      });
+      return dataMap['session']['token'];
     } else {
-      return {};
+      return null;
     }
   }
 
   Future<void> registerAnonymous(token) async {
     await _storage.write(key: API.sessionToken, value: token);
+    _token = token;
     notifyListeners();
     return;
   }
@@ -151,8 +162,7 @@ class AuthProvider with ChangeNotifier {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         HttpHeaders.userAgentHeader: webViewUserAgent,
-        HttpHeaders.authorizationHeader:
-            'Bearer $_token'
+        HttpHeaders.authorizationHeader: 'Bearer $_token'
       },
       body: body,
     );
@@ -175,7 +185,7 @@ class AuthProvider with ChangeNotifier {
 
     final body = jsonEncode({
       'email': email,
-      'password': API().getSalt(password),
+      'password': password,
     });
 
     await FlutterUserAgent.init();

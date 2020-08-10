@@ -6,6 +6,7 @@ import 'user_model.dart';
 
 class ChallengeModel extends ContentModel {
   final String body;
+  final String description;
   final String parameter;
   final int goal;
   final List<ResourceModel> resources;
@@ -24,6 +25,7 @@ class ChallengeModel extends ContentModel {
     hasRegalup,
     hasSaved,
     this.body,
+    this.description,
     this.parameter,
     this.goal,
     this.resources,
@@ -50,9 +52,10 @@ class ChallengeModel extends ContentModel {
         icon: content['user']['icon'],
       ),
       title: content['body'],
+      description: content['description'],
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
       parameter: content['med_param'],
-      goal: content['goal'],
+      goal: int.parse(content['goal']),
       likes: content['likes'],
       regalups: content['regalups'],
       comments: content['comments'],

@@ -46,6 +46,7 @@ import 'screens/test_screen.dart';
 import 'screens/home_screen.dart';
 
 import 'providers/auth_provider.dart';
+import 'providers/database_provider.dart';
 import 'providers/config_provider.dart';
 import 'providers/preferences_provider.dart';
 import 'providers/content_provider.dart';
@@ -97,6 +98,7 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (ctx) => AuthProvider()),
+        ChangeNotifierProvider(create: (ctx) => DatabaseProvider()),
         ChangeNotifierProvider(create: (ctx) => ConfigurationProvider()),
         ChangeNotifierProvider(create: (ctx) => Preferences()),
         ChangeNotifierProvider(create: (ctx) => ContentProvider()),

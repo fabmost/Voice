@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/poll_answer_model.dart';
 import '../providers/preferences_provider.dart';
+import '../providers/content_provider.dart';
 import '../screens/auth_screen.dart';
 
 class PollOptions extends StatefulWidget {
@@ -24,7 +25,9 @@ class PollOptions extends StatefulWidget {
 }
 
 class _PollOptionsState extends State<PollOptions> {
+  bool _hasVoted;
   bool _isLoading = false;
+  List<PollAnswerModel> _answers;
 
   void _anonymousAlert() {
     showDialog(
@@ -52,62 +55,32 @@ class _PollOptionsState extends State<PollOptions> {
     );
   }
 
-  void _setVote(position) async {
-    /*
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      final interactions =
-          await Provider.of<Preferences>(context, listen: false)
-              .getInteractions();
-      if (interactions >= 5) {
-        _anonymousAlert();
-        return;
-      }
-    }
+  void _setVote(idAnswer, position) async {
     setState(() {
       _isLoading = true;
     });
-
-    WriteBatch batch = Firestore.instance.batch();
-
-    batch
-        .updateData(Firestore.instance.collection('users').document(user.uid), {
-      'voted': FieldValue.arrayUnion(
-        [widget.reference.documentID],
-      )
-    });
-    batch.updateData(widget.reference, {
-      'interactions': FieldValue.increment(1),
-      'voters': FieldValue.arrayUnion([
-        {widget.userId: position}
-      ]),
-    });
-
-    await batch.commit();
-    /*
-    await Firestore.instance.runTransaction((transaction) {
-      return transaction.get(widget.reference).then((value) {
-        List results = value.data['results'];
-        Map result = results[position];
-        result['votes']++;
-        transaction.update(widget.reference, {
-          "results": results,
-        });
-      });
-    });
-    */
-    Provider.of<Preferences>(context, listen: false).setInteractions();
+    await Provider.of<ContentProvider>(context, listen: false)
+        .votePoll(widget.id, idAnswer);
+    final selected = _answers.firstWhere((element) => element.id == idAnswer);
+    final newAnswer = PollAnswerModel(
+      id: idAnswer,
+      answer: selected.answer,
+      count: selected.count + 1,
+      isVote: true,
+      url: selected.url,
+    );
     setState(() {
+      _answers[position] = newAnswer;
+      _hasVoted = true;
       _isLoading = false;
     });
-    */
   }
 
   Widget _getOptions() {
     int pos = -1;
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: widget.answers.map(
+        children: _answers.map(
           (option) {
             pos++;
             if (option.url != null) {
@@ -120,9 +93,13 @@ class _PollOptionsState extends State<PollOptions> {
                       ),
                       SizedBox(width: 8),
                       Expanded(
-                        child: widget.hasVoted
+                        child: _hasVoted
                             ? _voted(option.answer, option.isVote, pos)
-                            : _poll(option.answer, pos),
+                            : _poll(
+                                option.answer,
+                                option.id,
+                                pos,
+                              ),
                       ),
                     ],
                   ),
@@ -134,10 +111,11 @@ class _PollOptionsState extends State<PollOptions> {
               children: <Widget>[
                 Container(
                   width: double.infinity,
-                  child: widget.hasVoted
-                      ? _voted(option.answer, option.isVote, pos)
+                  child: _hasVoted
+                      ? _voted(option.answer, option.isVote, option.count)
                       : _poll(
                           option.answer,
+                          option.id,
                           pos,
                         ),
                 ),
@@ -148,24 +126,17 @@ class _PollOptionsState extends State<PollOptions> {
         ).toList());
   }
 
-  Widget _poll(option, position) {
+  Widget _poll(option, idAnswer, position) {
     return FlatButton(
       child: Text(option),
-      onPressed: () => _setVote(position),
+      onPressed: () => _setVote(idAnswer, position),
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
           side: BorderSide(color: Theme.of(context).primaryColor)),
     );
   }
 
-  Widget _voted(answer, isVote, position) {
-    int amount = 0;
-    widget.answers.forEach((element) {
-      int vote = element.count;
-      if (vote == position) {
-        amount++;
-      }
-    });
+  Widget _voted(answer, isVote, amount) {
     var totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.votes;
     if (totalPercentage > 1) {
       totalPercentage = 1;
@@ -240,6 +211,13 @@ class _PollOptionsState extends State<PollOptions> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    _hasVoted = widget.hasVoted;
+    _answers = widget.answers;
+    super.initState();
   }
 
   @override

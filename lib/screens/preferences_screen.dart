@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/database_provider.dart';
 import '../widgets/category_tile.dart';
 import '../models/category_model.dart';
 
@@ -37,7 +38,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     setState(() {
       _isLoading = true;
     });
-    List categories = _categories.map((e) {
+    List categories = _selected.map((e) {
       Map map = {};
       map['id'] = e.id;
       return map;
@@ -50,12 +51,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     setState(() {
       _isLoading = true;
     });
-    final mMap =
+    final mToken =
         await Provider.of<AuthProvider>(context, listen: false).installation();
+    final mList = await Provider.of<DatabaseProvider>(context, listen: false)
+        .getCategories();
     setState(() {
       _isLoading = false;
-      _categories = mMap['categories'];
-      _token = mMap['token'];
+      _token = mToken;
+      _categories = mList;
     });
   }
 
@@ -67,23 +70,28 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        title: const Text(''),
-        backgroundColor: Colors.white,
-        actions: <Widget>[
-          FlatButton(
-            textColor: Colors.black,
-            child: Text(Translations.of(context).text('button_skip')),
-            onPressed: () => _signIn(context),
+    return _isLoading
+        ? Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.white,
+            child: Center(child: CircularProgressIndicator()),
           )
-        ],
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
+        : Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              elevation: 0,
+              title: const Text(''),
+              backgroundColor: Colors.white,
+              actions: <Widget>[
+                FlatButton(
+                  textColor: Colors.black,
+                  child: Text(Translations.of(context).text('button_skip')),
+                  onPressed: () => _signIn(context),
+                )
+              ],
+            ),
+            body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,12 +135,12 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       textColor: Colors.white,
                       child: Text(
                           Translations.of(context).text('button_continue')),
-                      onPressed: _categories.isEmpty ? null : _saveCategories,
+                      onPressed: _selected.isEmpty ? null : _saveCategories,
                     ),
                   ),
                 ],
               ),
             ),
-    );
+          );
   }
 }

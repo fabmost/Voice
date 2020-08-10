@@ -90,7 +90,11 @@ class DetailCommentScreen extends StatelessWidget {
               },
             ),
           ),
-          NewComment(reference),
+          NewComment(
+            id: '',
+            type: '',
+            function: null,
+          ),
         ],
       ),
     );

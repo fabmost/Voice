@@ -7,6 +7,7 @@ import 'user_model.dart';
 
 class PollModel extends ContentModel {
   final String body;
+  final String description;
   final int votes;
   final bool hasVoted;
   final List<PollAnswerModel> answers;
@@ -26,6 +27,7 @@ class PollModel extends ContentModel {
     hasRegalup,
     hasSaved,
     this.body,
+    this.description,
     this.votes,
     this.hasVoted,
     this.answers,
@@ -53,6 +55,7 @@ class PollModel extends ContentModel {
         icon: content['user']['icon'],
       ),
       title: content['body'],
+      description: content['description'],
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
       votes: content['votes'],
       likes: content['likes'],

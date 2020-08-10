@@ -10,6 +10,8 @@ import '../api.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
+import '../models/cause_model.dart';
+import '../models/comment_model.dart';
 
 class ContentProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
@@ -63,7 +65,7 @@ class ContentProvider with ChangeNotifier {
   Future<ContentModel> getContent(type, id) async {
     var url = '${API.baseURL}/contents/$type/$id';
     final token = await _getToken();
-   
+
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
     final response = await http.get(
@@ -81,13 +83,22 @@ class ContentProvider with ChangeNotifier {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      switch (type) {
+        case 'P':
+          return PollModel.fromJson(dataMap['data']);
+        case 'C':
+          return ChallengeModel.fromJson(dataMap['data']);
+        case 'CA':
+          return CauseModel.fromJson(dataMap['data']);
+      }
     }
+    return null;
   }
 
-  Future<List> getComments (type, id) async {
+  Future<List> getComments(type, id) async {
     var url = '${API.baseURL}/comments/$type/$id/';
     final token = await _getToken();
-   
+
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
     final response = await http.get(
@@ -105,9 +116,10 @@ class ContentProvider with ChangeNotifier {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      return CommentModel.listFromJson(dataMap['comments']);
     }
+    return [];
   }
-  
 
   Future<bool> likeContent(type, id) async {
     var url = '${API.baseURL}/registerLikes/$type/$id';
@@ -143,7 +155,7 @@ class ContentProvider with ChangeNotifier {
               title: content.title,
               createdAt: content.createdAt,
               votes: (content as PollModel).votes,
-              likes: hasLiked ? content.likes + 1 : content.likes -1,
+              likes: hasLiked ? content.likes + 1 : content.likes - 1,
               regalups: content.regalups,
               comments: (content as PollModel).comments,
               hasVoted: (content as PollModel).hasVoted,
@@ -165,9 +177,10 @@ class ContentProvider with ChangeNotifier {
 
       return hasLiked;
     }
+    return null;
   }
 
-  Future<void> likeComment(id, like) async {
+  Future<Map> likeComment(id, like) async {
     var url = '${API.baseURL}/registerLike/comments/$id';
     final token = await _getToken();
     Map parameters = {
@@ -188,11 +201,16 @@ class ContentProvider with ChangeNotifier {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return {};
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      return {
+        'like': dataMap['is_likes'],
+        'dislike': dataMap['is_dislike'],
+      };
     }
+    return {};
   }
 
   Future<void> votePoll(id, answer) async {
@@ -294,7 +312,7 @@ class ContentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> newComment({comment, type, id}) async {
+  Future<CommentModel> newComment({comment, type, id}) async {
     var url = '${API.baseURL}/registerComments/$type/$id/';
     final token = await _getToken();
     Map parameters = {
@@ -316,14 +334,16 @@ class ContentProvider with ChangeNotifier {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return null;
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      return CommentModel.fromJson(dataMap['comment']);
     }
+    return null;
   }
 
-  Future<void> newRegalup(id, type) async {
+  Future<bool> newRegalup(type, id) async {
     var url = '${API.baseURL}/registerRegalup/$type/$id';
     final token = await _getToken();
 
@@ -340,11 +360,48 @@ class ContentProvider with ChangeNotifier {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return null;
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      bool hasRegalup = dataMap['is_regalup'];
+
+      final index = _homeContent.indexWhere((element) => element.id == id);
+      if (index != -1) {
+        ContentModel content = _homeContent[index];
+        switch (type) {
+          case 'P':
+            content = PollModel(
+              id: content.id,
+              type: 'poll',
+              user: content.user,
+              title: content.title,
+              createdAt: content.createdAt,
+              votes: (content as PollModel).votes,
+              likes: content.likes,
+              regalups:
+                  hasRegalup ? content.regalups + 1 : content.regalups - 1,
+              comments: (content as PollModel).comments,
+              hasVoted: (content as PollModel).hasVoted,
+              hasLiked: content.hasLiked,
+              hasRegalup: hasRegalup,
+              hasSaved: content.hasSaved,
+              answers: (content as PollModel).answers,
+              resources: (content as PollModel).resources,
+            );
+            break;
+          case 'C':
+            break;
+          case 'CA':
+            break;
+        }
+        _homeContent[index] = content;
+      }
+      notifyListeners();
+
+      return hasRegalup;
     }
+    return null;
   }
 
   Future<void> saveContent(id, type) async {

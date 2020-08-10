@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import 'content_model.dart';
 
 class CauseModel extends ContentModel {
@@ -32,4 +34,21 @@ class CauseModel extends ContentModel {
             hasLiked: hasLiked,
             hasRegalup: hasRegalup,
             hasSaved: hasSaved);
+
+  static CauseModel fromJson(Map content) {
+    return CauseModel(
+      id: content['id'],
+      type: 'challenge',
+      title: content['body'],
+      by: content['by'],
+      info: content['info'],
+      cause: content['cause'],
+      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
+      likes: content['likes'],
+      regalups: content['regalups'],
+      hasLiked: content['is_like'],
+      hasRegalup: content['is_regalup'] ?? false,
+      hasSaved: content['is_save'],
+    );
+  }
 }

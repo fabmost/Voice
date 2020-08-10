@@ -1,19 +1,21 @@
 import 'dart:math';
 
 import 'package:extended_text/extended_text.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'poll_video.dart';
+import 'like_content.dart';
+import 'regalup_content.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
+import '../models/challenge_model.dart';
+import '../models/resource_model.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
@@ -22,17 +24,17 @@ import '../screens/poll_gallery_screen.dart';
 import '../screens/search_results_screen.dart';
 
 class HeaderChallenge extends StatelessWidget with ShareContent {
-  final DocumentReference reference;
-  final String userId;
+  final ChallengeModel challengeModel;
   final Color color = Color(0xFFFFF5FB);
 
-  HeaderChallenge(this.reference, this.userId);
+  HeaderChallenge(this.challengeModel);
 
   void _toProfile(context, creatorId) {
+    /*
     if (userId != creatorId) {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
-    }
+    }*/
   }
 
   void _toTaggedProfile(context, id) {
@@ -49,7 +51,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       context,
       MaterialPageRoute(
         builder: (context) => PollGalleryScreen(
-          reference: reference,
+          reference: null,
           galleryItems: images,
           initialIndex: 0,
         ),
@@ -105,128 +107,19 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     );
   }
 
-  void _like(context, hasLiked) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      final interactions =
-          await Provider.of<Preferences>(context, listen: false)
-              .getInteractions();
-      if (interactions >= 5) {
-        _anonymousAlert(
-          context,
-          Translations.of(context).text('dialog_interactions_done'),
-        );
-        return;
-      }
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasLiked) {
-      Provider.of<Preferences>(context, listen: false).removeInteractions();
-      batch
-          .updateData(Firestore.instance.collection('users').document(userId), {
-        'liked': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'likes': FieldValue.arrayRemove([userId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      Provider.of<Preferences>(context, listen: false).setInteractions();
-      batch
-          .updateData(Firestore.instance.collection('users').document(userId), {
-        'liked': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'likes': FieldValue.arrayUnion([userId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
-  void _repost(context, title, userName, userImage, influencer, metric, goal,
-      date, hasReposted) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([user.uid]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-          Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-challenge',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'creator_name': userName,
-        'creator_image': userImage,
-        'influencer': influencer,
-        'metric_type': metric,
-        'metric_goal': goal,
-        'originalDate': Timestamp.fromDate(date),
-        'parent': reference,
-        'home': userData['followers'] ?? [],
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([user.uid]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
-  void _share(title) {
-    shareChallenge(reference.documentID, title);
+  void _share() {
+    shareChallenge(challengeModel.id, challengeModel.title);
   }
 
   void _flag(context) {
+    /*
     Navigator.of(context)
         .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
+        */
   }
 
   void _save(context, hasSaved) async {
+    /*
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -258,9 +151,11 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     batch.commit();
 
     Navigator.of(context).pop();
+    */
   }
 
   void _options(context, creatorId, hasSaved) {
+    /*
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -294,57 +189,56 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         );
       },
     );
+    */
   }
 
   Widget _challengeGoal(
     context,
-    metric,
-    goal,
-    likes,
-    comments,
-    reposts,
-    isVideo,
-    images,
   ) {
     //bool goalReached = false;
+    String goal;
     int amount;
-    switch (metric) {
-      case 'likes':
-        amount = likes;
+    switch (challengeModel.parameter) {
+      case 'L':
+        goal = 'Likes';
+        amount = challengeModel.likes;
         /*
         if (likes >= goal) {
           goalReached = true;
         }*/
         break;
-      case 'comentarios':
-        amount = comments;
+      case 'C':
+        goal = 'Comentarios';
+        amount = challengeModel.comments;
         /*
         if (comments >= goal) {
           goalReached = true;
         }*/
         break;
-      case 'regalups':
-        amount = reposts;
+      case 'R':
+        goal = 'Regalups';
+        amount = challengeModel.regalups;
         /*
         if (reposts >= goal) {
           goalReached = true;
         }*/
         break;
     }
-    var totalPercentage = (amount == 0) ? 0.0 : amount / goal;
+    var totalPercentage = (amount == 0) ? 0.0 : amount / challengeModel.goal;
     if (totalPercentage > 1) totalPercentage = 1;
     final format = NumberFormat('###.##');
 
+    ResourceModel resource = challengeModel.resources[0];
     return Column(
       children: <Widget>[
-        if (isVideo) PollVideo('', images[0], null),
-        if (!isVideo)
+        if (resource.type == 'V') PollVideo('', resource.url, null),
+        if (resource.type == 'I')
           Align(
             alignment: Alignment.center,
             child: InkWell(
-              onTap: () => _toGallery(context, images),
+              onTap: () => _toGallery(context, resource.url),
               child: Hero(
-                tag: images[0],
+                tag: resource.url,
                 child: Container(
                   width: 144,
                   height: 144,
@@ -352,7 +246,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: Colors.black),
                       image: DecorationImage(
-                        image: NetworkImage(images[0]),
+                        image: NetworkImage(resource.url),
                         fit: BoxFit.cover,
                       )),
                 ),
@@ -398,7 +292,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                   child: Row(
                     children: <Widget>[
                       Text(
-                        metric.toUpperCase(),
+                        goal,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -425,166 +319,115 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: reference.snapshots(),
-        builder: (ctx, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final document = snapshot.data;
+    if (challengeModel == null) {
+      _noExists(context);
+      return Container();
+    }
+    final now = new DateTime.now();
+    final difference = now.difference(challengeModel.createdAt);
 
-          if (document.data == null) {
-            _noExists(context);
-            return Container();
-          }
-
-          int likes = 0;
-          bool hasLiked = false;
-          if (document['likes'] != null) {
-            likes = document['likes'].length;
-            hasLiked = (document['likes'] as List).contains(userId);
-          }
-          int reposts = 0;
-          bool hasReposted = false;
-          if (document['reposts'] != null) {
-            reposts = document['reposts'].length;
-            hasReposted = (document['reposts'] as List).contains(userId);
-          }
-          bool hasSaved = false;
-          if (document['saved'] != null) {
-            hasSaved = (document['saved'] as List).contains(userId);
-          }
-
-          final creatorId = document['user_id'];
-          final userImage = document['user_image'] ?? '';
-          final description = document['description'] ?? '';
-
-          final date = document['createdAt'].toDate();
-          final now = new DateTime.now();
-          final difference = now.difference(date);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          color: color,
+          child: ListTile(
+            /*
+            onTap: creatorId == userId
+                ? null
+                : () => _toProfile(context, creatorId),*/
+            leading: CircleAvatar(
+              radius: 18,
+              backgroundColor: Color(0xFFA4175D),
+              backgroundImage: NetworkImage(challengeModel.user.icon),
+            ),
+            title: Row(
+              children: <Widget>[
+                Flexible(
+                  child: Text(
+                    challengeModel.user.userName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(width: 8),
+                //InfluencerBadge(document['influencer'] ?? '', 16),
+              ],
+            ),
+            subtitle: Text(timeago.format(now.subtract(difference))),
+            trailing: Transform.rotate(
+              angle: 270 * pi / 180,
+              child: IconButton(
+                icon: Icon(Icons.chevron_left),
+                //onPressed: () => _options(context, creatorId, hasSaved),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            challengeModel.title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        SizedBox(height: 16),
+        _challengeGoal(context),
+        SizedBox(height: 16),
+        if (challengeModel.description.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ExtendedText(
+              challengeModel.description,
+              style: TextStyle(fontSize: 16),
+              specialTextSpanBuilder: MySpecialTextSpanBuilder(canClick: true),
+              onSpecialTextTap: (parameter) {
+                if (parameter.toString().startsWith('@')) {
+                  String atText = parameter.toString();
+                  int start = atText.indexOf('[');
+                  int finish = atText.indexOf(']');
+                  String toRemove = atText.substring(start + 1, finish);
+                  _toTaggedProfile(context, toRemove);
+                } else if (parameter.toString().startsWith('#')) {
+                  _toHash(context, parameter.toString());
+                }
+              },
+            ),
+          ),
+        if (challengeModel.description.isNotEmpty) SizedBox(height: 16),
+        Container(
+          color: color,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              Container(
-                color: color,
-                child: ListTile(
-                  onTap: creatorId == userId
-                      ? null
-                      : () => _toProfile(context, creatorId),
-                  leading: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color(0xFFA4175D),
-                    backgroundImage: NetworkImage(userImage),
-                  ),
-                  title: Row(
-                    children: <Widget>[
-                      Flexible(
-                        child: Text(
-                          document['user_name'],
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      InfluencerBadge(document['influencer'] ?? '', 16),
-                    ],
-                  ),
-                  subtitle: Text(timeago.format(now.subtract(difference))),
-                  trailing: Transform.rotate(
-                    angle: 270 * pi / 180,
-                    child: IconButton(
-                      icon: Icon(Icons.chevron_left),
-                      onPressed: () => _options(context, creatorId, hasSaved),
-                    ),
-                  ),
-                ),
+              LikeContent(
+                id: challengeModel.id,
+                type: 'C',
+                likes: challengeModel.likes,
+                hasLiked: challengeModel.hasLiked,
               ),
-              SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  document['title'],
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              RegalupContent(
+                id: challengeModel.id,
+                type: 'C',
+                regalups: challengeModel.regalups,
+                hasRegalup: challengeModel.hasRegalup,
               ),
-              SizedBox(height: 16),
-              _challengeGoal(
-                  context,
-                  document['metric_type'],
-                  document['metric_goal'],
-                  likes,
-                  document['comments'],
-                  reposts,
-                  document['is_video'] ?? false,
-                  document['images']),
-              SizedBox(height: 16),
-              if (description.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ExtendedText(
-                    description,
-                    style: TextStyle(fontSize: 16),
-                    specialTextSpanBuilder:
-                        MySpecialTextSpanBuilder(canClick: true),
-                    onSpecialTextTap: (parameter) {
-                      if (parameter.toString().startsWith('@')) {
-                        String atText = parameter.toString();
-                        int start = atText.indexOf('[');
-                        int finish = atText.indexOf(']');
-                        String toRemove = atText.substring(start + 1, finish);
-                        _toTaggedProfile(context, toRemove);
-                      } else if (parameter.toString().startsWith('#')) {
-                        _toHash(context, parameter.toString());
-                      }
-                    },
-                  ),
-                ),
-              if (description.isNotEmpty) SizedBox(height: 16),
-              Container(
-                color: color,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    FlatButton.icon(
-                      onPressed: () => _like(context, hasLiked),
-                      icon: Icon(GalupFont.like,
-                          color: hasLiked ? Color(0xFFA4175D) : Colors.black),
-                      label: Text(likes == 0 ? '' : '$likes'),
-                    ),
-                    FlatButton.icon(
-                      onPressed: () => _repost(
-                        context,
-                        document['title'],
-                        document['user_name'],
-                        userImage,
-                        document['influencer'],
-                        document['metric_type'],
-                        document['metric_goal'],
-                        date,
-                        hasReposted,
-                      ),
-                      icon: Icon(GalupFont.repost,
-                          color:
-                              hasReposted ? Color(0xFFA4175D) : Colors.black),
-                      label: Text(reposts == 0 ? '' : '$reposts'),
-                    ),
-                    IconButton(
-                      icon: Icon(GalupFont.share),
-                      onPressed: () => _share(document['title']),
-                    ),
-                  ],
-                ),
-              )
+              IconButton(
+                icon: Icon(GalupFont.share),
+                onPressed: _share,
+              ),
             ],
-          );
-        });
+          ),
+        )
+      ],
+    );
   }
 }

@@ -1,18 +1,26 @@
 import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'influencer_badge.dart';
+import '../providers/content_provider.dart';
 import '../screens/auth_screen.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom//my_special_text_span_builder.dart';
 import '../translations.dart';
 
 class NewComment extends StatefulWidget {
-  final DocumentReference reference;
+  final String type;
+  final String id;
+  final String idComment;
+  final Function function;
 
-  NewComment(this.reference);
+  NewComment({
+    @required this.id,
+    @required this.type,
+    this.idComment,
+    @required this.function,
+  });
 
   @override
   _NewCommentState createState() => _NewCommentState();
@@ -76,37 +84,13 @@ class _NewCommentState extends State<NewComment> {
 
   void _sendComment() async {
     FocusScope.of(context).unfocus();
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert();
-      return;
-    }
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    String commentId =
-        Firestore.instance.collection('chats').document().documentID;
-    WriteBatch batch = Firestore.instance.batch();
-
-    batch.setData(
-        Firestore.instance.collection('comments').document(commentId), {
-      'comments': 0,
-      'parent': widget.reference,
-      'text': _controller.text,
-      'createdAt': Timestamp.now(),
-      'userId': user.uid,
-      'userImage': userData['image'],
-      'username': userData['user_name']
-    });
-    batch.updateData(userData.reference, {
-      'comments': FieldValue.arrayUnion([commentId]),
-    });
-    batch.updateData(widget.reference, {
-      'comments': FieldValue.increment(1),
-      'interactions': FieldValue.increment(1)
-    });
-    batch.commit();
+    var result = await Provider.of<ContentProvider>(context, listen: false).newComment(
+      comment: _controller.text,
+      type: widget.type,
+      id: widget.id,
+    );
+    widget.function(result);
     setState(() {
-      //_enteredMessage = '';
       _controller.clear();
     });
   }

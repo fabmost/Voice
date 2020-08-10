@@ -1,19 +1,33 @@
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'flag_screen.dart';
+import 'auth_screen.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/content_provider.dart';
 import '../providers/preferences_provider.dart';
-import '../screens/auth_screen.dart';
-import '../screens/flag_screen.dart';
+import '../models/cause_model.dart';
+import '../widgets/regalup_content.dart';
+import '../widgets/cause_button.dart';
 
-class DetailCauseScreen extends StatelessWidget with ShareContent {
+class DetailCauseScreen extends StatefulWidget with ShareContent {
   static const routeName = '/cause';
+  final String id;
+
+  DetailCauseScreen({this.id});
+
+  @override
+  _DetailCauseScreenState createState() => _DetailCauseScreenState();
+}
+
+class _DetailCauseScreenState extends State<DetailCauseScreen> {
+  CauseModel _causeModel;
+  bool _isLoading = false;
+  int _likes;
 
   final Color color = Color(0xFFF0F0F0);
 
@@ -61,123 +75,19 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
     );
   }
 
-  void _like(context, reference, myId, hasLiked) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      final interactions =
-          await Provider.of<Preferences>(context, listen: false)
-              .getInteractions();
-      if (interactions >= 5) {
-        _anonymousAlert(
-          context,
-          Translations.of(context).text('dialog_interactions_done'),
-        );
-        return;
-      }
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasLiked) {
-      Provider.of<Preferences>(context, listen: false).removeInteractions();
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'liked': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'likes': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      Provider.of<Preferences>(context, listen: false).setInteractions();
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'liked': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'likes': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
-  void _repost(
-      context, reference, myId, title, info, creator, date, hasReposted) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-
-    if (hasReposted) {
-      String repostId;
-      final item = (userData['reposted'] as List).firstWhere(
-        (element) => (element as Map).containsKey(reference.documentID),
-        orElse: () => null,
-      );
-      if (item != null) {
-        repostId = item[reference.documentID];
-      }
-      batch.delete(Firestore.instance.collection('content').document(repostId));
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayRemove([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      String repostId =
-          Firestore.instance.collection('content').document().documentID;
-
-      batch.updateData(
-        Firestore.instance.collection('users').document(user.uid),
-        {
-          'reposted': FieldValue.arrayUnion([
-            {reference.documentID: repostId}
-          ])
-        },
-      );
-      batch.setData(
-          Firestore.instance.collection('content').document(repostId), {
-        'type': 'repost-cause',
-        'user_name': userData['user_name'],
-        'user_id': user.uid,
-        'createdAt': Timestamp.now(),
-        'title': title,
-        'info': info,
-        'creator': creator,
-        'originalDate': date,
-        'parent': reference,
-        'home': userData['followers'] ?? []
-      });
-      batch.updateData(reference, {
-        'reposts': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-  }
-
-  void _share(reference, title) async {
-    shareCause(reference.documentID, title);
+  void _share() {
+    widget.shareCause(_causeModel.id, _causeModel.cause);
   }
 
   void _flag(context, reference) {
+    /*
     Navigator.of(context)
         .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
+        */
   }
 
   void _save(context, reference, myId, hasSaved) async {
+    /*
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -207,10 +117,11 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
     batch.commit();
 
     Navigator.of(context).pop();
+    */
   }
 
   void _options(context, reference, myId, hasSaved) {
-    //FocusScope.of(context).requestFocus(FocusNode());
+    /*
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -243,76 +154,45 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
         );
       },
     );
+    */
   }
 
-  Widget _causeButton(context, reference, myId, hasLiked) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      height: 42,
-      width: double.infinity,
-      child: hasLiked
-          ? OutlineButton(
-              highlightColor: Color(0xFFA4175D),
-              borderSide: BorderSide(
-                color: Colors.black,
-                width: 2,
-              ),
-              onPressed: () => _like(context, reference, myId, hasLiked),
-              child: Text('No apoyo esta causa'),
-            )
-          : RaisedButton(
-              onPressed: () => _like(context, reference, myId, hasLiked),
-              color: Colors.black,
-              textColor: Colors.white,
-              child: Text('Apoyo esta causa'),
-            ),
-    );
+  Future<void> _fetchCause() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .getContent('CA', widget.id);
+    setState(() {
+      _isLoading = false;
+      _causeModel = result;
+      _likes = _causeModel.likes;
+    });
+  }
+
+  void _setLike(isLike) {
+    setState(() {
+      isLike ? _likes++ : _likes--;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCause();
   }
 
   @override
   Widget build(BuildContext context) {
-    final id = ModalRoute.of(context).settings.arguments;
-    final DocumentReference reference =
-        Firestore.instance.collection('content').document(id);
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_cause')),
       ),
-      body: FutureBuilder(
-        future: FirebaseAuth.instance.currentUser(),
-        builder: (ctx, userSnap) {
-          if (userSnap.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          return StreamBuilder(
-            stream: reference.snapshots(),
-            builder: (ct, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              final document = snapshot.data;
-
-              int likes = 0;
-              bool hasLiked = false;
-              if (document['likes'] != null) {
-                likes = document['likes'].length;
-                hasLiked =
-                    (document['likes'] as List).contains(userSnap.data.uid);
-              }
-              int reposts = 0;
-              bool hasReposted = false;
-              if (document['reposts'] != null) {
-                reposts = document['reposts'].length;
-                hasReposted =
-                    (document['reposts'] as List).contains(userSnap.data.uid);
-              }
-              bool hasSaved = false;
-              if (document['saved'] != null) {
-                hasSaved =
-                    (document['saved'] as List).contains(userSnap.data.uid);
-              }
-
-              return Column(
+      body: RefreshIndicator(
+        onRefresh: () => _fetchCause(),
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Column(
                 children: <Widget>[
                   Container(
                     color: color,
@@ -326,14 +206,14 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Text(
-                            document['creator'],
+                            _causeModel.by,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                           IconButton(
                             icon: Icon(GalupFont.info_circled_alt),
                             onPressed: () =>
-                                _infoAlert(context, document['info']),
+                                _infoAlert(context, _causeModel.info),
                           )
                         ],
                       ),
@@ -341,13 +221,15 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                       trailing: Transform.rotate(
                         angle: 270 * pi / 180,
                         child: IconButton(
-                            icon: Icon(Icons.chevron_left),
+                          icon: Icon(Icons.chevron_left),
+                          /*
                             onPressed: () => _options(
                                   context,
                                   reference,
                                   userSnap.data.uid,
                                   hasSaved,
-                                )),
+                                )*/
+                        ),
                       ),
                     ),
                   ),
@@ -355,7 +237,7 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      document['title'],
+                      _causeModel.cause,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -363,49 +245,34 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                     ),
                   ),
                   SizedBox(height: 16),
-                  _causeButton(
-                    context,
-                    reference,
-                    userSnap.data.uid,
-                    hasLiked,
+                  CauseButton(
+                    id: _causeModel.id,
+                    hasLike: _causeModel.hasLiked,
+                    setVotes: _setLike,
                   ),
                   SizedBox(height: 16),
                   Container(
                     color: color,
                     child: Row(
                       children: <Widget>[
-                        FlatButton.icon(
-                          onPressed: () => _repost(
-                            context,
-                            reference,
-                            userSnap.data.uid,
-                            document['title'],
-                            document['info'],
-                            document['creator'],
-                            document['createdAt'],
-                            hasReposted,
-                          ),
-                          icon: Icon(GalupFont.repost,
-                              color: hasReposted
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.black),
-                          label: Text(reposts == 0 ? '' : '$reposts'),
+                        RegalupContent(
+                          id: _causeModel.id,
+                          type: 'CA',
+                          regalups: _causeModel.regalups,
+                          hasRegalup: _causeModel.hasRegalup,
                         ),
                         IconButton(
                           icon: Icon(GalupFont.share),
-                          onPressed: () => _share(reference, document['title']),
+                          onPressed: _share,
                         ),
                         Expanded(child: SizedBox(height: 1)),
-                        Text(likes == 0 ? '' : '$likes Votos'),
+                        Text(_likes == 0 ? '' : '$_likes Votos'),
                         SizedBox(width: 16),
                       ],
                     ),
                   )
                 ],
-              );
-            },
-          );
-        },
+              ),
       ),
     );
   }
