@@ -30,15 +30,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   HeaderChallenge(this.challengeModel);
 
   void _toProfile(context, creatorId) {
-    /*
-    if (userId != creatorId) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
-    }*/
-  }
-
-  void _toTaggedProfile(context, id) {
-    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
   }
 
   void _toHash(context, hashtag) {
@@ -332,10 +325,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         Container(
           color: color,
           child: ListTile(
-            /*
-            onTap: creatorId == userId
-                ? null
-                : () => _toProfile(context, creatorId),*/
+            onTap: () => _toProfile(context, challengeModel.user.userName),
             leading: CircleAvatar(
               radius: 18,
               backgroundColor: Color(0xFFA4175D),
@@ -395,7 +385,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                   int start = atText.indexOf('[');
                   int finish = atText.indexOf(']');
                   String toRemove = atText.substring(start + 1, finish);
-                  _toTaggedProfile(context, toRemove);
+                  _toProfile(context, toRemove);
                 } else if (parameter.toString().startsWith('#')) {
                   _toHash(context, parameter.toString());
                 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'comment_options.dart';
-import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/detail_comment_screen.dart';
 import '../screens/view_profile_screen.dart';
@@ -39,13 +38,9 @@ class CommentTile extends StatelessWidget {
     //  .pushNamed(DetailCommentScreen.routeName, arguments: reference);
   }
 
-  void _toProfile(context) {
-    //Navigator.of(context)
-    //  .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-  }
-
-  void _toTaggedProfile(context, id) {
-    //Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  void _toProfile(context, user) {
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: user);
   }
 
   void _toHash(context, hashtag) {
@@ -96,7 +91,7 @@ class CommentTile extends StatelessWidget {
       children: <Widget>[
         ListTile(
           leading: GestureDetector(
-            onTap: () => _toProfile(context),
+            onTap: () => _toProfile(context, userName),
             child: CircleAvatar(
               backgroundImage: NetworkImage(userImage),
             ),
@@ -131,7 +126,7 @@ class CommentTile extends StatelessWidget {
                 int start = atText.indexOf('[');
                 int finish = atText.indexOf(']');
                 String toRemove = atText.substring(start + 1, finish);
-                _toTaggedProfile(context, toRemove);
+                _toProfile(context, toRemove);
               } else if (parameter.toString().startsWith('#')) {
                 _toHash(context, parameter.toString());
               }
@@ -144,7 +139,7 @@ class CommentTile extends StatelessWidget {
           dislikes: downs,
           hasLike: hasUp,
           hasDislike: hasDown,
-          toComments: ()=> _toComment(context),
+          toComments: () => _toComment(context),
         ),
         if (comments > 0)
           Row(

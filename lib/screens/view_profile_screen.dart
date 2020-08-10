@@ -3,13 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:voice_inc/models/user_model.dart';
 
 import 'auth_screen.dart';
 import 'chat_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
 
+import '../providers/user_provider.dart';
 import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
 import '../widgets/influencer_badge.dart';
@@ -278,12 +281,12 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
     );
   }
 
-  Widget _followButton(context, userId, myId, followers) {
-    if (followers == null || !followers.contains(myId)) {
+  Widget _followButton(context, userId, isFollowing) {
+    if (!isFollowing) {
       return Expanded(
         flex: 1,
         child: RaisedButton(
-          onPressed: () => _follow(context, userId, myId, false),
+          //onPressed: () => _follow(context, userId, myId, false),
           textColor: Colors.white,
           child: Text('Seguir'),
         ),
@@ -292,267 +295,259 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
     return Expanded(
       flex: 1,
       child: OutlineButton(
-        onPressed: () => _follow(context, userId, myId, true),
+        //onPressed: () => _follow(context, userId, myId, true),
         child: Text('Siguiendo'),
       ),
     );
   }
 
-  Widget _newHeader(context, profileId) {
-    return FutureBuilder(
-      future: FirebaseAuth.instance.currentUser(),
-      builder: (ct, AsyncSnapshot<FirebaseUser> userSnap) {
-        if (userSnap.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        return StreamBuilder(
-          stream: Firestore.instance
-              .collection('users')
-              .document(profileId)
-              .snapshots(),
-          builder: (ctx, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final document = snapshot.data;
-            final screenWidth = MediaQuery.of(context).size.width;
-            final containerHeight = (screenWidth * 8) / 25;
-            return Container(
-              color: Colors.white,
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    height: containerHeight + 60,
-                    child: Stack(
-                      children: <Widget>[
-                        Container(
-                          width: double.infinity,
-                          height: containerHeight,
-                          decoration: BoxDecoration(
-                            color: Color(0xFFECECEC),
-                            image: document['cover'] != null
-                                ? DecorationImage(
-                                    image: NetworkImage(document['cover']),
-                                    fit: BoxFit.cover)
-                                : null,
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundImage:
-                                NetworkImage(document['image'] ?? ''),
-                          ),
-                        ),
-                      ],
-                    ),
+  Widget _newHeader(context, hasSocialMedia, UserModel user) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final containerHeight = (screenWidth * 8) / 25;
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: containerHeight + 60,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  height: containerHeight,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFECECEC),
+                    image: DecorationImage(
+                        image: NetworkImage(user.cover), fit: BoxFit.cover),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        '${document['name']} ${document['last_name']}',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      InfluencerBadge(document['influencer'] ?? '', 20),
-                    ],
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundImage: NetworkImage(user.icon),
                   ),
-                  Text(
-                    '@${document['user_name']}',
-                    style: TextStyle(
-                      color: Theme.of(context).accentColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Container(
-                    height: 50,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: AutoSizeText(
-                      document['bio'] ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 3,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      if ((document['tiktok'] ?? '').toString().isNotEmpty)
-                        GestureDetector(
-                          onTap: () => _launchURL(
-                              'https://www.tiktok.com/${document['tiktok'].replaceAll('@', '')}'),
-                          child: CircleAvatar(
-                            backgroundColor: Colors.black,
-                            child: Icon(
-                              GalupFont.tik_tok,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      SizedBox(width: 8),
-                      if ((document['facebook'] ?? '').toString().isNotEmpty)
-                        GestureDetector(
-                          onTap: () => _launchURL(
-                              'https://www.facebook.com/${document['facebook'].replaceAll('@', '')}'),
-                          child: CircleAvatar(
-                            backgroundColor: Colors.black,
-                            child: Icon(
-                              GalupFont.facebook,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      SizedBox(width: 8),
-                      if ((document['instagram'] ?? '').toString().isNotEmpty)
-                        GestureDetector(
-                          onTap: () => _launchURL(
-                              'https://www.instagram.com/${document['instagram'].replaceAll('@', '')}'),
-                          child: CircleAvatar(
-                            backgroundColor: Colors.black,
-                            child: Icon(
-                              GalupFont.instagram,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      SizedBox(width: 8),
-                      if ((document['youtube'] ?? '').toString().isNotEmpty)
-                        GestureDetector(
-                          onTap: () => _launchURL(
-                              'https://www.youtube.com/c/${document['youtube']}'),
-                          child: CircleAvatar(
-                            backgroundColor: Colors.black,
-                            child: Icon(
-                              GalupFont.youtube,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: <Widget>[
-                      _usersWidget(
-                        document['following'] != null
-                            ? document['following'].length
-                            : 0,
-                        Translations.of(context).text('label_following'),
-                        () => _toFollowing(context, profileId),
-                      ),
-                      Container(
-                        width: 1,
-                        color: Colors.grey,
-                        height: 32,
-                      ),
-                      _usersWidget(
-                        document['followers'] != null
-                            ? document['followers'].length
-                            : 0,
-                        Translations.of(context).text('label_followers'),
-                        () => _toFollowers(context, profileId),
-                      ),
-                      _followButton(
-                        context,
-                        profileId,
-                        userSnap.data.uid,
-                        document['followers'],
-                      ),
-                      SizedBox(width: 16)
-                    ],
-                  ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                '${user.name} ${user.lastName}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
-            );
-          },
-        );
-      },
+              SizedBox(width: 8),
+              //InfluencerBadge(document['influencer'] ?? '', 20),
+            ],
+          ),
+          Text(
+            '@${user.userName}',
+            style: TextStyle(
+              color: Theme.of(context).accentColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          SizedBox(height: 16),
+          if (user.biography != null && user.biography.isNotEmpty)
+            Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: AutoSizeText(
+                user.biography,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          if (user.biography != null && user.biography.isNotEmpty)
+            SizedBox(height: 16),
+          if(hasSocialMedia) Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              if ((user.tiktok ?? '').isNotEmpty)
+                GestureDetector(
+                  onTap: () => _launchURL(
+                      'https://www.tiktok.com/${user.tiktok.replaceAll('@', '')}'),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black,
+                    child: Icon(
+                      GalupFont.tik_tok,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              SizedBox(width: 8),
+              if ((user.facebook ?? '').isNotEmpty)
+                GestureDetector(
+                  onTap: () => _launchURL(
+                      'https://www.facebook.com/${user.facebook.replaceAll('@', '')}'),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black,
+                    child: Icon(
+                      GalupFont.facebook,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              SizedBox(width: 8),
+              if ((user.instagram ?? '').isNotEmpty)
+                GestureDetector(
+                  onTap: () => _launchURL(
+                      'https://www.instagram.com/${user.instagram.replaceAll('@', '')}'),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black,
+                    child: Icon(
+                      GalupFont.instagram,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              SizedBox(width: 8),
+              if ((user.youtube ?? '').isNotEmpty)
+                GestureDetector(
+                  onTap: () =>
+                      _launchURL('https://www.youtube.com/c/${user.youtube}'),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black,
+                    child: Icon(
+                      GalupFont.youtube,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if(hasSocialMedia) SizedBox(height: 16),
+          Row(
+            children: <Widget>[
+              _usersWidget(
+                user.following,
+                Translations.of(context).text('label_following'),
+                () => _toFollowing(context, user.userName),
+              ),
+              Container(
+                width: 1,
+                color: Colors.grey,
+                height: 32,
+              ),
+              _usersWidget(
+                user.followers,
+                Translations.of(context).text('label_followers'),
+                () => _toFollowers(context, user.userName),
+              ),
+              _followButton(context, user.userName, user.isFollowing
+                  //userSnap.data.uid,
+                  //document['followers'],
+                  ),
+              SizedBox(width: 16)
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final profileId = ModalRoute.of(context).settings.arguments as String;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final containerHeight = (screenWidth * 8) / 25;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: DefaultTabController(
-        length: 2,
-        child: NestedScrollView(
-          headerSliverBuilder: (ctx, isScrolled) {
-            return <Widget>[
-              SliverAppBar(
-                pinned: true,
-                title: Text(Translations.of(context).text('title_profile')),
-                actions: <Widget>[
-                  IconButton(
-                    icon: Icon(GalupFont.message),
-                    onPressed: () => _toChat(context, profileId),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert),
-                    onPressed: () => _menu(context, profileId),
-                  ),
-                  //_header(context, profileId),
-                ],
-                //flexibleSpace: _header(context, statusBarHeight, profileId),
-              ),
-              SliverPersistentHeader(
-                pinned: false,
-                delegate: _SliverHeaderDelegate(
-                  378 + containerHeight - 70,
-                  378 + containerHeight - 70,
-                  _newHeader(context, profileId),
-                ),
-              ),
-              SliverPersistentHeader(
-                delegate: _SliverAppBarDelegate(
-                  TabBar(
-                    labelColor: Theme.of(context).accentColor,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
-                    tabs: [
-                      Tab(
-                        icon: Icon(GalupFont.survey),
-                        text: 'Encuestas',
+      body: FutureBuilder(
+        future: Provider.of<UserProvider>(context).getProfile(profileId),
+        builder: (context, AsyncSnapshot<UserModel> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return Center(child: CircularProgressIndicator());
+
+          UserModel user = snapshot.data;
+          bool hasSocialMedia = false;
+
+          double containerHeight = 320;
+          if (user.biography != null && user.biography.isNotEmpty) {
+            containerHeight += 66;
+          }
+          if ((user.tiktok ?? '').isNotEmpty ||
+              (user.facebook ?? '').isNotEmpty ||
+              (user.instagram ?? '').isNotEmpty ||
+              (user.youtube ?? '').isNotEmpty) {
+            hasSocialMedia = true;
+            containerHeight += 60;
+          }
+          return DefaultTabController(
+            length: 2,
+            child: NestedScrollView(
+              headerSliverBuilder: (ctx, isScrolled) {
+                return <Widget>[
+                  SliverAppBar(
+                    pinned: true,
+                    title: Text(Translations.of(context).text('title_profile')),
+                    actions: <Widget>[
+                      IconButton(
+                        icon: Icon(GalupFont.message),
+                        onPressed: () => _toChat(context, profileId),
                       ),
-                      Tab(
-                        icon: Icon(GalupFont.challenge),
-                        text: 'Retos',
+                      IconButton(
+                        icon: Icon(Icons.more_vert),
+                        onPressed: () => _menu(context, profileId),
                       ),
+                      //_header(context, profileId),
                     ],
+                    //flexibleSpace: _header(context, statusBarHeight, profileId),
                   ),
-                ),
-                pinned: true,
+                  SliverPersistentHeader(
+                    pinned: false,
+                    delegate: _SliverHeaderDelegate(
+                      containerHeight,
+                      containerHeight,
+                      _newHeader(context, hasSocialMedia, user),
+                    ),
+                  ),
+                  SliverPersistentHeader(
+                    delegate: _SliverAppBarDelegate(
+                      TabBar(
+                        labelColor: Theme.of(context).accentColor,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
+                        tabs: [
+                          Tab(
+                            icon: Icon(GalupFont.survey),
+                            text: 'Encuestas',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.challenge),
+                            text: 'Retos',
+                          ),
+                        ],
+                      ),
+                    ),
+                    pinned: true,
+                  ),
+                ];
+              },
+              body: TabBarView(
+                children: [
+                  PollList(profileId),
+                  ChallengeList(profileId),
+                ],
               ),
-            ];
-          },
-          body: TabBarView(
-            children: [
-              PollList(profileId),
-              ChallengeList(profileId),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

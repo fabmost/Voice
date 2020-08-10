@@ -30,12 +30,8 @@ class HeaderPoll extends StatelessWidget with ShareContent {
   HeaderPoll(this.pollModel);
 
   void _toProfile(context, creatorId) {
-    /*
-    if (creatorId != userId) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
-    }
-    */
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
   }
 
   void _toHash(context, hashtag) {
@@ -198,9 +194,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
         Container(
           color: color,
           child: ListTile(
-            //onTap: creatorId == userId
-            //  ? null
-            //: () => _toProfile(context, creatorId),
+            onTap: () => _toProfile(context, pollModel.user.userName),
             leading: CircleAvatar(
               radius: 18,
               backgroundColor: Theme.of(context).accentColor,
