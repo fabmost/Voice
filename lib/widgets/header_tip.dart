@@ -4,9 +4,11 @@ import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'tip_rating.dart';
 import 'influencer_badge.dart';
 import 'poll_video.dart';
 import '../translations.dart';
@@ -23,7 +25,7 @@ import '../screens/search_results_screen.dart';
 class HeaderTip extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
-  final Color color = Color(0xFFC1F2FF);
+  final Color color = Color(0xFFF4FDFF);
 
   HeaderTip(this.reference, this.userId);
 
@@ -61,16 +63,34 @@ class HeaderTip extends StatelessWidget with ShareContent {
       showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (ctx) => AlertDialog(
-          content: Text('Este contenido ya no existe'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text('Ok'),
+        builder: (ctx) => Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  'Este contenido ya no existe',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  child: RaisedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    textColor: Colors.white,
+                    child: Text('Ok'),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ).then((value) {
         Navigator.of(context).pop();
@@ -293,6 +313,19 @@ class HeaderTip extends StatelessWidget with ShareContent {
     );
   }
 
+  void _rateAlert(context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: TipRating(reference, _saveRate),
+      ),
+    );
+  }
+
+  void _saveRate(context) {
+    Navigator.of(context).pop();
+  }
+
   Widget _challengeGoal(
     context,
     likes,
@@ -356,11 +389,28 @@ class HeaderTip extends StatelessWidget with ShareContent {
           if (document['saved'] != null) {
             hasSaved = (document['saved'] as List).contains(userId);
           }
+          bool hasRated = false;
+          double rate = 0;
+          if (document['rates'] != null) {
+            int amount = document['rates'].length;
+            double rateSum = 0;
+            (document['rates'] as List).forEach((element) {
+              Map map = (element as Map);
+              if (map.containsKey(userId)) {
+                hasRated = true;
+              }
+              rateSum += map.values.first;
+            });
+            if (amount > 0 && rateSum > 0) {
+              rate = rateSum / amount;
+            }
+          }
 
           final creatorId = document['user_id'];
           final userImage = document['user_image'] ?? '';
           final description = document['description'] ?? '';
 
+          final format = NumberFormat('###.##');
           final date = document['createdAt'].toDate();
           final now = new DateTime.now();
           final difference = now.difference(date);
@@ -409,25 +459,59 @@ class HeaderTip extends StatelessWidget with ShareContent {
               SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ExtendedText(
-                  document['title'],
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  specialTextSpanBuilder:
-                      MySpecialTextSpanBuilder(canClick: true),
-                  onSpecialTextTap: (parameter) {
-                    if (parameter.toString().startsWith('@')) {
-                      String atText = parameter.toString();
-                      int start = atText.indexOf('[');
-                      int finish = atText.indexOf(']');
-                      String toRemove = atText.substring(start + 1, finish);
-                      _toProfile(context, toRemove);
-                    } else if (parameter.toString().startsWith('#')) {
-                      _toHash(context, parameter.toString());
-                    }
-                  },
+                child: Row(
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () => hasRated ? null : _rateAlert(context),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          Icon(
+                            Icons.star,
+                            color: hasRated
+                                ? Theme.of(context).primaryColor
+                                : Color(0xFFBBBBBB),
+                            size: 42,
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(top: 3),
+                            child: Text(
+                              '${format.format(rate)}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: ExtendedText(
+                        document['title'],
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        specialTextSpanBuilder:
+                            MySpecialTextSpanBuilder(canClick: true),
+                        onSpecialTextTap: (parameter) {
+                          if (parameter.toString().startsWith('@')) {
+                            String atText = parameter.toString();
+                            int start = atText.indexOf('[');
+                            int finish = atText.indexOf(']');
+                            String toRemove =
+                                atText.substring(start + 1, finish);
+                            _toProfile(context, toRemove);
+                          } else if (parameter.toString().startsWith('#')) {
+                            _toHash(context, parameter.toString());
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 16),

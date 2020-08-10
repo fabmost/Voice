@@ -19,7 +19,7 @@ class RepostTip extends StatelessWidget {
   final DateTime date;
   final String influencer;
 
-  final Color color = Color(0xFFC1F2FF);
+  final Color color = Color(0xFFF4FDFF);
 
   RepostTip({
     this.reference,

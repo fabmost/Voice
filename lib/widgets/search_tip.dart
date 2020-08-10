@@ -18,7 +18,7 @@ class SearchTip extends StatelessWidget {
   final String influencer;
   final String description;
 
-  final Color color = Color(0xFFC1F2FF);
+  final Color color = Color(0xFFF4FDFF);
 
   SearchTip({
     this.reference,

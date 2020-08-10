@@ -62,16 +62,34 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (ctx) => AlertDialog(
-          content: Text('Este contenido ya no existe'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text('Ok'),
+        builder: (ctx) => Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  'Este contenido ya no existe',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  child: RaisedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    textColor: Colors.white,
+                    child: Text('Ok'),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ).then((value) {
         Navigator.of(context).pop();

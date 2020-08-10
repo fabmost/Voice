@@ -130,12 +130,30 @@ class FilteredContent extends StatelessWidget {
     if (doc['saved'] != null) {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
+    bool hasRated = false;
+    double rate = 0;
+    if (doc['rates'] != null) {
+      int amount = doc['rates'].length;
+      double rateSum = 0;
+      (doc['rates'] as List).forEach((element) {
+        Map map = (element as Map);
+        if(map.containsKey(userId)){
+          hasRated = true;
+        }
+        rateSum += map.values.first;
+      });
+      if(amount > 0 && rateSum > 0){
+        rate = rateSum / amount;
+      }
+    }
     return Tip(
       reference: doc.reference,
       myId: userId,
       userId: doc['user_id'],
       userName: doc['user_name'],
       userImage: doc['user_image'] ?? '',
+      rating: rate,
+      hasRated: hasRated,
       title: doc['title'],
       description: doc['description'] ?? '',
       isVideo: doc['is_video'] ?? false,

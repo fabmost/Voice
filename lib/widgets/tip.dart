@@ -4,9 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'tip_rating.dart';
 import 'poll_video.dart';
 import 'influencer_badge.dart';
 import '../translations.dart';
@@ -39,10 +41,12 @@ class Tip extends StatelessWidget with ShareContent {
   final bool isVideo;
   final List images;
   final String description;
+  final double rating;
+  final bool hasRated;
 
   final videoFunction;
 
-  final Color color = Color(0xFFC1F2FF);
+  final Color color = Color(0xFFF4FDFF);
 
   Tip({
     this.reference,
@@ -58,6 +62,8 @@ class Tip extends StatelessWidget with ShareContent {
     this.hasReposted,
     this.hasSaved,
     this.date,
+    @required this.hasRated,
+    @required this.rating,
     @required this.influencer,
     @required this.isVideo,
     @required this.images,
@@ -271,8 +277,21 @@ class Tip extends StatelessWidget with ShareContent {
     Navigator.of(context).pop();
   }
 
+  void _rateAlert(context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: TipRating(reference, _saveRate),
+      ),
+    );
+  }
+
+  void _saveRate(context) {
+    Navigator.of(context).pop();
+  }
+
   void _options(context) {
-    FocusScope.of(context).requestFocus(FocusNode());
+    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -309,6 +328,7 @@ class Tip extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
+    double width = (MediaQuery.of(context).size.width / 3) * 2;
     if (isVideo) return PollVideo('', images[0], videoFunction);
 
     return Align(
@@ -318,8 +338,8 @@ class Tip extends StatelessWidget with ShareContent {
         child: Hero(
           tag: images[0],
           child: Container(
-            width: 144,
-            height: 144,
+            width: width,
+            height: width,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.black),
@@ -335,6 +355,7 @@ class Tip extends StatelessWidget with ShareContent {
 
   @override
   Widget build(BuildContext context) {
+    final format = NumberFormat('###.##');
     final now = new DateTime.now();
     final difference = now.difference(date);
 
@@ -388,25 +409,58 @@ class Tip extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ExtendedText(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                specialTextSpanBuilder:
-                    MySpecialTextSpanBuilder(canClick: true),
-                onSpecialTextTap: (parameter) {
-                  if (parameter.toString().startsWith('@')) {
-                    String atText = parameter.toString();
-                    int start = atText.indexOf('[');
-                    int finish = atText.indexOf(']');
-                    String toRemove = atText.substring(start + 1, finish);
-                    _toTaggedProfile(context, toRemove);
-                  } else if (parameter.toString().startsWith('#')) {
-                    _toHash(context, parameter.toString());
-                  }
-                },
+              child: Row(
+                children: <Widget>[
+                  GestureDetector(
+                    onTap: () => hasRated ? null : _rateAlert(context),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        Icon(
+                          Icons.star,
+                          color: hasRated
+                              ? Theme.of(context).primaryColor
+                              : Color(0xFFBBBBBB),
+                          size: 42,
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            '${format.format(rating)}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: ExtendedText(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      specialTextSpanBuilder:
+                          MySpecialTextSpanBuilder(canClick: true),
+                      onSpecialTextTap: (parameter) {
+                        if (parameter.toString().startsWith('@')) {
+                          String atText = parameter.toString();
+                          int start = atText.indexOf('[');
+                          int finish = atText.indexOf(']');
+                          String toRemove = atText.substring(start + 1, finish);
+                          _toTaggedProfile(context, toRemove);
+                        } else if (parameter.toString().startsWith('#')) {
+                          _toHash(context, parameter.toString());
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 16),

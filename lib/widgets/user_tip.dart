@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -38,8 +39,10 @@ class UserTip extends StatelessWidget with ShareContent {
   final bool isVideo;
   final List images;
   final String description;
+  final double rating;
+  final bool hasRated;
 
-  final Color color = Color(0xFFC1F2FF);
+  final Color color = Color(0xFFF4FDFF);
 
   UserTip({
     this.reference,
@@ -54,6 +57,8 @@ class UserTip extends StatelessWidget with ShareContent {
     this.reposts,
     this.hasSaved,
     this.date,
+    @required this.hasRated,
+    @required this.rating,
     @required this.influencer,
     @required this.likesList,
     @required this.isVideo,
@@ -273,6 +278,7 @@ class UserTip extends StatelessWidget with ShareContent {
 
   @override
   Widget build(BuildContext context) {
+    final format = NumberFormat('###.##');
     final now = new DateTime.now();
     final difference = now.difference(date);
 
@@ -320,25 +326,55 @@ class UserTip extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ExtendedText(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                specialTextSpanBuilder:
-                    MySpecialTextSpanBuilder(canClick: true),
-                onSpecialTextTap: (parameter) {
-                  if (parameter.toString().startsWith('@')) {
-                    String atText = parameter.toString();
-                    int start = atText.indexOf('[');
-                    int finish = atText.indexOf(']');
-                    String toRemove = atText.substring(start + 1, finish);
-                    _toTaggedProfile(context, toRemove);
-                  } else if (parameter.toString().startsWith('#')) {
-                    _toHash(context, parameter.toString());
-                  }
-                },
+              child: Row(
+                children: <Widget>[
+                  Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.star,
+                        color: hasRated
+                            ? Theme.of(context).primaryColor
+                            : Color(0xFFBBBBBB),
+                        size: 42,
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 3),
+                        child: Text(
+                          '${format.format(rating)}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: ExtendedText(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      specialTextSpanBuilder:
+                          MySpecialTextSpanBuilder(canClick: true),
+                      onSpecialTextTap: (parameter) {
+                        if (parameter.toString().startsWith('@')) {
+                          String atText = parameter.toString();
+                          int start = atText.indexOf('[');
+                          int finish = atText.indexOf(']');
+                          String toRemove = atText.substring(start + 1, finish);
+                          _toTaggedProfile(context, toRemove);
+                        } else if (parameter.toString().startsWith('#')) {
+                          _toHash(context, parameter.toString());
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 16),

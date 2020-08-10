@@ -103,16 +103,6 @@ class _NewTipScreenState extends State<NewTipScreen> {
     });
   }
 
-  Future<void> _getPicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path);
-    }
-  }
-
   Future<void> _takePicture() async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
@@ -207,16 +197,34 @@ class _NewTipScreenState extends State<NewTipScreen> {
     await showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Tu tip se ha creado correctamente'),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('Ok'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          )
-        ],
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Tu tip se ha creado correctamente',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
     Navigator.of(context).pop();
@@ -474,7 +482,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   controller: _descriptionController,
                   focusNode: _descFocus,
                   maxLines: null,
-                  maxLength: 240,
+                  maxLength: 500,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

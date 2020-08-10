@@ -106,16 +106,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     });
   }
 
-  Future<void> _getPicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path);
-    }
-  }
-
   Future<void> _takePicture() async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
@@ -252,16 +242,34 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     await showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Tu reto se ha creado correctamente'),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('Ok'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          )
-        ],
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Tu reto se ha creado correctamente',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
     Navigator.of(context).pop();
