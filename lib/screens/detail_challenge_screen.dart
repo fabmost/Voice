@@ -33,7 +33,7 @@ class _DetailChallengeScreenState extends State<DetailChallengeScreen> {
         .getContent('C', widget.id);
     List<CommentModel> newObjects =
         await Provider.of<ContentProvider>(context, listen: false)
-            .getComments('C', widget.id);
+            .getComments(id: widget.id, type: 'C', page: 0);
     setState(() {
       _isLoading = false;
       _challengeModel = result;

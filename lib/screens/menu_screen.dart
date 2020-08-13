@@ -11,15 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:voice_inc/translations.dart';
+
+import '../translations.dart';
 
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
+import '../providers/user_provider.dart';
 
+import 'home_screen.dart';
 import 'upgrade_screen.dart';
 import 'auth_screen.dart';
 import 'onboarding_screen.dart';
-import 'polls_screen.dart';
 import 'search_screen.dart';
 import 'messages_screen.dart';
 import 'profile_screen.dart';
@@ -45,15 +47,18 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   Animation<double> _iconAnimationTween;
   int _selectedPageIndex = 0;
   List<Widget> _pages = [
-    PollsScreen(
-      key: PageStorageKey('Page1'),
-      homeController: _homeController,
-      stopVideo: _playVideo,
-    ),
+    HomeScreen(
+        //key: PageStorageKey('Page1'),
+        //homeController: _homeController,
+        //stopVideo: _playVideo,
+        ),
+    Container(),
+    /*
     SearchScreen(
       key: PageStorageKey('Page2'),
       stopVideo: _playVideo,
     ),
+    */
     MessagesScreen(
       key: PageStorageKey('Page3'),
     ),
@@ -72,7 +77,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
   void _selectPage(int index) {
     setState(() {
-      if(_controller != null){
+      if (_controller != null) {
         _controller.pause();
       }
       if (_selectedPageIndex == index && index == 0) {
@@ -101,8 +106,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _newPoll() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
       return;
     }
@@ -110,8 +114,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _newChallenge() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
       return;
     }

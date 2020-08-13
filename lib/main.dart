@@ -21,7 +21,6 @@ import 'screens/edit_profile_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/view_profile_screen.dart';
 import 'screens/chat_screen.dart';
-import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
@@ -99,8 +98,11 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (ctx) => AuthProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
+          create: (ctx) => UserProvider(null),
+          update: (ctx, auth, previous) => UserProvider(auth.getUsername),
+        ),
         ChangeNotifierProvider(create: (ctx) => DatabaseProvider()),
-        ChangeNotifierProvider(create: (ctx) => UserProvider()),
         ChangeNotifierProvider(create: (ctx) => ConfigurationProvider()),
         ChangeNotifierProvider(create: (ctx) => Preferences()),
         ChangeNotifierProvider(create: (ctx) => ContentProvider()),
@@ -129,7 +131,7 @@ class App extends StatelessWidget {
             const Locale('es', ''),
           ],
           home: provider.isAuth
-              ? TestScreen()
+              ? MenuScreen()
               : FutureBuilder(
                   future: provider.hasToken(),
                   builder: (ctx, snapshot) =>
@@ -169,7 +171,6 @@ class App extends StatelessWidget {
             NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),
-            CommentsScreen.routeName: (ctx) => CommentsScreen(),
             DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),

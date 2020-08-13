@@ -93,8 +93,7 @@ class Poll extends StatelessWidget with ShareContent {
   }
 
   void _toComments(context) {
-    Navigator.of(context)
-        .pushNamed(CommentsScreen.routeName, arguments: reference);
+    
   }
 
   void _anonymousAlert(context, text) {
@@ -374,7 +373,7 @@ class Poll extends StatelessWidget with ShareContent {
               ),
             ),
             if (images.isNotEmpty) SizedBox(height: 16),
-            if (images.isNotEmpty) PollImages(images, reference),
+           // if (images.isNotEmpty) PollImages(images, reference),
             if (video.isNotEmpty) SizedBox(height: 16),
             if (video.isNotEmpty) PollVideo(thumb, video, videoFunction),
             /*

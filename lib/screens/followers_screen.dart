@@ -1,15 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'view_profile_screen.dart';
 import 'auth_screen.dart';
 import '../translations.dart';
+import '../providers/user_provider.dart';
 import '../widgets/influencer_badge.dart';
+import '../widgets/follow_button.dart';
+import '../models/user_model.dart';
+
+enum LoadMoreStatus { LOADING, STABLE }
 
 class FollowersScreen extends StatefulWidget {
-  static const routeName = '/followers';
   final userId;
 
   FollowersScreen(this.userId);
@@ -20,98 +22,60 @@ class FollowersScreen extends StatefulWidget {
 
 class _FollowersScreenState extends State<FollowersScreen> {
   TextEditingController _controller = new TextEditingController();
-  List documents;
+  List<UserModel> _userList = [];
   bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPageNumber = 0;
   String _filter;
-  String userId;
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  final ScrollController scrollController = new ScrollController();
 
   void _toProfile(userId) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.uid != userId) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-    }
+    //final user = await FirebaseAuth.instance.currentUser();
+    //if (user.uid != userId) {
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    //}
   }
 
   void _getData() async {
     setState(() {
       _isLoading = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
-    userId = user.uid;
-    QuerySnapshot usersSnap = await Firestore.instance
-        .collection('users')
-        .where('following', arrayContains: widget.userId)
-        .orderBy('user_name')
-        .getDocuments();
+    final users = await Provider.of<UserProvider>(context, listen: false)
+        .getFollowers(widget.userId, _currentPageNumber);
     setState(() {
-      documents = usersSnap.documents;
+      _userList = users;
       _isLoading = false;
     });
   }
 
-  void _follow(context, userId, myId, isFollowing) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(context);
-      return;
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (scrollController.position.maxScrollExtent > scrollController.offset &&
+          scrollController.position.maxScrollExtent - scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<UserProvider>(context, listen: false)
+              .getFollowers(widget.userId, _currentPageNumber)
+              .then((newUsers) {
+            setState(() {
+              if (newUsers.isEmpty) {
+                _hasMore = false;
+              } else {
+                _userList.addAll(newUsers);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
     }
-    final userData =
-        await Firestore.instance.collection('users').document(userId).get();
-    final List creations = userData['created'] ?? [];
-    if (userData['reposted'] != null) {
-      (userData['reposted'] as List).forEach((element) {
-        creations.add(element.values.first);
-      });
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (!isFollowing) {
-      FirebaseMessaging().subscribeToTopic(userId);
-      batch.updateData(
-        Firestore.instance.collection('users').document(userId),
-        {
-          'followers': FieldValue.arrayUnion([myId])
-        },
-      );
-      batch.updateData(
-        Firestore.instance.collection('users').document(myId),
-        {
-          'following': FieldValue.arrayUnion([userId])
-        },
-      );
-      creations.forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('content').document(element),
-          {
-            'home': FieldValue.arrayUnion([myId])
-          },
-        );
-      });
-    } else {
-      FirebaseMessaging().unsubscribeFromTopic(userId);
-      batch.updateData(
-        Firestore.instance.collection('users').document(userId),
-        {
-          'followers': FieldValue.arrayRemove([myId])
-        },
-      );
-      batch.updateData(
-        Firestore.instance.collection('users').document(myId),
-        {
-          'following': FieldValue.arrayRemove([userId])
-        },
-      );
-      creations.forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('content').document(element),
-          {
-            'home': FieldValue.arrayRemove([myId])
-          },
-        );
-      });
-    }
-    await batch.commit();
-    _getData();
+    return true;
   }
 
   void _anonymousAlert(context) {
@@ -151,43 +115,36 @@ class _FollowersScreenState extends State<FollowersScreen> {
     });
   }
 
-  Widget _userTile(doc) {
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  Widget _userTile(UserModel user) {
     return ListTile(
-      onTap: () => _toProfile(doc.documentID),
+      onTap: () => _toProfile(user.userName),
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['image'] ?? ''),
+        backgroundImage: user.icon == null ? null : NetworkImage(user.icon),
       ),
       title: Row(
         children: <Widget>[
           Flexible(
-              child: Text(
-            '${doc['name']} ${doc['last_name']}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          )),
+            child: Text(
+              '${user.name} ${user.lastName}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          //InfluencerBadge(doc['influencer'] ?? '', 16),
         ],
       ),
-      subtitle: Text('@${doc['user_name']}'),
-      trailing: _followButton(doc.documentID, doc['followers']),
-    );
-  }
-
-  Widget _followButton(profileId, followers) {
-    if(profileId == userId){
-      return Text('');
-    }
-    if (followers == null || !followers.contains(userId)) {
-      return RaisedButton(
-        onPressed: () => _follow(context, profileId, userId, false),
-        textColor: Colors.white,
-        child: Text('Seguir'),
-      );
-    }
-    return OutlineButton(
-      onPressed: () => _follow(context, profileId, userId, true),
-      child: Text('Siguiendo'),
+      subtitle: Text('@${user.userName}'),
+      trailing: FollowButton(
+        userName: user.userName,
+        isFollowing: user.isFollowing,
+      ),
     );
   }
 
@@ -199,7 +156,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : (documents.isEmpty)
+          : (_userList.isEmpty)
               ? Center(
                   child: Text(Translations.of(context).text('empty_followers')),
                 )
@@ -216,21 +173,28 @@ class _FollowersScreenState extends State<FollowersScreen> {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: documents.length,
-                        itemBuilder: (ctx, i) {
-                          final doc = documents[i];
+                      child: NotificationListener(
+                        onNotification: onNotification,
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: _userList.length,
+                          itemBuilder: (ctx, i) {
+                            final doc = _userList[i];
 
-                          return _filter == null || _filter == ""
-                              ? Column(
-                                  children: <Widget>[_userTile(doc), Divider()],
-                                )
-                              : doc['user_name']
-                                      .toLowerCase()
-                                      .contains(_filter.toLowerCase())
-                                  ? _userTile(doc)
-                                  : Container();
-                        },
+                            return _filter == null || _filter == ""
+                                ? Column(
+                                    children: <Widget>[
+                                      _userTile(doc),
+                                      Divider()
+                                    ],
+                                  )
+                                : doc.userName
+                                        .toLowerCase()
+                                        .contains(_filter.toLowerCase())
+                                    ? _userTile(doc)
+                                    : Container();
+                          },
+                        ),
                       ),
                     ),
                   ],

@@ -72,8 +72,7 @@ class UserChallenge extends StatelessWidget with ShareContent {
   }
 
   void _toComments(context) {
-    Navigator.of(context)
-        .pushNamed(CommentsScreen.routeName, arguments: reference);
+    
   }
 
   void _toTaggedProfile(context, id) {
@@ -90,7 +89,7 @@ class UserChallenge extends StatelessWidget with ShareContent {
       context,
       MaterialPageRoute(
         builder: (context) => PollGalleryScreen(
-          reference: reference,
+          //reference: reference,
           galleryItems: images,
           initialIndex: position,
         ),

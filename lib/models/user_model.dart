@@ -16,6 +16,7 @@ class UserModel {
   int followers;
   int following;
   bool isFollowing;
+  String idAnswer;
 
   UserModel({
     this.userName,
@@ -34,6 +35,7 @@ class UserModel {
     this.followers,
     this.following,
     this.isFollowing,
+    this.idAnswer,
   });
 
   static UserModel fromJson(Map content) {
@@ -55,5 +57,48 @@ class UserModel {
       following: content['following'],
       isFollowing: content['is_following'],
     );
+  }
+
+  static List<UserModel> listFromJson(List<dynamic> content) {
+    List<UserModel> mList = [];
+
+    content.forEach((element) {
+      mList.add(UserModel(
+        icon: element['icon'],
+        userName: element['user_name'],
+        name: element['name'],
+        lastName: element['last_name'],
+        isFollowing: element['is_following'],
+      ));
+    });
+
+    return mList;
+  }
+
+  static List<UserModel> votersListFromJson(List<dynamic> content) {
+    List<UserModel> mList = [];
+
+    content.forEach((element) {
+      mList.add(UserModel(
+        icon: element['icon'],
+        userName: element['user_name'],
+        idAnswer: element['id_answer'],
+      ));
+    });
+
+    return mList;
+  }
+
+  static List<UserModel> likesListFromJson(List<dynamic> content) {
+    List<UserModel> mList = [];
+
+    content.forEach((element) {
+      mList.add(UserModel(
+        icon: element['icon'],
+        userName: element['user_name'],
+      ));
+    });
+
+    return mList;
   }
 }

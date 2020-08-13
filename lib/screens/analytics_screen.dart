@@ -1,16 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'view_profile_screen.dart';
+import '../providers/content_provider.dart';
 import '../widgets/vote_card.dart';
+import '../models/poll_answer_model.dart';
+import '../models/user_model.dart';
 
 class AnalyticsScreen extends StatefulWidget {
-  static const routeName = '/analytics';
+  final String pollId;
+  final String title;
+  final List<PollAnswerModel> answers;
 
-  final pollId;
-
-  AnalyticsScreen(this.pollId);
+  AnalyticsScreen({this.pollId, this.title, this.answers});
 
   @override
   _AnalyticsScreenState createState() => _AnalyticsScreenState();
@@ -19,38 +21,23 @@ class AnalyticsScreen extends StatefulWidget {
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   bool _isLoading = false;
   int _selection = -1;
-  String _title;
-  List _options;
-  //List _votes;
-  List _results;
-  List _voters;
+  List<UserModel> _voters = [];
+  Map _answersString = {};
 
   void _toProfile(userId) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.uid != userId) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-    }
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
   }
 
   void _getAllData() async {
-    DocumentSnapshot pollDoc = await Firestore.instance
-        .collection('content')
-        .document(widget.pollId)
-        .get();
-
-    QuerySnapshot usersSnap = await Firestore.instance
-        .collection('users')
-        .where('voted', arrayContains: widget.pollId)
-        .getDocuments();
-
+    final results = await Provider.of<ContentProvider>(context, listen: false).getPollStatistics(
+      idPoll: widget.pollId,
+      page: 0,
+      idAnswer: null,
+    );
     setState(() {
       _isLoading = false;
-      _title = pollDoc.data['title'];
-      _options = pollDoc.data['options'];
-      //_votes = pollDoc.data['results'];
-      _results = pollDoc.data['voters'] ?? [];
-      _voters = usersSnap.documents ?? [];
+      _voters = results;
     });
   }
 
@@ -66,6 +53,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   @override
   void initState() {
+    widget.answers.forEach((element) { 
+      _answersString[element.id] = element.answer;
+    });
     _getAllData();
     setState(() {
       _isLoading = true;
@@ -80,62 +70,66 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       appBar: AppBar(
         title: Text('Estadísticos'),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    _title,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+      body: ListView.builder(
+        itemCount: _isLoading ? _voters.length + 4 : _voters.length + 3,
+        itemBuilder: (context, i) {
+          if (i == 0)
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
-                Container(
-                  height: 80,
-                  child: ListView.separated(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    separatorBuilder: (context, index) => SizedBox(width: 8),
-                    itemCount: _options.length,
-                    itemBuilder: (context, i) {
-                      Map option = _options[i];
-                      int amount = 0;
-                      _results.forEach((element) {
-                        int vote =
-                            int.parse((element as Map).values.first.toString());
-                        if (vote == i) {
-                          amount++;
-                        }
-                      });
-                      return VoteCard(
-                        option['text'],
-                        amount,
-                        _selection == i,
-                        () => _selectOption(i),
-                      );
-                    },
-                  ),
+              ),
+            );
+          if (i == 1)
+            return Container(
+              height: 80,
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                separatorBuilder: (context, index) => SizedBox(width: 8),
+                itemCount: widget.answers.length,
+                itemBuilder: (context, i) {
+                  PollAnswerModel option = widget.answers[i];
+                  return VoteCard(
+                    option.answer,
+                    option.count,
+                    _selection == i,
+                    () => _selectOption(i),
+                  );
+                },
+              ),
+            );
+          if (i == 2)
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Votantes',
+                style: TextStyle(
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Votantes',
-                    style: TextStyle(
-                      color: Theme.of(context).accentColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _voters.length,
-                    itemBuilder: (context, i) {
+              ),
+            );
+          if (_isLoading) {
+            return Center(child: CircularProgressIndicator());
+          }
+          UserModel user = _voters[i - 3];
+          return ListTile(
+            onTap: () => _toProfile(user.userName),
+            leading: CircleAvatar(
+              backgroundImage:
+                  user.icon == null ? null : NetworkImage(user.icon),
+            ),
+            title: Text(user.userName),
+            subtitle: Text('Votó - ${_answersString[user.idAnswer]}'),
+          );
+
+/*
                       final user = _voters[i];
                       final userId = user.documentID;
 
@@ -175,11 +169,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         );
                       }
                       return Container();
-                    },
-                  ),
-                )
-              ],
-            ),
+                      */
+        },
+      ),
     );
   }
 }

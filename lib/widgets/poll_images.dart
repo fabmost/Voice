@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../screens/poll_gallery_screen.dart';
 
 class PollImages extends StatelessWidget {
-  final reference;
+  final String reference;
   final List images;
   final bool isClickable;
 
@@ -22,6 +22,24 @@ class PollImages extends StatelessWidget {
     );
   }
 
+  Widget _image(size, image) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          bottomLeft: Radius.circular(24),
+        ),
+        border: Border.all(color: Colors.black),
+        image: DecorationImage(
+          image: NetworkImage(image),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double width =
@@ -29,139 +47,106 @@ class PollImages extends StatelessWidget {
             images.length;
     if (images.length == 1) {
       return Align(
-        alignment: Alignment.center,
-        child: InkWell(
-          onTap: () => isClickable ? _toGallery(context, 0) : null,
-          child: Hero(
-            tag: images[0],
-            child: Container(
-              width: 144,
-              height: 144,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[0]),
-                    fit: BoxFit.cover,
-                  )),
-            ),
-          ),
-        ),
-      );
+          alignment: Alignment.center,
+          child: isClickable
+              ? InkWell(
+                  onTap: () => _toGallery(context, 0),
+                  child: Hero(
+                      tag: '$images[0]$reference',
+                      child: _image(
+                        144.0,
+                        images[0],
+                      )),
+                )
+              : _image(144.0, images[0]));
     } else if (images.length == 2) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InkWell(
-            onTap: () => isClickable ? _toGallery(context, 0) : null,
-            child: Hero(
-              tag: images[0],
-              child: Container(
-                width: width,
-                height: width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    bottomLeft: Radius.circular(24),
+          isClickable
+              ? InkWell(
+                  onTap: () => _toGallery(context, 0),
+                  child: Hero(
+                    tag: '$images[0]$reference',
+                    child: _image(
+                      width,
+                      images[0],
+                    ),
                   ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[0]),
-                    fit: BoxFit.cover,
-                  ),
+                )
+              : _image(
+                  width,
+                  images[0],
                 ),
-              ),
-            ),
-          ),
           SizedBox(width: 5),
-          InkWell(
-            onTap: () => isClickable ? _toGallery(context, 1) : null,
-            child: Hero(
-              tag: images[1],
-              child: Container(
-                width: width,
-                height: width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
+          isClickable
+              ? InkWell(
+                  onTap: () => _toGallery(context, 1),
+                  child: Hero(
+                    tag: '$images[1]$reference',
+                    child: _image(
+                      width,
+                      images[1],
+                    ),
                   ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[1]),
-                    fit: BoxFit.cover,
-                  ),
+                )
+              : _image(
+                  width,
+                  images[1],
                 ),
-              ),
-            ),
-          )
         ],
       );
     } else {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InkWell(
-            onTap: () => isClickable ? _toGallery(context, 0) : null,
-            child: Hero(
-              tag: images[0],
-              child: Container(
-                width: width,
-                height: width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    bottomLeft: Radius.circular(24),
+          isClickable
+              ? InkWell(
+                  onTap: () => _toGallery(context, 0),
+                  child: Hero(
+                    tag: '$images[0]$reference',
+                    child: _image(
+                      width,
+                      images[0],
+                    ),
                   ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[0]),
-                    fit: BoxFit.cover,
-                  ),
+                )
+              : _image(
+                  width,
+                  images[0],
                 ),
-              ),
-            ),
-          ),
           SizedBox(width: 5),
-          InkWell(
-            onTap: () => isClickable ? _toGallery(context, 1) : null,
-            child: Hero(
-              tag: images[1],
-              child: Container(
-                width: width,
-                height: width,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[1]),
-                    fit: BoxFit.cover,
+          isClickable
+              ? InkWell(
+                  onTap: () => _toGallery(context, 1),
+                  child: Hero(
+                    tag: '$images[1]$reference',
+                    child: _image(
+                      width,
+                      images[1],
+                    ),
                   ),
+                )
+              : _image(
+                  width,
+                  images[1],
                 ),
-              ),
-            ),
-          ),
           SizedBox(width: 5),
-          InkWell(
-            onTap: () => isClickable ? _toGallery(context, 2) : null,
-            child: Hero(
-              tag: images[2],
-              child: Container(
-                width: width,
-                height: width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
+          isClickable
+              ? InkWell(
+                  onTap: () => _toGallery(context, 2),
+                  child: Hero(
+                    tag: '$images[2]$reference',
+                    child: _image(
+                      width,
+                      images[2],
+                    ),
                   ),
-                  border: Border.all(color: Colors.black),
-                  image: DecorationImage(
-                    image: NetworkImage(images[2]),
-                    fit: BoxFit.cover,
-                  ),
+                )
+              : _image(
+                  width,
+                  images[2],
                 ),
-              ),
-            ),
-          )
         ],
       );
     }

@@ -185,7 +185,7 @@ class RepostPoll extends StatelessWidget {
               if (images.isNotEmpty)
                 PollImages(
                   images,
-                  reference,
+                  '',
                   isClickable: false,
                 ),
               Padding(

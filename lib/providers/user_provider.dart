@@ -10,7 +10,41 @@ import '../api.dart';
 import '../models/user_model.dart';
 
 class UserProvider with ChangeNotifier {
+  final String _myUser;
   final _storage = FlutterSecureStorage();
+
+  UserProvider(this._myUser);
+
+  String get getUser => _myUser;
+
+  Future<UserModel> userProfile() async {
+    var url = '${API.baseURL}/profile/$_myUser';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+
+      return UserModel.fromJson(dataMap['profile']);
+    }
+    return null;
+  }
 
   Future<UserModel> getProfile(userName) async {
     var url = '${API.baseURL}/profile/$userName';
@@ -69,6 +103,64 @@ class UserProvider with ChangeNotifier {
       return dataMap['is_following'];
     }
     return null;
+  }
+
+  Future<List<UserModel>> getFollowers(user, page) async {
+    var url = '${API.baseURL}/followers/$user/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+
+      return UserModel.listFromJson(dataMap['followers']);
+    }
+    return [];
+  }
+
+  Future<List> getFollowing(user, page) async {
+    var url = '${API.baseURL}/following/$user/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+
+      return UserModel.listFromJson(dataMap['followings']);
+    }
+    return [];
   }
 
   Future<String> _getToken() {

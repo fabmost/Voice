@@ -1,13 +1,11 @@
 import 'dart:io';
 
 import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:video_compress/video_compress.dart';
 //import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -16,6 +14,8 @@ import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../models/category_model.dart';
+import '../providers/content_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../custom/suggestion_textfield.dart';
@@ -47,7 +47,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
   bool moreOptions = false;
   File _option1, _option2, _option3;
   List<File> pollImages = [];
-  String category;
+  CategoryModel category;
   File _videoFile;
   File _videoThumb;
 
@@ -246,11 +246,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
       maxWidth: 600,
     );
     if (imageFile != null) {
-      /*
-      final appDir = await provider.getApplicationDocumentsDirectory();
-      final fileName = path.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
-      */
       if (isOption)
         _cropImage(file, imageFile.path);
       else
@@ -295,7 +290,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
     ).then((value) async {
       if (value != null) {
         final mFile = await VideoCompress.getFileThumbnail(
-        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+          //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -445,95 +440,90 @@ class _NewPollScreenState extends State<NewPollScreen> {
   }
 
   void _savePoll() async {
+    FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
     });
-    FocusScope.of(context).unfocus();
-    final user = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-    String pollId =
-        Firestore.instance.collection('content').document().documentID;
-    batch.updateData(
-      Firestore.instance.collection('users').document(user.uid),
-      {
-        'created': FieldValue.arrayUnion([pollId])
-      },
-    );
-    var pollOptions = [];
-    var results = [];
-    var resultData = {'votes': 0, "countries": {}, "gender": {}, "age": {}};
+    var pollAnswers = [];
     if (_option1 != null) {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('option1.jpg');
+      String idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        _option1.path,
+        'I',
+        'PA',
+      );
 
-      await ref.putFile(_option1).onComplete;
-
-      final url = await ref.getDownloadURL();
-      pollOptions.add({
+      pollAnswers.add({
         'text': _firstController.text,
-        'image': url,
+        'image': idResource,
       });
     } else {
-      pollOptions.add({'text': _firstController.text});
+      pollAnswers.add({
+        'text': _firstController.text,
+        'id_resource': null,
+      });
     }
-    results.add(resultData);
     if (_option2 != null) {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('option2.jpg');
-
-      await ref.putFile(_option2).onComplete;
-
-      final url = await ref.getDownloadURL();
-      pollOptions.add({
+      String idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        _option2.path,
+        'I',
+        'PA',
+      );
+      pollAnswers.add({
         'text': _secondController.text,
-        'image': url,
+        'image': idResource,
       });
     } else {
-      pollOptions.add({'text': _secondController.text});
+      pollAnswers.add({
+        'text': _secondController.text,
+        'id_resource': null,
+      });
     }
-    results.add(resultData);
     if (moreOptions) {
       if (_option3 != null) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('polls')
-            .child(pollId)
-            .child('option3.jpg');
-
-        await ref.putFile(_option3).onComplete;
-
-        final url = await ref.getDownloadURL();
-        pollOptions.add({
+        String idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _option3.path,
+          'I',
+          'PA',
+        );
+        pollAnswers.add({
           'text': _thirdController.text,
-          'image': url,
+          'image': idResource,
         });
       } else {
-        pollOptions.add({'text': _thirdController.text});
+        pollAnswers.add({
+          'text': _thirdController.text,
+          'id_resource': null,
+        });
       }
-      results.add(resultData);
     }
+
     List<String> images = [];
     for (int i = 0; i < pollImages.length; i++) {
       final element = pollImages[i];
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('$i.jpg');
-
-      await ref.putFile(element).onComplete;
-
-      final url = await ref.getDownloadURL();
-      images.add(url);
+      String idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        element.path,
+        'I',
+        'P',
+      );
+      images.add(idResource);
     }
+
+    await Provider.of<ContentProvider>(context, listen: false).newPoll(
+      name: _titleController.text,
+      description: _descriptionController.text,
+      category: category.id,
+      resources: images,
+      answers: pollAnswers,
+    );
+    /*
     String videoUrl;
     String videoThumb;
     if (_isVideo && _videoFile != null && _videoThumb != null) {
@@ -596,6 +586,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       );
     });
     await batch.commit();
+    */
     setState(() {
       _isLoading = false;
     });
@@ -897,7 +888,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Text('${category ?? 'Selecciona una categoría'}'),
+                  child: (category == null)
+                      ? Text('Selecciona una categoría')
+                      : Text('${category.name}'),
                 ),
               ),
               SuggestionField(
@@ -908,7 +901,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   maxLines: null,
                   maxLength: 240,
                   decoration: InputDecoration(
-                    labelText: Translations.of(context).text('hint_description'),
+                    labelText:
+                        Translations.of(context).text('hint_description'),
                   ),
                 ),
                 suggestionsCallback: (pattern) {

@@ -1,50 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'poll_tile.dart';
-import '../custom/galup_font_icons.dart';
-import '../models/content_model.dart';
-import '../models/poll_model.dart';
+import '../translations.dart';
+import '../models/user_model.dart';
 import '../providers/content_provider.dart';
+import '../screens/view_profile_screen.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
-class PollList extends StatefulWidget {
-  final String userId;
+class LikesList extends StatefulWidget {
+  final String id;
+  final String type;
 
-  PollList(this.userId);
+  LikesList({this.id, this.type});
 
   @override
-  _PollListState createState() => _PollListState();
+  _LikesListState createState() => _LikesListState();
 }
 
-class _PollListState extends State<PollList> {
+class _LikesListState extends State<LikesList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
-  List<ContentModel> _list = [];
+  List<UserModel> _list = [];
   int _currentPageNumber = 0;
   bool _isLoading = false;
   bool _hasMore = true;
 
-  Widget _pollWidget(PollModel content) {
-    return PollTile(
-      reference: 'list',
-      id: content.id,
-      date: content.createdAt,
-      userName: content.user.userName,
-      userImage: content.user.icon,
-      title: content.title,
-      description: content.description,
-      votes: content.votes,
-      likes: content.likes,
-      comments: content.comments,
-      regalups: content.regalups,
-      hasVoted: content.hasVoted,
-      hasLiked: content.hasLiked,
-      hasRegalup: content.hasRegalup,
-      hasSaved: content.hasSaved,
-      answers: content.answers,
-      resources: content.resources,
+  void _toProfile(userId) async {
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+  }
+
+  Widget _userTile(UserModel user) {
+    return ListTile(
+      onTap: () => _toProfile(user.userName),
+      leading: CircleAvatar(
+        backgroundImage: user.icon == null ? null : NetworkImage(user.icon),
+      ),
+      title: Row(
+        children: <Widget>[
+          Text('${user.userName}'),
+          SizedBox(width: 8),
+          //InfluencerBadge(doc['influencer'] ?? '', 16),
+        ],
+      ),
     );
   }
 
@@ -59,7 +58,11 @@ class _PollListState extends State<PollList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'P')
+              .getLikes(
+            id: widget.id,
+            type: widget.type,
+            page: _currentPageNumber,
+          )
               .then((newObjects) {
             setState(() {
               if (newObjects.isEmpty) {
@@ -80,8 +83,12 @@ class _PollListState extends State<PollList> {
     setState(() {
       _isLoading = true;
     });
-    List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+    List results =
+        await Provider.of<ContentProvider>(context, listen: false).getLikes(
+      id: widget.id,
+      type: widget.type,
+      page: _currentPageNumber,
+    );
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -110,33 +117,14 @@ class _PollListState extends State<PollList> {
         ? Center(child: CircularProgressIndicator())
         : _list.isEmpty
             ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    const SizedBox(height: 16),
-                    Icon(
-                      GalupFont.empty_content,
-                      color: Color(0xFF8E8EAB),
-                      size: 32,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Este usuario no ha realizado encuestas',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF8E8EAB),
-                      ),
-                    ),
-                  ],
-                ),
+                child: Text(Translations.of(context).text('empty_comments')),
               )
             : NotificationListener(
                 onNotification: onNotification,
                 child: ListView.builder(
                   controller: scrollController,
                   itemCount: _list.length,
-                  itemBuilder: (context, i) => _pollWidget(_list[i]),
+                  itemBuilder: (context, i) => _userTile(_list[i]),
                 ),
               );
   }

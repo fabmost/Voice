@@ -23,14 +23,17 @@ class _HomeListState extends State<HomeList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
   int currentPageNumber;
+  bool _hasMore = true;
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
+      reference: 'home',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
       title: content.title,
+      description: content.description,
       votes: content.votes,
       likes: content.likes,
       comments: content.comments,
@@ -38,23 +41,29 @@ class _HomeListState extends State<HomeList> {
       hasVoted: content.hasVoted,
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
       answers: content.answers,
+      resources: content.resources,
     );
   }
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
-      id: content.id,
-      date: content.createdAt,
-      userName: content.user.userName,
-      userImage: content.user.icon,
-      title: content.title,
-      likes: content.likes,
-      comments: content.comments,
-      regalups: content.regalups,
-      hasLiked: content.hasLiked,
-      hasRegalup: content.hasRegalup,
-    );
+        id: content.id,
+        date: content.createdAt,
+        userName: content.user.userName,
+        userImage: content.user.icon,
+        title: content.title,
+        description: content.description,
+        likes: content.likes,
+        comments: content.comments,
+        regalups: content.regalups,
+        hasLiked: content.hasLiked,
+        hasRegalup: content.hasRegalup,
+        hasSaved: content.hasSaved,
+        parameter: content.parameter,
+        goal: content.goal,
+        resources: content.resources);
   }
 
   Widget _causeWidget(content) {
@@ -78,12 +87,15 @@ class _HomeListState extends State<HomeList> {
       if (scrollController.position.maxScrollExtent > scrollController.offset &&
           scrollController.position.maxScrollExtent - scrollController.offset <=
               50) {
-        if (loadMoreStatus != null && loadMoreStatus == LoadMoreStatus.STABLE) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
           currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
               .getBaseTimeline(currentPageNumber, null)
               .then((moviesObject) {
+            _hasMore = moviesObject;
             loadMoreStatus = LoadMoreStatus.STABLE;
           });
         }
@@ -113,8 +125,9 @@ class _HomeListState extends State<HomeList> {
         controller: scrollController,
         itemCount: widget.mList.length + 1,
         itemBuilder: (ctx, i) {
-          if(i == widget.mList.length){
-            return Center(child: Padding(
+          if (i == widget.mList.length) {
+            return Center(
+                child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: CircularProgressIndicator(),
             ));

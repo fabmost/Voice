@@ -2,78 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'view_profile_screen.dart';
 import '../translations.dart';
+import '../widgets/comments_list.dart';
+import '../widgets/likes_list.dart';
 import '../widgets/comment.dart';
 import '../widgets/new_comment.dart';
-import '../widgets/influencer_badge.dart';
 
 class CommentsScreen extends StatelessWidget {
-  static const routeName = '/comments';
+  final String id;
+  final String type;
 
-  void _toProfile(context, userId) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.uid != userId) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-    }
-  }
-
-  Widget _userTile(context, doc) {
-    if (doc['user_name'] == null) {
-      return Container();
-    }
-    return ListTile(
-      onTap: () => _toProfile(context, doc.documentID),
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['image'] ?? ''),
-      ),
-      title: Row(
-        children: <Widget>[
-          Text('${doc['name']} ${doc['last_name']}'),
-          SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
-        ],
-      ),
-      subtitle: Text('@${doc['user_name']}'),
-    );
-  }
-
-  Widget _likesList(context, DocumentReference reference) {
-    return FutureBuilder(
-      future: FirebaseAuth.instance.currentUser(),
-      builder: (ctx, userSnap) {
-        if (userSnap.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        return StreamBuilder(
-          stream: Firestore.instance
-              .collection('users')
-              .where('liked', arrayContains: reference.documentID)
-              .snapshots(),
-          builder: (ct, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final documents = snapshot.data.documents;
-            if (documents.isEmpty) {
-              return Center(
-                child: Text(Translations.of(context).text('empty_comments')),
-              );
-            }
-            return ListView.builder(
-              itemCount: documents.length,
-              itemBuilder: (context, i) {
-                final doc = documents[i];
-
-                return _userTile(context, doc);
-              },
-            );
-          },
-        );
-      },
-    );
-  }
+  CommentsScreen({this.id, this.type});
 
   Widget _commentsList(context, reference) {
     return Column(
@@ -152,8 +91,6 @@ class CommentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reference =
-        ModalRoute.of(context).settings.arguments as DocumentReference;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -161,15 +98,25 @@ class CommentsScreen extends StatelessWidget {
           title: Text(Translations.of(context).text('title_comments')),
           bottom: TabBar(
             tabs: <Widget>[
-              Tab(text: 'Comentarios',),
-              Tab(text: 'Likes',),
+              Tab(
+                text: 'Comentarios',
+              ),
+              Tab(
+                text: 'Likes',
+              ),
             ],
           ),
         ),
         body: TabBarView(
           children: <Widget>[
-            _commentsList(context, reference),
-            _likesList(context, reference)
+            CommentsList(
+              id: id,
+              type: type,
+            ),
+            LikesList(
+              id: id,
+              type: type,
+            ),
           ],
         ),
       ),

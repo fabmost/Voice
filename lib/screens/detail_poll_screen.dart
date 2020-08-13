@@ -34,7 +34,7 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
         .getContent('P', widget.id);
     List<CommentModel> newObjects =
         await Provider.of<ContentProvider>(context, listen: false)
-            .getComments('P', widget.id);
+            .getComments(id: widget.id, type: 'P', page: 0);
     setState(() {
       _isLoading = false;
       _pollModel = result;

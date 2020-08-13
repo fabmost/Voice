@@ -45,7 +45,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       MaterialPageRoute(
         builder: (context) => PollGalleryScreen(
           reference: null,
-          galleryItems: images,
+          galleryItems: [images],
           initialIndex: 0,
         ),
       ),
@@ -185,9 +185,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     */
   }
 
-  Widget _challengeGoal(
-    context,
-  ) {
+  Widget _challengeGoal(context) {
     //bool goalReached = false;
     String goal;
     int amount;

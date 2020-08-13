@@ -1,14 +1,12 @@
 import 'dart:io';
 
 import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:video_compress/video_compress.dart';
 //import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -17,6 +15,8 @@ import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../models/category_model.dart';
+import '../providers/content_provider.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -43,7 +43,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
   Algolia algolia;
   AlgoliaQuery searchQuery;
 
-  String category;
+  CategoryModel category;
 
   void _imageOptions() {
     FocusScope.of(context).requestFocus(FocusNode());
@@ -158,7 +158,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     ).then((value) async {
       if (value != null) {
         final mFile = await VideoCompress.getFileThumbnail(
-        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+          //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -285,39 +285,45 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     setState(() {
       _isLoading = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-
-    WriteBatch batch = Firestore.instance.batch();
-    String challengeId =
-        Firestore.instance.collection('content').document().documentID;
-
-    StorageReference ref;
+    String idResource;
     if (_isVideo) {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('challenges')
-          .child('$challengeId.mp4');
-
-      await ref.putFile(_videoFile).onComplete;
+      idResource = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadResource(
+        _videoFile.path,
+        'V',
+        'C',
+      );
     } else {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('challenges')
-          .child(challengeId + '.jpg');
-
-      await ref.putFile(_imageFile).onComplete;
+      idResource = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadResource(
+        _imageFile.path,
+        'I',
+        'C',
+      );
     }
 
-    final url = await ref.getDownloadURL();
-    batch.updateData(
-      Firestore.instance.collection('users').document(user.uid),
-      {
-        'created': FieldValue.arrayUnion([challengeId])
-      },
-    );
+    String metricString;
+    switch (metric) {
+      case 'Likes':
+        metricString = 'L';
+        break;
+      case 'Comentarios':
+        metricString = 'C';
+        break;
+      case 'Regalups':
+        metricString = 'R';
+        break;
+    }
 
+    await Provider.of<ContentProvider>(context, listen: false).newChallenge(
+      name: _titleController.text,
+      description: _descriptionController.text,
+      category: category.id,
+      resource: idResource,
+      parameter: metricString,
+      goal: goal,
+    );
+    /*
     List<String> hashes = [];
     RegExp exp = new RegExp(r"\B#\w\w+");
     exp.allMatches(_descriptionController.text).forEach((match) {
@@ -356,6 +362,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       );
     });
     await batch.commit();
+    */
     setState(() {
       _isLoading = false;
     });
@@ -534,7 +541,9 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Text('${category ?? 'Selecciona una categoría'}'),
+                  child: (category == null)
+                      ? Text('Selecciona una categoría')
+                      : Text('${category.name}'),
                 ),
               ),
               SuggestionField(

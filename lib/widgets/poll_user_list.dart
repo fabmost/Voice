@@ -1,100 +1,116 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'user_poll.dart';
+import 'user_poll_tile.dart';
 import 'repost_poll.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/content_provider.dart';
+import '../models/content_model.dart';
+import '../models/poll_model.dart';
 
-class PollUserList extends StatelessWidget {
+enum LoadMoreStatus { LOADING, STABLE }
+
+class PollUserList extends StatefulWidget {
   final String userId;
   final Function setVideo;
 
   PollUserList(this.userId, this.setVideo);
 
-  Widget _pollWidget(doc, userId) {
-    int voters = 0;
-    if (doc['voters'] != null) {
-      voters = doc['voters'].length;
-    }
-    int likes = 0;
-    bool hasLiked = false;
-    if (doc['likes'] != null) {
-      likes = doc['likes'].length;
-      hasLiked = (doc['likes'] as List).contains(userId);
-    }
-    int reposts = 0;
-    if (doc['reposts'] != null) {
-      reposts = doc['reposts'].length;
-    }
-    bool hasSaved = false;
-    if (doc['saved'] != null) {
-      hasSaved = (doc['saved'] as List).contains(userId);
-    }
-    return UserPoll(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      comments: doc['comments'],
-      options: doc['options'],
-      votes: doc['results'],
-      votersList: doc['voters'] ?? [],
-      images: doc['images'] ?? [],
-      video: doc['video'] ?? '',
-      thumb: doc['video_thumb'] ?? '',
-      voters: voters,
-      likesList: doc['likes'] ?? [],
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      repostedList: doc['reposts'] ?? [],
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? '',
-      videoFunction: setVideo,
+  @override
+  _PollUserListState createState() => _PollUserListState();
+}
+
+class _PollUserListState extends State<PollUserList> {
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  final ScrollController scrollController = new ScrollController();
+  List<ContentModel> _list = [];
+  int _currentPageNumber;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  Widget _pollWidget(PollModel content) {
+    return UserPollTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      answers: content.answers,
+      resources: content.resources,
     );
   }
 
-  Widget _repostPollWidget(doc, userId) {
-    return RepostPoll(
-        reference: doc['parent'] ?? doc.reference,
-        myId: userId,
-        userId: doc['user_id'],
-        userName: doc['user_name'],
-        title: doc['title'],
-        options: doc['options'],
-        creatorName: doc['creator_name'],
-        creatorImage: doc['creator_image'] ?? '',
-        images: doc['images'] ?? [],
-        date: doc['originalDate'].toDate(),
-        influencer: doc['influencer'] ?? '');
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (scrollController.position.maxScrollExtent > scrollController.offset &&
+          scrollController.position.maxScrollExtent - scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<ContentProvider>(context, listen: false)
+              .getUserTimeline(widget.userId, _currentPageNumber, 'P')
+              .then((newContent) {
+            setState(() {
+              if (newContent.isEmpty) {
+                _hasMore = false;
+              } else {
+                _list.addAll(newContent);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
+    }
+    return true;
+  }
+
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        _list = results;
+      }
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    _currentPageNumber = 0;
+    _getData();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: FirebaseAuth.instance.currentUser(),
-      builder: (ctx, userSnap) {
-        if (userSnap.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        return StreamBuilder(
-          stream: Firestore.instance
-              .collection('content')
-              .where('user_id', isEqualTo: userId)
-              .where('type', whereIn: ['poll', 'repost-poll'])
-              .orderBy('createdAt', descending: true)
-              .snapshots(),
-          builder: (ctx, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final documents = snapshot.data.documents;
-            if (documents.isEmpty) {
-              return Center(
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : _list.isEmpty
+            ? Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -115,25 +131,14 @@ class PollUserList extends StatelessWidget {
                     ),
                   ],
                 ),
+              )
+            : NotificationListener(
+                onNotification: onNotification,
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: _list.length,
+                  itemBuilder: (context, i) => _pollWidget(_list[i]),
+                ),
               );
-            }
-            return ListView.builder(
-              itemCount: documents.length,
-              itemBuilder: (context, i) {
-                final doc = documents[i];
-                switch (doc['type']) {
-                  case 'poll':
-                    return _pollWidget(doc, userSnap.data.uid);
-                  case 'repost-poll':
-                    return _repostPollWidget(doc, userSnap.data.uid);
-                  default:
-                    return SizedBox();
-                }
-              },
-            );
-          },
-        );
-      },
-    );
   }
 }

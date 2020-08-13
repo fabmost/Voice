@@ -13,15 +13,17 @@ import '../api.dart';
 class AuthProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
   String _token;
-  String _hash;
+  String _userName;
 
   String get geToken => _token;
+  String get getUsername => _userName;
   bool get isAuth {
     return _token != null;
   }
 
   Future<bool> hasToken() async {
     _token = await _storage.read(key: API.sessionToken) ?? null;
+    _userName = await _storage.read(key: API.userName) ?? null;
     if (_token == null) {
       return false;
     }
@@ -31,7 +33,10 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> signOut() async {
     _storage.delete(key: API.sessionToken);
+    _storage.delete(key: API.userHash);
+    _storage.delete(key: API.userName);
     _token = null;
+    _userName = null;
     notifyListeners();
   }
 
@@ -112,6 +117,13 @@ class AuthProvider with ChangeNotifier {
     return;
   }
 
+  Future<void> saveUserName(userName) async {
+    await _storage.write(key: API.userName, value: userName);
+    _userName = userName;
+    notifyListeners();
+    return;
+  }
+
   Future<void> savePreferences(List categories) async {
     var url = '${API.baseURL}/registerCategories';
 
@@ -140,7 +152,7 @@ class AuthProvider with ChangeNotifier {
     return;
   }
 
-  Future<void> signUp({name, last, email, user, password}) async {
+  Future<Map> signUp({name, last, email, user, password}) async {
     var url = '${API.baseURL}/registerProfile/';
     _token = await _storage.read(key: API.sessionToken) ?? null;
 
@@ -169,19 +181,20 @@ class AuthProvider with ChangeNotifier {
 
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return {'result': false, 'message': 'Error'};
     }
 
     if (dataMap['status'] == 'success') {
       _token = dataMap['session']['token'];
       await _storage.write(key: API.sessionToken, value: _token);
+      await saveUserName(user);
+      return {'result': true};
     }
-    return;
+    return {'result': false, 'message': dataMap['alert']['message']};
   }
 
-  Future<void> login({email, password}) async {
+  Future<Map> login({email, password}) async {
     var url = '${API.baseURL}/login';
-    _token = await _storage.read(key: API.sessionToken) ?? null;
 
     final body = jsonEncode({
       'email': email,
@@ -204,15 +217,17 @@ class AuthProvider with ChangeNotifier {
 
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return {'result': false, 'message': 'Error'};
     }
 
     if (dataMap['status'] == 'success') {
       _token = dataMap['session']['token'];
       await _storage.write(key: API.sessionToken, value: _token);
-      saveHash(dataMap['hash_user']);
+      await saveHash(dataMap['hash_user']);
+      await saveUserName(dataMap['user_name']);
+      return {'result': true};
     }
-    return;
+    return {'result': false, 'message': dataMap['alert']['message']};
   }
 
   Future<void> renewToken() async {

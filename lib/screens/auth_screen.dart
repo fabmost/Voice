@@ -1,10 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'menu_screen.dart';
@@ -12,6 +11,7 @@ import 'login_screen.dart';
 import 'countries_screen.dart';
 import '../api.dart';
 import '../translations.dart';
+import '../providers/auth_provider.dart';
 
 class AuthScreen extends StatefulWidget {
   static const routeName = '/signup';
@@ -22,7 +22,6 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
-  final _auth = FirebaseAuth.instance;
   var _isLoading = false;
   bool _isChecked = false;
   TextEditingController _birthController = TextEditingController();
@@ -115,7 +114,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     if (isValid && _isChecked) {
       _formKey.currentState.save();
-      _validateUserName();
+      _submitForm();
     } else if (!_isChecked) {
       showDialog(
         context: context,
@@ -134,6 +133,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+/*
   void _validateUserName() async {
     setState(() {
       _isLoading = true;
@@ -156,6 +156,7 @@ class _AuthScreenState extends State<AuthScreen> {
       _submitForm();
     }
   }
+  */
 
   void _submitForm() async {
     try {
@@ -163,17 +164,16 @@ class _AuthScreenState extends State<AuthScreen> {
         _isLoading = true;
       });
 
-      final credential = EmailAuthProvider.getCredential(
-          email: _email, password: _passwordController.text);
-      final user = await _auth.currentUser();
-      await user.linkWithCredential(credential);
+      Map result =
+          await Provider.of<AuthProvider>(context, listen: false).signUp(
+        name: _name,
+        last: _last,
+        email: _email,
+        password: API().getSalt(_passwordController.text),
+        user: _userName,
+      );
 
-      WriteBatch batch = Firestore.instance.batch();
-
-      String salt = API().getSalt(_passwordController.text);
-
-      batch.setData(
-        Firestore.instance.collection('users').document(user.uid),
+/*
         {
           'name': _name,
           'last_name': _last,
@@ -184,21 +184,22 @@ class _AuthScreenState extends State<AuthScreen> {
           'birthday': _birthController.text,
           'salt': salt,
         },
-        merge: true,
-      );
-      batch.setData(
-        Firestore.instance.collection('hash').document(user.uid),
-        {
-          'name': _userName,
-          'user_name': '$_name $_last',
-        },
-        merge: true,
-      );
-
-      await batch.commit();
-
-      Navigator.of(context).pushNamedAndRemoveUntil(
-          MenuScreen.routeName, (Route<dynamic> route) => false);
+        */
+      if (result['result']) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            MenuScreen.routeName, (Route<dynamic> route) => false);
+      } else {
+        var message = result['message'] ?? 'Ocurrió un error';
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Theme.of(context).errorColor,
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {
