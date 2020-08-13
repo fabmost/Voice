@@ -68,7 +68,7 @@ class TestScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => DetailPollScreen(
-                        id: '6',
+                        id: '624',
                       ),
                     ),
                   );

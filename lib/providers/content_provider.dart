@@ -343,6 +343,7 @@ class ContentProvider with ChangeNotifier {
       'hashtag': [],
       'answers': answers,
       'resources': resources,
+      'taged': [],
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;

@@ -105,7 +105,7 @@ class PollTile extends StatelessWidget with ShareContent {
                 leading: CircleAvatar(
                   radius: 18,
                   backgroundColor: Theme.of(context).accentColor,
-                  backgroundImage: NetworkImage(userImage),
+                  backgroundImage: userImage == null ? null : NetworkImage(userImage),
                 ),
                 title: Row(
                   children: <Widget>[

@@ -230,7 +230,7 @@ class ProfileScreen extends StatelessWidget {
               UserModel user = snapshot.data;
               bool hasSocialMedia = false;
 
-              double containerHeight = 320;
+              double containerHeight = 410;
               if (user.biography != null && user.biography.isNotEmpty) {
                 containerHeight += 66;
               }

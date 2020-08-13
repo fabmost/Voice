@@ -177,7 +177,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
           UserModel user = snapshot.data;
           bool hasSocialMedia = false;
 
-          double containerHeight = 320;
+          double containerHeight = 420;
           if (user.biography != null && user.biography.isNotEmpty) {
             containerHeight += 66;
           }

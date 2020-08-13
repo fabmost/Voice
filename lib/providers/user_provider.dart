@@ -75,6 +75,64 @@ class UserProvider with ChangeNotifier {
     return null;
   }
 
+  Future<Map> editProfile({
+    name,
+    lastName,
+    userName,
+    country,
+    tiktok,
+    facebook,
+    instagram,
+    youtube,
+    bio,
+    gender,
+    cover,
+    birth,
+  }) async {
+    var url = '${API.baseURL}/editProfile';
+    final token = await _getToken();
+
+    Map parameters = {};
+
+    if (name != null) parameters['name'] = name;
+    if (lastName != null) parameters['last_name'] = lastName;
+    if (userName != null) parameters['“user_name”'] = userName;
+    if (country != null) parameters['country_code'] = country;
+    if (tiktok != null) parameters['country_code'] = tiktok;
+    if (facebook != null) parameters['facebook'] = facebook;
+    if (instagram != null) parameters['instagram'] = instagram;
+    if (youtube != null) parameters['youtube'] = youtube;
+    if (bio != null) parameters['biography'] = bio;
+    if (gender != null) parameters['gender'] = gender;
+    if (cover != null) parameters['cover'] = cover;
+    if (birth != null) parameters['birhtday'] = birth;
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return {'result': false, 'message': 'Error'};
+    }
+
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      return {'result': true};
+    }
+    return {'result': false, 'message': dataMap['alert']['message']};
+  }
+
   Future<bool> followUser(id) async {
     var url = '${API.baseURL}/follow';
     final token = await _getToken();

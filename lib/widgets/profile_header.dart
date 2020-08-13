@@ -23,7 +23,7 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final containerHeight = (screenWidth * 8) / 25;
+    final containerHeight = (screenWidth * 9) / 16;
     return Container(
       color: Colors.white,
       child: Column(
@@ -38,14 +38,18 @@ class ProfileHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Color(0xFFECECEC),
                     image: DecorationImage(
-                        image: NetworkImage(user.cover), fit: BoxFit.cover),
+                        image: user.cover == null
+                            ? null
+                            : NetworkImage(user.cover),
+                        fit: BoxFit.cover),
                   ),
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: CircleAvatar(
                     radius: 60,
-                    backgroundImage: NetworkImage(user.icon),
+                    backgroundImage:
+                        user.icon == null ? null : NetworkImage(user.icon),
                   ),
                 ),
               ],

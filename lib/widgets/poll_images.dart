@@ -22,14 +22,28 @@ class PollImages extends StatelessWidget {
     );
   }
 
-  Widget _image(size, image) {
+  Widget _image(size, image, pos) {
+    Radius topLeft = pos == 0 ? Radius.circular(24) : Radius.zero;
+    Radius topRight = ((pos == 0 && images.length == 1) ||
+            (pos == 1 && images.length == 2) ||
+            (pos == 2 && images.length == 3))
+        ? Radius.circular(24)
+        : Radius.zero;
+    Radius bottomLeft = pos == 0 ? Radius.circular(24) : Radius.zero;
+    Radius bottomRight = ((pos == 0 && images.length == 1) ||
+            (pos == 1 && images.length == 2) ||
+            (pos == 2 && images.length == 3))
+        ? Radius.circular(24)
+        : Radius.zero;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          bottomLeft: Radius.circular(24),
+          topLeft: topLeft,
+          topRight: topRight,
+          bottomLeft: bottomLeft,
+          bottomRight: bottomRight,
         ),
         border: Border.all(color: Colors.black),
         image: DecorationImage(
@@ -53,12 +67,13 @@ class PollImages extends StatelessWidget {
                   onTap: () => _toGallery(context, 0),
                   child: Hero(
                       tag: '$images[0]$reference',
-                      child: _image(
-                        144.0,
-                        images[0],
-                      )),
+                      child: _image(144.0, images[0], 0)),
                 )
-              : _image(144.0, images[0]));
+              : _image(
+                  144.0,
+                  images[0],
+                  0,
+                ));
     } else if (images.length == 2) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -71,12 +86,14 @@ class PollImages extends StatelessWidget {
                     child: _image(
                       width,
                       images[0],
+                      0,
                     ),
                   ),
                 )
               : _image(
                   width,
                   images[0],
+                  0,
                 ),
           SizedBox(width: 5),
           isClickable
@@ -87,12 +104,14 @@ class PollImages extends StatelessWidget {
                     child: _image(
                       width,
                       images[1],
+                      1,
                     ),
                   ),
                 )
               : _image(
                   width,
                   images[1],
+                  1,
                 ),
         ],
       );
@@ -108,12 +127,14 @@ class PollImages extends StatelessWidget {
                     child: _image(
                       width,
                       images[0],
+                      0,
                     ),
                   ),
                 )
               : _image(
                   width,
                   images[0],
+                  0,
                 ),
           SizedBox(width: 5),
           isClickable
@@ -124,12 +145,14 @@ class PollImages extends StatelessWidget {
                     child: _image(
                       width,
                       images[1],
+                      1,
                     ),
                   ),
                 )
               : _image(
                   width,
                   images[1],
+                  1,
                 ),
           SizedBox(width: 5),
           isClickable
@@ -140,12 +163,14 @@ class PollImages extends StatelessWidget {
                     child: _image(
                       width,
                       images[2],
+                      2,
                     ),
                   ),
                 )
               : _image(
                   width,
                   images[2],
+                  2,
                 ),
         ],
       );

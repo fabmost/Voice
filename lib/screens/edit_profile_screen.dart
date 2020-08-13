@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,11 +8,14 @@ import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'user_name_screen.dart';
 import 'countries_screen.dart';
 import 'verify_type_screen.dart';
 import '../translations.dart';
+import '../providers/user_provider.dart';
+import '../models/user_model.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';
@@ -52,7 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoading = false;
   bool _changedImage = false;
   int _isValidated;
-  DocumentSnapshot userData;
+  UserModel userData;
 
   void _toValidate(context) {
     Navigator.of(context).pushNamed(VerifyTypeScreen.routeName);
@@ -276,6 +278,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
           _changedImage = true;
         }
+
+        final String editName =
+            userData.name != _nameController.text ? _nameController.text : null;
+        final String editLastName = userData.lastName != _lastController.text
+            ? _lastController.text
+            : null;
+        final String editBio = userData.biography != _bioController.text
+            ? _bioController.text
+            : null;
+        final String editFacebook =
+            userData.facebook != _facebookController.text
+                ? _facebookController.text
+                : null;
+        final String editTiktok = userData.tiktok != _tiktokController.text
+            ? _tiktokController.text
+            : null;
+        final String editInstagram =
+            userData.instagram != _instagramController.text
+                ? _instagramController.text
+                : null;
+
+        Map result =
+            await Provider.of<UserProvider>(context, listen: false).editProfile(
+          name: editName,
+          lastName: editLastName,
+          bio: editBio,
+          tiktok: editTiktok,
+          facebook: editFacebook,
+          instagram: editInstagram,
+        );
+
+        if (result['result']) {
+          Navigator.of(context).pop();
+        } else {
+          var message = result['message'] ?? 'Ocurrió un error';
+          _scaffoldKey.currentState.showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Theme.of(context).errorColor,
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+        }
+
+/*
         WriteBatch batch = Firestore.instance.batch();
         batch.updateData(
             Firestore.instance.collection('users').document(userId), {
@@ -331,7 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
 
         await batch.commit();
-        Navigator.of(context).pop();
+        */
       } on PlatformException catch (err) {
         var message = 'An error ocurred';
         if (err.message != null) {
@@ -360,38 +409,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() {
       _loadingView = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
-    final document =
-        await Firestore.instance.collection('users').document(user.uid).get();
+    final user =
+        await Provider.of<UserProvider>(context, listen: false).userProfile();
 
     setState(() {
       _loadingView = false;
-      userId = user.uid;
-      userData = document;
-      _isValidated = document['is_validated'] ?? 0;
-      _userController.text = document['user_name'];
-      _nameController.text = document['name'];
-      _lastController.text = document['last_name'];
-      _birthController.text = document['birthday'];
-      _genderController.text = document['gender'];
-      _countryController.text = document['country'];
+      userId = user.userName;
+      userData = user;
+      _isValidated = 0;
+      _userController.text = user.userName;
+      _nameController.text = user.name;
+      _lastController.text = user.lastName;
+      _birthController.text = user.birthday ?? '';
+      _genderController.text = user.gender ?? '';
+      _countryController.text = user.country ?? '';
 
-      if (document['bio'] != null) {
-        _bioController.text = document['bio'];
+      if (user.biography != null) {
+        _bioController.text = user.biography;
       }
-      if (document['tiktok'] != null) {
-        _tiktokController.text = document['tiktok'];
+      if (user.tiktok != null) {
+        _tiktokController.text = user.tiktok;
       }
-      if (document['facebook'] != null) {
-        _facebookController.text = document['facebook'];
+      if (user.facebook != null) {
+        _facebookController.text = user.facebook;
       }
-      if (document['instagram'] != null) {
-        _instagramController.text = document['instagram'];
+      if (user.instagram != null) {
+        _instagramController.text = user.instagram;
       }
-      if (document['youtube'] != null) {
-        _youtubeController.text = document['youtube'];
+      if (user.youtube != null) {
+        _youtubeController.text = user.youtube;
       }
-      _currentUrl = document['image'] ?? '';
+      _currentUrl = user.icon;
     });
   }
 
@@ -431,7 +479,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           CircleAvatar(
                             radius: 52,
                             backgroundImage: _imageFile == null
-                                ? NetworkImage(_currentUrl)
+                                ? _currentUrl == null
+                                    ? null
+                                    : NetworkImage(_currentUrl)
                                 : FileImage(_imageFile),
                           ),
                           SizedBox(width: 16),
