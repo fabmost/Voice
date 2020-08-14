@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../widgets/filtered_content.dart';
+import '../models/category_model.dart';
 
 class CategoryScreen extends StatelessWidget {
   static const routeName = '/category';
@@ -17,12 +18,12 @@ class CategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String category = ModalRoute.of(context).settings.arguments;
+    CategoryModel category = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: AppBar(
-        title: Text(category),
+        title: Text(category.name),
       ),
-      body: FilteredContent(category, _playVideo),
+      body: FilteredContent(category.id, _playVideo),
     );
   }
 }

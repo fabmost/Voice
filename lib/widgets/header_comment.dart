@@ -19,8 +19,9 @@ class HeaderComment extends StatelessWidget {
   }
 
   void _toHash(context, hashtag) {
-    Navigator.of(context)
-        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+    MaterialPageRoute(
+      builder: (context) => SearchResultsScreen(hashtag),
+    );
   }
 
   void _upVote(hasUp) {

@@ -48,7 +48,7 @@ class ContentProvider with ChangeNotifier {
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
       List timeLine = dataMap['timeline'];
-      if(timeLine.isEmpty){
+      if (timeLine.isEmpty) {
         return false;
       }
       timeLine.forEach((element) {
@@ -116,6 +116,85 @@ class ContentProvider with ChangeNotifier {
 
   Future<List<ContentModel>> getSaved(int page) async {
     var url = '${API.baseURL}/saved/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      List<ContentModel> contentList = [];
+      List timeLine = dataMap['timeline'];
+      timeLine.forEach((element) {
+        Map content = element as Map;
+        switch (content['type']) {
+          case 'poll':
+            contentList.add(PollModel.fromJson(content));
+            break;
+          case 'challenge':
+            contentList.add(ChallengeModel.fromJson(content));
+            break;
+        }
+      });
+      return contentList;
+    }
+    return [];
+  }
+
+  Future<List<ContentModel>> getCategory(
+      String category, int page) async {
+    var url = '${API.baseURL}/search/previews/$category/$page';
+    final token = await _getToken();
+   
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      List<ContentModel> contentList = [];
+      List timeLine = dataMap['timeline'];
+      timeLine.forEach((element) {
+        Map content = element as Map;
+        switch (content['type']) {
+          case 'poll':
+            contentList.add(PollModel.fromJson(content));
+            break;
+          case 'challenge':
+            contentList.add(ChallengeModel.fromJson(content));
+            break;
+        }
+      });
+      return contentList;
+    }
+    return [];
+  }
+
+  Future<List<ContentModel>> search(String query, int page) async {
+    var url = '${API.baseURL}/search/${query.replaceAll('#', '')}/$page';
     final token = await _getToken();
 
     await FlutterUserAgent.init();
@@ -332,7 +411,8 @@ class ContentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> newPoll({name, category, resources, description, answers}) async {
+  Future<void> newPoll(
+      {name, category, resources, description, answers}) async {
     var url = '${API.baseURL}/registerPoll';
     final token = await _getToken();
     Map parameters = {
@@ -602,8 +682,9 @@ class ContentProvider with ChangeNotifier {
       HttpHeaders.userAgentHeader: webViewUserAgent,
       HttpHeaders.authorizationHeader: 'Bearer $token'
     });
-    final response = await http.Response.fromStream(await imageUploadRequest.send());
-    
+    final response =
+        await http.Response.fromStream(await imageUploadRequest.send());
+
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
       return null;
@@ -611,6 +692,39 @@ class ContentProvider with ChangeNotifier {
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
       return dataMap['id_resource'];
+    }
+    return null;
+  }
+
+  Future<String> uploadResourceGetUrl(String filePath, type, content) async {
+    var url = '${API.baseURL}/uploadResource';
+    final token = await _getToken();
+
+    final imageUploadRequest = http.MultipartRequest('POST', Uri.parse(url));
+    final file = await http.MultipartFile.fromPath('upload', filePath);
+
+    imageUploadRequest.fields['type'] = type;
+    imageUploadRequest.fields['content'] = content;
+    imageUploadRequest.files.add(file);
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    imageUploadRequest.headers.addAll({
+      'Content-Type': 'multipart/form-data',
+      'Accept': '*/*',
+      HttpHeaders.userAgentHeader: webViewUserAgent,
+      HttpHeaders.authorizationHeader: 'Bearer $token'
+    });
+    final response =
+        await http.Response.fromStream(await imageUploadRequest.send());
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return dataMap['url'];
     }
     return null;
   }

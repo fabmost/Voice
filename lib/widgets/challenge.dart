@@ -84,8 +84,8 @@ class Challenge extends StatelessWidget with ShareContent {
   }
 
   void _toHash(context, hashtag) {
-    Navigator.of(context)
-        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+   // Navigator.of(context)
+     //   .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
   }
 
   void _toGallery(context, position) {

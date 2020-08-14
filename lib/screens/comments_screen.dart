@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../translations.dart';
 import '../widgets/comments_list.dart';
 import '../widgets/likes_list.dart';
-import '../widgets/comment.dart';
 import '../widgets/new_comment.dart';
 
 class CommentsScreen extends StatelessWidget {
@@ -59,20 +58,7 @@ class CommentsScreen extends StatelessWidget {
                         hasDown = doc['down'].contains(userSnap.data.uid);
                       }
 
-                      return Comment(
-                        reference: doc.reference,
-                        myId: userSnap.data.uid,
-                        userId: doc['userId'],
-                        title: doc['text'],
-                        comments: doc['comments'],
-                        date: doc['createdAt'].toDate(),
-                        userName: doc['username'],
-                        userImage: doc['userImage'] ?? '',
-                        ups: ups,
-                        hasUp: hasUp,
-                        downs: downs,
-                        hasDown: hasDown,
-                      );
+                      return Container();
                     },
                   );
                 },

@@ -126,7 +126,7 @@ class UserProfileHeader extends StatelessWidget {
   void _saveImage(context, file, isProfile) async {
     String idResource =
         await Provider.of<ContentProvider>(context, listen: false)
-            .uploadResource(
+            .uploadResourceGetUrl(
       file.path,
       'I',
       'U',

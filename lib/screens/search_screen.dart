@@ -105,10 +105,10 @@ class _SearchScreenState extends State<SearchScreen>
               child: TabBarView(
                 children: [
                   TopContent(_playVideo),
-                  FilteredContent('Salud', _playVideo),
-                  FilteredContent('Tecnología', _playVideo),
-                  FilteredContent('Deportes', _playVideo),
-                  FilteredContent('Política', _playVideo),
+                  FilteredContent('1', _playVideo),
+                  FilteredContent('2', _playVideo),
+                  FilteredContent('5', _playVideo),
+                  FilteredContent('8', _playVideo),
                   CategoriesList(),
                 ],
               ),

@@ -15,6 +15,8 @@ import '../mixins/share_mixin.dart';
 import '../models/resource_model.dart';
 import '../screens/comments_screen.dart';
 import '../screens/poll_gallery_screen.dart';
+import '../screens/view_profile_screen.dart';
+import '../screens/search_results_screen.dart';
 
 class ChallengeTile extends StatelessWidget with ShareContent {
   final String id;
@@ -52,6 +54,20 @@ class ChallengeTile extends StatelessWidget with ShareContent {
   });
 
   final Color color = Color(0xFFFFF5FB);
+
+  void _toProfile(context) {
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: userName);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultsScreen(hashtag),
+      ),
+    );
+  }
 
   void _toComments(context) {
     Navigator.push(
@@ -224,7 +240,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
             Container(
               color: color,
               child: ListTile(
-                  //onTap: myId == userId ? null : () => _toProfile(context),
+                  onTap: () => _toProfile(context),
                   leading: CircleAvatar(
                     radius: 18,
                     backgroundColor: Color(0xFFA4175D),
@@ -284,7 +300,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
                       String toRemove = atText.substring(start + 1, finish);
                       //_toTaggedProfile(context, toRemove);
                     } else if (parameter.toString().startsWith('#')) {
-                      //_toHash(context, parameter.toString());
+                      _toHash(context, parameter.toString());
                     }
                   },
                 ),

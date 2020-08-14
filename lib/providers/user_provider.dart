@@ -221,6 +221,43 @@ class UserProvider with ChangeNotifier {
     return [];
   }
 
+  Future<Map> getAutocomplete(query) async {
+    var url = '${API.baseURL}/search/autocomplete/$query';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return {'users': [], 'hashtags': []};
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+
+      return {
+        'users': UserModel.listFromJson(dataMap['users']),
+        'hashtags': dataMap['hashtags'].map((element) {
+          return {
+            'text': element['name'],
+            'count': element['count'],
+          };
+        }).toList()
+      };
+    }
+    return {'users': [], 'hashtags': []};
+  }
+
   Future<String> _getToken() {
     return _storage.read(key: API.sessionToken) ?? null;
   }

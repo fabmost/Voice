@@ -30,7 +30,6 @@ import 'screens/user_name_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/session_login_screen.dart';
 import 'screens/session_auth_screen.dart';
-import 'screens/search_results_screen.dart';
 
 import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
@@ -188,7 +187,6 @@ class App extends StatelessWidget {
             CategoryScreen.routeName: (ctx) => CategoryScreen(),
             SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
             GalleryScreen.routeName: (ctx) => GalleryScreen(),
-            SearchResultsScreen.routeName: (ctx) => SearchResultsScreen(),
           },
         ),
       ),

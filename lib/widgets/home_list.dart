@@ -49,21 +49,22 @@ class _HomeListState extends State<HomeList> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
-        id: content.id,
-        date: content.createdAt,
-        userName: content.user.userName,
-        userImage: content.user.icon,
-        title: content.title,
-        description: content.description,
-        likes: content.likes,
-        comments: content.comments,
-        regalups: content.regalups,
-        hasLiked: content.hasLiked,
-        hasRegalup: content.hasRegalup,
-        hasSaved: content.hasSaved,
-        parameter: content.parameter,
-        goal: content.goal,
-        resources: content.resources);
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
+    );
   }
 
   Widget _causeWidget(content) {

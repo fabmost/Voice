@@ -44,42 +44,12 @@ class CommentTile extends StatelessWidget {
   }
 
   void _toHash(context, hashtag) {
-    //Navigator.of(context)
-    //  .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
-  }
-
-  void _upVote() {
-    /*
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasUp) {
-      batch.updateData(reference, {
-        'up': FieldValue.arrayRemove([myId]),
-      });
-    } else {
-      batch.updateData(reference, {
-        'up': FieldValue.arrayUnion([myId]),
-        'down': FieldValue.arrayRemove([myId])
-      });
-    }
-    batch.commit();
-    */
-  }
-
-  void _downVote() {
-    /*
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasDown) {
-      batch.updateData(reference, {
-        'down': FieldValue.arrayRemove([myId]),
-      });
-    } else {
-      batch.updateData(reference, {
-        'down': FieldValue.arrayUnion([myId]),
-        'up': FieldValue.arrayRemove([myId])
-      });
-    }
-    batch.commit();
-    */
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultsScreen(hashtag),
+      ),
+    );
   }
 
   @override

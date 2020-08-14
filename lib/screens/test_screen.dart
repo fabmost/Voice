@@ -101,6 +101,13 @@ class TestScreen extends StatelessWidget {
                 },
                 child: Text('Get Cause'),
               ),
+              RaisedButton(
+                onPressed: () {
+                  Provider.of<UserProvider>(context, listen: false)
+                      .getAutocomplete('test');
+                },
+                child: Text('Get Autocomplete'),
+              ),
             ],
           ),
         ),

@@ -13,6 +13,7 @@ import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/comments_screen.dart';
+import '../screens/search_results_screen.dart';
 
 class PollTile extends StatelessWidget with ShareContent {
   final String reference;
@@ -60,6 +61,15 @@ class PollTile extends StatelessWidget with ShareContent {
         .pushNamed(ViewProfileScreen.routeName, arguments: userName);
   }
 
+  void _toHash(context, hashtag) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultsScreen(hashtag),
+      ),
+    );
+  }
+
   void _toComments(context) {
     Navigator.push(
       context,
@@ -105,7 +115,8 @@ class PollTile extends StatelessWidget with ShareContent {
                 leading: CircleAvatar(
                   radius: 18,
                   backgroundColor: Theme.of(context).accentColor,
-                  backgroundImage: userImage == null ? null : NetworkImage(userImage),
+                  backgroundImage:
+                      userImage == null ? null : NetworkImage(userImage),
                 ),
                 title: Row(
                   children: <Widget>[
@@ -185,7 +196,7 @@ class PollTile extends StatelessWidget with ShareContent {
                       String toRemove = atText.substring(start + 1, finish);
                       //_toTaggedProfile(context, toRemove);
                     } else if (parameter.toString().startsWith('#')) {
-                      //_toHash(context, parameter.toString());
+                      _toHash(context, parameter.toString());
                     }
                   },
                 ),

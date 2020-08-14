@@ -35,8 +35,9 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   }
 
   void _toHash(context, hashtag) {
-    Navigator.of(context)
-        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+    MaterialPageRoute(
+      builder: (context) => SearchResultsScreen(hashtag),
+    );
   }
 
   void _toGallery(context, images) {
