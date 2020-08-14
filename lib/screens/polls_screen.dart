@@ -264,6 +264,8 @@ class PollsScreen extends StatelessWidget {
         userId: doc['user_id'],
         userName: doc['user_name'],
         title: doc['title'],
+        description: doc['description'] ?? '',
+        images: doc['images'] ?? [],
         creatorName: doc['creator_name'],
         creatorImage: doc['creator_image'] ?? '',
         date: doc['originalDate'].toDate(),

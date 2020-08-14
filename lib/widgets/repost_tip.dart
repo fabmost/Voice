@@ -14,6 +14,8 @@ class RepostTip extends StatelessWidget {
   final String myId;
   final String userName;
   final String title;
+  final String description;
+  final List images;
   final String creatorName;
   final String creatorImage;
   final DateTime date;
@@ -26,6 +28,8 @@ class RepostTip extends StatelessWidget {
     this.userName,
     this.myId,
     this.title,
+    @required this.description,
+    @required this.images,
     this.userId,
     this.creatorImage,
     this.creatorName,
@@ -34,8 +38,26 @@ class RepostTip extends StatelessWidget {
   });
 
   void _toDetail(context) {
-    Navigator.of(context).pushNamed(DetailTipScreen.routeName,
-        arguments: reference.documentID);
+    Navigator.of(context)
+        .pushNamed(DetailTipScreen.routeName, arguments: reference.documentID);
+  }
+
+  Widget _challengeGoal(context) {
+    double width = (MediaQuery.of(context).size.width / 5) * 3;
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        width: width,
+        height: width,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.black),
+            image: DecorationImage(
+              image: NetworkImage(images[0]),
+              fit: BoxFit.cover,
+            )),
+      ),
+    );
   }
 
   @override
@@ -120,10 +142,22 @@ class RepostTip extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
-                  specialTextSpanBuilder:
-                      MySpecialTextSpanBuilder(),
+                  specialTextSpanBuilder: MySpecialTextSpanBuilder(),
                 ),
               ),
+              if (images.isNotEmpty) SizedBox(height: 16),
+              if (images.isNotEmpty) _challengeGoal(context),
+              if (description.isNotEmpty) SizedBox(height: 16),
+              if (description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExtendedText(
+                    description,
+                    style: TextStyle(fontSize: 16),
+                    specialTextSpanBuilder:
+                        MySpecialTextSpanBuilder(canClick: false),
+                  ),
+                ),
               SizedBox(height: 16),
             ],
           ),

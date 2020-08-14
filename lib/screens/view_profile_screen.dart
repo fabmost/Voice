@@ -319,7 +319,8 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
             }
             final document = snapshot.data;
             final screenWidth = MediaQuery.of(context).size.width;
-            final containerHeight = (screenWidth * 8) / 25;
+            final containerHeight = (screenWidth * 9) / 16;
+
             return Container(
               color: Colors.white,
               child: Column(

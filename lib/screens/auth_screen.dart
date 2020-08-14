@@ -309,7 +309,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 TextFormField(
                   maxLength: 22,
                   inputFormatters: [
-                    WhitelistingTextInputFormatter(RegExp("[a-zA-Z0-9_.]")),
+                    FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9_.]")),
                   ],
                   decoration: InputDecoration(
                     counterText: '',

@@ -100,7 +100,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
   @override
   Widget build(BuildContext context) {
     String userName = ModalRoute.of(context).settings.arguments;
-    if(!hasData){
+    if (!hasData) {
       hasData = true;
       _userController.text = userName;
     }
@@ -119,7 +119,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
                   controller: _userController,
                   maxLength: 22,
                   inputFormatters: [
-                    WhitelistingTextInputFormatter(RegExp("[a-zA-Z0-9_.]")),
+                    FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9_.]")),
                   ],
                   decoration: InputDecoration(
                     counterText: '',

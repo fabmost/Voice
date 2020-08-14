@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
+import 'detail_tip_screen.dart';
 import 'detail_cause_screen.dart';
 import 'view_profile_screen.dart';
 import 'detail_comment_screen.dart';
@@ -19,6 +20,11 @@ class NotificationsScreen extends StatelessWidget {
   void _toChallenge(context, id) {
     Navigator.of(context)
         .pushNamed(DetailChallengeScreen.routeName, arguments: id);
+  }
+
+  void _toTip(context, id) {
+    Navigator.of(context)
+        .pushNamed(DetailTipScreen.routeName, arguments: id);
   }
 
   void _toCause(context, id) {
@@ -91,6 +97,8 @@ class NotificationsScreen extends StatelessWidget {
                             return _toPoll(context, doc['content_id']);
                           case 'challenge':
                             return _toChallenge(context, doc['content_id']);
+                          case 'tip':
+                            return _toTip(context, doc['content_id']);
                           case 'cause':
                             return _toCause(context, doc['content_id']);
                           case 'profile':

@@ -221,6 +221,8 @@ class Tip extends StatelessWidget with ShareContent {
         'user_id': user.uid,
         'createdAt': Timestamp.now(),
         'title': title,
+        'images': images,
+        'description': description,
         'creator_name': userName,
         'creator_image': userImage,
         'influencer': influencer,
