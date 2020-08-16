@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
 import 'auth_screen.dart';
@@ -54,6 +55,14 @@ class ProfileScreen extends StatelessWidget {
 
   void _toEdit(context) {
     Navigator.of(context).pushNamed(EditProfileScreen.routeName);
+  }
+
+  void _launchURL(url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   void _playVideo(VideoPlayerController controller) {
@@ -129,7 +138,7 @@ class ProfileScreen extends StatelessWidget {
       sourcePath: pathFile,
       aspectRatio: isProfile
           ? CropAspectRatio(ratioX: 1, ratioY: 1)
-          : CropAspectRatio(ratioX: 25, ratioY: 8),
+          : CropAspectRatio(ratioX: 16, ratioY: 9),
     );
     if (cropped != null) {
       _saveCover(cropped, isProfile);
@@ -379,50 +388,79 @@ class ProfileScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                CircleAvatar(
-                  backgroundColor: (document['tiktok'] ?? '').toString().isEmpty
-                      ? Colors.grey
-                      : Colors.black,
-                  child: Icon(
-                    GalupFont.tik_tok,
-                    color: Colors.white,
-                    size: 20,
+                GestureDetector(
+                  onTap: () => (document['tiktok'] ?? '').toString().isNotEmpty
+                      ? _launchURL(
+                          'https://www.tiktok.com/${document['tiktok'].replaceAll('@', '')}')
+                      : null,
+                  child: CircleAvatar(
+                    backgroundColor:
+                        (document['tiktok'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
+                    child: Icon(
+                      GalupFont.tik_tok,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
                 SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor:
-                      (document['facebook'] ?? '').toString().isEmpty
-                          ? Colors.grey
-                          : Colors.black,
-                  child: Icon(
-                    GalupFont.facebook,
-                    color: Colors.white,
-                    size: 20,
+                GestureDetector(
+                  onTap: () => (document['facebook'] ?? '')
+                          .toString()
+                          .isNotEmpty
+                      ? _launchURL(
+                          'https://www.facebook.com/${document['facebook'].replaceAll('@', '')}')
+                      : null,
+                  child: CircleAvatar(
+                    backgroundColor:
+                        (document['facebook'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
+                    child: Icon(
+                      GalupFont.facebook,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
                 SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor:
-                      (document['instagram'] ?? '').toString().isEmpty
-                          ? Colors.grey
-                          : Colors.black,
-                  child: Icon(
-                    GalupFont.instagram,
-                    color: Colors.white,
-                    size: 20,
+                GestureDetector(
+                  onTap: () => (document['instagram'] ?? '')
+                          .toString()
+                          .isNotEmpty
+                      ? _launchURL(
+                          'https://www.instagram.com/${document['instagram'].replaceAll('@', '')}')
+                      : null,
+                  child: CircleAvatar(
+                    backgroundColor:
+                        (document['instagram'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
+                    child: Icon(
+                      GalupFont.instagram,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
                 SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor:
-                      (document['youtube'] ?? '').toString().isEmpty
-                          ? Colors.grey
-                          : Colors.black,
-                  child: Icon(
-                    GalupFont.youtube,
-                    color: Colors.white,
-                    size: 20,
+                GestureDetector(
+                  onTap: () => (document['youtube'] ?? '').toString().isNotEmpty
+                      ? _launchURL(
+                          'https://www.youtube.com/c/${document['youtube']}')
+                      : null,
+                  child: CircleAvatar(
+                    backgroundColor:
+                        (document['youtube'] ?? '').toString().isEmpty
+                            ? Colors.grey
+                            : Colors.black,
+                    child: Icon(
+                      GalupFont.youtube,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -493,8 +531,8 @@ class ProfileScreen extends StatelessWidget {
                   SliverPersistentHeader(
                     pinned: false,
                     delegate: _SliverHeaderDelegate(
-                      365 + containerHeight - 80,
-                      365 + containerHeight - 80,
+                      465 + containerHeight - 80,
+                      465 + containerHeight - 80,
                       _header(context, userSnap.data.uid),
                     ),
                   ),

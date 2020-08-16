@@ -482,7 +482,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   controller: _descriptionController,
                   focusNode: _descFocus,
                   maxLines: null,
-                  maxLength: 500,
+                  maxLength: 2000,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

@@ -15,6 +15,7 @@ import '../widgets/repost_tip.dart';
 import '../widgets/repost_cause.dart';
 
 import '../widgets/cause_tile.dart';
+import '../widgets/influencer_item.dart';
 
 class PollsScreen extends StatelessWidget {
   final ScrollController homeController;
@@ -163,12 +164,12 @@ class PollsScreen extends StatelessWidget {
       double rateSum = 0;
       (doc['rates'] as List).forEach((element) {
         Map map = (element as Map);
-        if(map.containsKey(userId)){
+        if (map.containsKey(userId)) {
           hasRated = true;
         }
         rateSum += map.values.first;
       });
-      if(amount > 0 && rateSum > 0){
+      if (amount > 0 && rateSum > 0) {
         rate = rateSum / amount;
       }
     }
@@ -319,6 +320,70 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
+  Widget _influencersList(userId) {
+    return FutureBuilder(
+      future: Firestore.instance
+          .collection('users')
+          .orderBy('followers', descending: true)
+          .orderBy('influencer')
+          .limit(20)
+          .getDocuments(),
+      builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final documents = snapshot.data.documents;
+        return Container(
+          height: 220,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    'Influencers que puedas conocer',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.separated(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  separatorBuilder: (context, index) => SizedBox(width: 16),
+                  itemCount: documents.length,
+                  itemBuilder: (context, i) {
+                    bool isFollowing = false;
+                    if (documents[i]['followers'] != null) {
+                      isFollowing =
+                          (documents[i]['followers'] as List).contains(userId);
+                    }
+                    return InfluencerItem(
+                      reference: documents[i].reference,
+                      userName: documents[i]['user_name'],
+                      image: documents[i]['image'] ?? '',
+                      influencer: documents[i]['influencer'],
+                      isFollowing: isFollowing,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 /*
   Widget _likesHome(userId, userLikes) {
     return StreamBuilder(
@@ -377,12 +442,17 @@ class PollsScreen extends StatelessWidget {
   Widget _contentList(documents, userId) {
     return ListView.builder(
       controller: homeController,
-      itemCount: documents.length + 1,
+      itemCount: documents.length + 2,
       itemBuilder: (ctx, i) {
         if (i == 6) {
+          return _influencersList(userId);
+        }
+        if (i == 12) {
           return _causesList(userId);
         }
-        final doc = (i > 6) ? documents[i - 1] : documents[i];
+        final doc = (i > 6)
+            ? (i > 12) ? documents[i - 2] : documents[i - 1]
+            : documents[i];
         final List flagArray = doc['flag'] ?? [];
         if (flagArray.contains(userId)) {
           return Container();

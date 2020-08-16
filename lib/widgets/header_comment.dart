@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -11,6 +12,8 @@ import '../screens/view_profile_screen.dart';
 class HeaderComment extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
   HeaderComment(this.reference, this.userId);
 
@@ -21,6 +24,18 @@ class HeaderComment extends StatelessWidget {
   void _toHash(context, hashtag) {
     Navigator.of(context)
         .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
+
+  void _launchURL(String url) async {
+    String newUrl = url;
+    if (!url.contains('http')) {
+      newUrl = 'http://$url';
+    }
+    if (await canLaunch(newUrl.trim())) {
+      await launch(newUrl.trim());
+    } else {
+      throw 'Could not launch $newUrl';
+    }
   }
 
   void _upVote(hasUp) {
@@ -119,6 +134,8 @@ class HeaderComment extends StatelessWidget {
                     _toTaggedProfile(context, toRemove);
                   } else if (parameter.toString().startsWith('#')) {
                     _toHash(context, parameter.toString());
+                  } else if (regex.hasMatch(parameter.toString())) {
+                    _launchURL(parameter.toString());
                   }
                 },
               ),

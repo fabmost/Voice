@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/preferences_provider.dart';
 import '../screens/auth_screen.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class PollOptions extends StatefulWidget {
   final DocumentReference reference;
@@ -32,6 +33,19 @@ class PollOptions extends StatefulWidget {
 
 class _PollOptionsState extends State<PollOptions> {
   bool _isLoading = false;
+
+  void _toGallery(image) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: widget.reference,
+          galleryItems: [image],
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
 
   void _anonymousAlert() {
     showDialog(
@@ -120,8 +134,14 @@ class _PollOptionsState extends State<PollOptions> {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      CircleAvatar(
-                        backgroundImage: NetworkImage(option['image']),
+                      GestureDetector(
+                        onTap: () => _toGallery(option['image']),
+                        child: Hero(
+                          tag: option['image'],
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage(option['image']),
+                          ),
+                        ),
                       ),
                       SizedBox(width: 8),
                       Expanded(

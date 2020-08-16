@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'influencer_badge.dart';
 import 'poll_video.dart';
@@ -25,6 +26,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   final DocumentReference reference;
   final String userId;
   final Color color = Color(0xFFFFF5FB);
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
   HeaderChallenge(this.reference, this.userId);
 
@@ -42,6 +45,18 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   void _toHash(context, hashtag) {
     Navigator.of(context)
         .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
+
+  void _launchURL(String url) async {
+    String newUrl = url;
+    if (!url.contains('http')) {
+      newUrl = 'http://$url';
+    }
+    if (await canLaunch(newUrl.trim())) {
+      await launch(newUrl.trim());
+    } else {
+      throw 'Could not launch $newUrl';
+    }
   }
 
   void _toGallery(context, images) {
@@ -542,6 +557,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                       _toProfile(context, toRemove);
                     } else if (parameter.toString().startsWith('#')) {
                       _toHash(context, parameter.toString());
+                    } else if (regex.hasMatch(parameter.toString())) {
+                      _launchURL(parameter.toString());
                     }
                   },
                 ),
@@ -574,6 +591,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                         _toTaggedProfile(context, toRemove);
                       } else if (parameter.toString().startsWith('#')) {
                         _toHash(context, parameter.toString());
+                      } else if (regex.hasMatch(parameter.toString())) {
+                        _launchURL(parameter.toString());
                       }
                     },
                   ),

@@ -38,6 +38,8 @@
 		<string>https://voiceinc.page.link/cause</string>
 		<string>https://voiceinc.page.link/challenge</string>
 		<string>https://voiceinc.page.link/poll</string>
+		<string>https://voiceinc.page.link/tip</string>
+		<string>https://voiceinc.page.link/profile</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>

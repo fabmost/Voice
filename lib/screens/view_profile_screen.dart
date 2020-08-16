@@ -9,6 +9,7 @@ import 'auth_screen.dart';
 import 'chat_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
+import 'poll_gallery_screen.dart';
 
 import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
@@ -49,6 +50,19 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
       MaterialPageRoute(
         builder: (context) => FollowingScreen(
           id,
+        ),
+      ),
+    );
+  }
+
+  void _toGallery(context, image) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: null,
+          galleryItems: [image],
+          initialIndex: 0,
         ),
       ),
     );
@@ -343,10 +357,18 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                         ),
                         Align(
                           alignment: Alignment.bottomCenter,
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundImage:
-                                NetworkImage(document['image'] ?? ''),
+                          child: GestureDetector(
+                            onTap: document['image'] == null
+                                ? null
+                                : () => _toGallery(context, document['image']),
+                            child: Hero(
+                              tag: document['image'] ?? '',
+                              child: CircleAvatar(
+                                radius: 60,
+                                backgroundImage:
+                                    NetworkImage(document['image'] ?? ''),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -528,8 +550,8 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                 SliverPersistentHeader(
                   pinned: false,
                   delegate: _SliverHeaderDelegate(
-                    378 + containerHeight - 70,
-                    378 + containerHeight - 70,
+                    485 + containerHeight - 70,
+                    485 + containerHeight - 70,
                     _newHeader(context, profileId),
                   ),
                 ),
