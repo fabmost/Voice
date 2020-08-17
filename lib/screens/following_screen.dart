@@ -74,7 +74,8 @@ class _FollowingScreenState extends State<FollowingScreen> {
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
         {
-          'followers': FieldValue.arrayUnion([myId])
+          'followers': FieldValue.arrayUnion([myId]),
+          'followers_count': FieldValue.increment(1)
         },
       );
       batch.updateData(
@@ -96,7 +97,8 @@ class _FollowingScreenState extends State<FollowingScreen> {
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
         {
-          'followers': FieldValue.arrayRemove([myId])
+          'followers': FieldValue.arrayRemove([myId]),
+          'followers_count': FieldValue.increment(-1)
         },
       );
       batch.updateData(

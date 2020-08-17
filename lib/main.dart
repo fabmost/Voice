@@ -21,6 +21,7 @@ import 'screens/countries_screen.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/view_profile_screen.dart';
+import 'screens/saved_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/comments_screen.dart';
 import 'screens/detail_comment_screen.dart';
@@ -39,6 +40,7 @@ import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
 import 'screens/new_tip_screen.dart';
+import 'screens/new_cause_screen.dart';
 import 'screens/new_content_category_screen.dart';
 
 import 'screens/verify_type_screen.dart';
@@ -113,7 +115,7 @@ class App extends StatelessWidget {
             const TranslationsDelegate(),
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
-            
+            GlobalCupertinoLocalizations.delegate
           ],
           supportedLocales: [
             const Locale('en', ''),
@@ -149,12 +151,14 @@ class App extends StatelessWidget {
             EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
             NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
+            SavedScreen.routeName: (ctx) => SavedScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),
             CommentsScreen.routeName: (ctx) => CommentsScreen(),
             DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
             NewTipScreen.routeName: (ctx) => NewTipScreen(),
+            NewCauseScreen.routeName: (ctx) => NewCauseScreen(),
             NewContentCategoryScreen.routeName: (ctx) =>
                 NewContentCategoryScreen(),
             DetailPollScreen.routeName: (ctx) => DetailPollScreen(),

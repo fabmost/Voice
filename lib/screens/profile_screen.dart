@@ -15,6 +15,7 @@ import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'followers_screen.dart';
 import 'following_screen.dart';
+import 'poll_gallery_screen.dart';
 
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -22,7 +23,7 @@ import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
 import '../widgets/tip_user_list.dart';
-import '../widgets/saved_list.dart';
+import '../widgets/cause_user_list.dart';
 import '../widgets/influencer_badge.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -65,6 +66,19 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
+  void _toGallery(context, image) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: null,
+          galleryItems: [image],
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
+
   void _playVideo(VideoPlayerController controller) {
     if (_controller != null) {
       _controller.pause();
@@ -74,7 +88,6 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _imageOptions(context, isProfile) {
-    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -318,10 +331,13 @@ class ProfileScreen extends StatelessWidget {
                       width: 122,
                       child: Stack(
                         children: <Widget>[
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundImage:
-                                NetworkImage(document['image'] ?? ''),
+                          GestureDetector(
+                            onTap: () =>  document['image'] == null ? null : _toGallery(context, document['image']),
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundImage:
+                                  NetworkImage(document['image'] ?? ''),
+                            ),
                           ),
                           Positioned(
                             bottom: 0,
@@ -391,7 +407,7 @@ class ProfileScreen extends StatelessWidget {
                 GestureDetector(
                   onTap: () => (document['tiktok'] ?? '').toString().isNotEmpty
                       ? _launchURL(
-                          'https://www.tiktok.com/${document['tiktok'].replaceAll('@', '')}')
+                          'https://www.tiktok.com/${document['tiktok']}')
                       : null,
                   child: CircleAvatar(
                     backgroundColor:
@@ -556,8 +572,8 @@ class ProfileScreen extends StatelessWidget {
                             text: 'Tips',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.saved),
-                            text: 'Guardados',
+                            icon: Icon(GalupFont.cause),
+                            text: 'Causas',
                           ),
                         ],
                       ),
@@ -571,7 +587,7 @@ class ProfileScreen extends StatelessWidget {
                   PollUserList(userSnap.data.uid, _playVideo),
                   ChallengeUserList(userSnap.data.uid),
                   TipUserList(userSnap.data.uid),
-                  SavedList(_playVideo),
+                  CauseUserList(userSnap.data.uid),
                 ],
               ),
             ),

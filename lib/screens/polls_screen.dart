@@ -8,6 +8,7 @@ import '../widgets/poll.dart';
 import '../widgets/challenge.dart';
 import '../widgets/tip.dart';
 import '../widgets/cause.dart';
+import '../widgets/cause_user.dart';
 
 import '../widgets/repost_poll.dart';
 import '../widgets/repost_challenge.dart';
@@ -214,18 +215,43 @@ class PollsScreen extends StatelessWidget {
     if (doc['saved'] != null) {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
-    return Cause(
+
+    if (doc['info'] != null && doc['info'].toString().isNotEmpty)
+      return Cause(
+        reference: doc.reference,
+        myId: userId,
+        title: doc['title'],
+        likes: likes,
+        hasLiked: hasLiked,
+        reposts: reposts,
+        hasReposted: hasReposted,
+        hasSaved: hasSaved,
+        creator: doc['creator'],
+        info: doc['info'],
+        date: doc['createdAt'].toDate(),
+      );
+    return CauseUser(
       reference: doc.reference,
       myId: userId,
+      userId: doc['user_id'],
+      userName: doc['user_name'],
+      userImage: doc['user_image'] ?? '',
       title: doc['title'],
+      description: doc['description'] ?? '',
+      goal: doc['goal'],
+      isVideo: doc['is_video'] ?? false,
+      images: doc['images'],
       likes: likes,
       hasLiked: hasLiked,
       reposts: reposts,
       hasReposted: hasReposted,
       hasSaved: hasSaved,
-      creator: doc['creator'],
-      info: doc['info'],
       date: doc['createdAt'].toDate(),
+      influencer: doc['influencer'] ?? '',
+      bank: doc['bank'] ?? '',
+      contact: doc['phone'],
+      web: doc['web'],
+      videoFunction: _playVideo,
     );
   }
 
@@ -280,8 +306,11 @@ class PollsScreen extends StatelessWidget {
       userName: doc['user_name'],
       title: doc['title'],
       creator: doc['creator'],
-      info: doc['info'],
       date: doc['originalDate'].toDate(),
+      info: doc['info'],
+      influencer: doc['influencer'] ?? '',
+      userImage: doc['creator_image'] ?? '',
+      images: doc['images'] ?? [],
     );
   }
 
@@ -324,8 +353,7 @@ class PollsScreen extends StatelessWidget {
     return FutureBuilder(
       future: Firestore.instance
           .collection('users')
-          .orderBy('followers', descending: true)
-          .orderBy('influencer')
+          .orderBy('followers_count', descending: true)
           .limit(20)
           .getDocuments(),
       builder: (ctx, snapshot) {
@@ -344,7 +372,7 @@ class PollsScreen extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.fitWidth,
                   child: Text(
-                    'Influencers que puedas conocer',
+                    'Galuperos que puedas conocer',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.black,
@@ -366,11 +394,11 @@ class PollsScreen extends StatelessWidget {
                       isFollowing =
                           (documents[i]['followers'] as List).contains(userId);
                     }
+                    if (isFollowing) return Container();
                     return InfluencerItem(
                       reference: documents[i].reference,
                       userName: documents[i]['user_name'],
                       image: documents[i]['image'] ?? '',
-                      influencer: documents[i]['influencer'],
                       isFollowing: isFollowing,
                     );
                   },
@@ -444,15 +472,13 @@ class PollsScreen extends StatelessWidget {
       controller: homeController,
       itemCount: documents.length + 2,
       itemBuilder: (ctx, i) {
-        if (i == 6) {
+        if (i == 0) {
           return _influencersList(userId);
         }
-        if (i == 12) {
+        if (i == 6) {
           return _causesList(userId);
         }
-        final doc = (i > 6)
-            ? (i > 12) ? documents[i - 2] : documents[i - 1]
-            : documents[i];
+        final doc = (i > 6) ? documents[i - 2] : documents[i - 1];
         final List flagArray = doc['flag'] ?? [];
         if (flagArray.contains(userId)) {
           return Container();

@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -131,8 +131,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        final mFile = await VideoCompress.getFileThumbnail(
+          //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -403,6 +403,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   spanBuilder: MySpecialTextSpanBuilder(),
                   autofocus: true,
                   maxLines: null,
+                  autocorrect: true,
                   maxLength: 120,
                   decoration: InputDecoration(
                     counterText: '',
@@ -449,7 +450,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   onTap: _imageOptions,
                   child: Container(
                     width: 180,
-                    height: 120,
+                    height: 180,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: Colors.black),
@@ -482,6 +483,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   controller: _descriptionController,
                   focusNode: _descFocus,
                   maxLines: null,
+                  autocorrect: true,
                   maxLength: 2000,
                   decoration: InputDecoration(
                     labelText:

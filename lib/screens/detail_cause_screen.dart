@@ -1,21 +1,80 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
+import 'auth_screen.dart';
+import 'flag_screen.dart';
+import 'view_profile_screen.dart';
+import 'poll_gallery_screen.dart';
+import 'search_results_screen.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
+import '../widgets/influencer_badge.dart';
+import '../widgets/poll_video.dart';
 import '../custom/galup_font_icons.dart';
+import '../custom/my_special_text_span_builder.dart';
 import '../providers/preferences_provider.dart';
-import '../screens/auth_screen.dart';
-import '../screens/flag_screen.dart';
 
 class DetailCauseScreen extends StatelessWidget with ShareContent {
   static const routeName = '/cause';
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
   final Color color = Color(0xFFF0F0F0);
+
+  void _toProfile(context, creatorId) {
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
+  }
+
+  void _toTaggedProfile(context, id) {
+    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+  }
+
+  void _toHash(context, hashtag) {
+    Navigator.of(context)
+        .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+  }
+
+  void _call(contact) async {
+    if (await canLaunch('tel:$contact')) {
+      await launch('tel:$contact');
+    } else {
+      throw 'Could not launch $contact';
+    }
+  }
+
+  void _launchURL(String url) async {
+    String newUrl = url;
+    if (!url.contains('http')) {
+      newUrl = 'http://$url';
+    }
+    if (await canLaunch(newUrl.trim())) {
+      await launch(newUrl.trim());
+    } else {
+      throw 'Could not launch $newUrl';
+    }
+  }
+
+  void _toGallery(context, images) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: null,
+          galleryItems: images,
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
 
   void _infoAlert(context, info) {
     showDialog(
@@ -99,7 +158,18 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
   }
 
   void _repost(
-      context, reference, myId, title, info, creator, date, hasReposted) async {
+    context,
+    reference,
+    myId,
+    title,
+    creator,
+    userName,
+    userImage,
+    influencer,
+    date,
+    hasReposted,
+    images,
+  ) async {
     final user = await FirebaseAuth.instance.currentUser();
     if (user.isAnonymous) {
       _anonymousAlert(
@@ -154,11 +224,15 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
         'user_id': user.uid,
         'createdAt': Timestamp.now(),
         'title': title,
-        'info': info,
         'creator': creator,
         'originalDate': date,
         'parent': reference,
-        'home': userData['followers'] ?? []
+        'home': userData['followers'] ?? [],
+        'info': '',
+        'creator_name': userName,
+        'creator_image': userImage,
+        'influencer': influencer,
+        'images': images,
       });
       batch.updateData(reference, {
         'reposts': FieldValue.arrayUnion([myId]),
@@ -210,7 +284,6 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
   }
 
   void _options(context, reference, myId, hasSaved) {
-    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -245,6 +318,106 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
     );
   }
 
+  Widget _challengeGoal(
+    context,
+    goal,
+    likes,
+    isVideo,
+    images,
+  ) {
+    //bool goalReached = false;
+    var totalPercentage = (likes == 0) ? 0.0 : likes / goal;
+    if (totalPercentage > 1) totalPercentage = 1;
+    final format = NumberFormat('###.##');
+
+    return Column(
+      children: <Widget>[
+        if (isVideo) PollVideo('', images[0], null),
+        if (!isVideo)
+          Align(
+            alignment: Alignment.center,
+            child: InkWell(
+              onTap: () => _toGallery(context, images),
+              child: Hero(
+                tag: images[0],
+                child: Container(
+                  width: 144,
+                  height: 144,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.black),
+                      image: DecorationImage(
+                        image: NetworkImage(images[0]),
+                        fit: BoxFit.cover,
+                      )),
+                ),
+              ),
+            ),
+          ),
+        Container(
+          height: 42,
+          margin: EdgeInsets.all(16),
+          child: Stack(
+            children: <Widget>[
+              FractionallySizedBox(
+                widthFactor: totalPercentage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xAAA4175D),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                      topRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                      bottomRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        'Firmas',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: SizedBox(),
+                      ),
+                      Text(
+                        '${format.format(totalPercentage * 100)}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
   Widget _causeButton(context, reference, myId, hasLiked) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -266,6 +439,85 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
               textColor: Colors.white,
               child: Text('Apoyo esta causa'),
             ),
+    );
+  }
+
+  Widget _userTile(context, DocumentSnapshot document, userId, hasSaved) {
+    if (document['info'].isNotEmpty)
+      return ListTile(
+        leading: CircleAvatar(
+          radius: 18,
+          backgroundColor: Theme.of(context).primaryColor,
+          backgroundImage: AssetImage('assets/logo.png'),
+        ),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              document['creator'],
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            IconButton(
+              icon: Icon(GalupFont.info_circled_alt),
+              onPressed: () => _infoAlert(context, document['info']),
+            )
+          ],
+        ),
+        subtitle: Text('Por: Galup'),
+        trailing: Transform.rotate(
+          angle: 270 * pi / 180,
+          child: IconButton(
+              icon: Icon(Icons.chevron_left),
+              onPressed: () => _options(
+                    context,
+                    document.reference,
+                    userId,
+                    hasSaved,
+                  )),
+        ),
+      );
+    String creatorId = document['user_id'];
+    String userImage = document['user_image'] ?? '';
+    final date = document['createdAt'].toDate();
+    final now = new DateTime.now();
+    final difference = now.difference(date);
+    return ListTile(
+      onTap: creatorId == userId ? null : () => _toProfile(context, creatorId),
+      leading: CircleAvatar(
+        radius: 18,
+        backgroundColor: Theme.of(context).accentColor,
+        backgroundImage: NetworkImage(userImage),
+      ),
+      title: Row(
+        children: <Widget>[
+          Flexible(
+            child: Text(
+              document['user_name'],
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          SizedBox(width: 8),
+          InfluencerBadge(document['influencer'] ?? '', 16),
+        ],
+      ),
+      subtitle: Text(timeago.format(now.subtract(difference))),
+      trailing: Transform.rotate(
+        angle: 270 * pi / 180,
+        child: IconButton(
+          icon: Icon(Icons.chevron_left),
+          onPressed: () => _options(
+            context,
+            document.reference,
+            userId,
+            hasSaved,
+          ),
+        ),
+      ),
     );
   }
 
@@ -312,96 +564,141 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                     (document['saved'] as List).contains(userSnap.data.uid);
               }
 
-              return Column(
-                children: <Widget>[
-                  Container(
-                    color: color,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        backgroundImage: AssetImage('assets/logo.png'),
+              final String description = document['description'] ?? '';
+              final String contact = document['description'] ?? '';
+              final String web = document['description'] ?? '';
+              final String bank = document['description'] ?? '';
+
+              return SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      color: color,
+                      child: _userTile(
+                        context,
+                        document,
+                        userSnap.data.uid,
+                        hasSaved,
                       ),
-                      title: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                    ),
+                    SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        document['title'],
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    _challengeGoal(
+                      context,
+                      document['goal'],
+                      likes,
+                      document['is_video'] ?? false,
+                      document['images'],
+                    ),
+                    SizedBox(height: 16),
+                    if (description.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ExtendedText(
+                          description,
+                          style: TextStyle(fontSize: 16),
+                          specialTextSpanBuilder:
+                              MySpecialTextSpanBuilder(canClick: true),
+                          onSpecialTextTap: (parameter) {
+                            if (parameter.toString().startsWith('@')) {
+                              String atText = parameter.toString();
+                              int start = atText.indexOf('[');
+                              int finish = atText.indexOf(']');
+                              String toRemove =
+                                  atText.substring(start + 1, finish);
+                              _toTaggedProfile(context, toRemove);
+                            } else if (parameter.toString().startsWith('#')) {
+                              _toHash(context, parameter.toString());
+                            } else if (regex.hasMatch(parameter.toString())) {
+                              _launchURL(parameter.toString());
+                            }
+                          },
+                        ),
+                      ),
+                    if (description.isNotEmpty) SizedBox(height: 16),
+                    _causeButton(
+                      context,
+                      reference,
+                      userSnap.data.uid,
+                      hasLiked,
+                    ),
+                    if (contact.isNotEmpty)
+                      ListTile(
+                        onTap: () => _call(contact),
+                        leading: Icon(
+                          Icons.phone,
+                          color: Colors.black,
+                        ),
+                        title: Text('Contáctame'),
+                        subtitle: Text(contact),
+                      ),
+                    if (web.isNotEmpty)
+                      ListTile(
+                        onTap: () => _launchURL(web),
+                        leading: Icon(
+                          Icons.open_in_browser,
+                          color: Colors.black,
+                        ),
+                        title: Text('Visita'),
+                        subtitle: Text(web),
+                      ),
+                    if (bank.isNotEmpty)
+                      ListTile(
+                        leading: Icon(
+                          Icons.credit_card,
+                          color: Colors.black,
+                        ),
+                        title: Text('Donaciones'),
+                        subtitle: Text(bank),
+                      ),
+                    SizedBox(height: 16),
+                    Container(
+                      color: color,
+                      child: Row(
                         children: <Widget>[
-                          Text(
-                            document['creator'],
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
+                          FlatButton.icon(
+                            onPressed: () => _repost(
+                              context,
+                              reference,
+                              userSnap.data.uid,
+                              document['title'],
+                              document['creator'],
+                              document['user_name'] ?? '',
+                              document['user_image'] ?? '',
+                              document['influencer'] ?? '',
+                              document['createdAt'],
+                              hasReposted,
+                              document['images'] ?? [],
+                            ),
+                            icon: Icon(GalupFont.repost,
+                                color: hasReposted
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.black),
+                            label: Text(reposts == 0 ? '' : '$reposts'),
                           ),
                           IconButton(
-                            icon: Icon(GalupFont.info_circled_alt),
+                            icon: Icon(GalupFont.share),
                             onPressed: () =>
-                                _infoAlert(context, document['info']),
-                          )
+                                _share(reference, document['title']),
+                          ),
+                          Expanded(child: SizedBox(height: 1)),
+                          Text(likes == 0 ? '' : '$likes Votos'),
+                          SizedBox(width: 16),
                         ],
                       ),
-                      subtitle: Text('Por: Galup'),
-                      trailing: Transform.rotate(
-                        angle: 270 * pi / 180,
-                        child: IconButton(
-                            icon: Icon(Icons.chevron_left),
-                            onPressed: () => _options(
-                                  context,
-                                  reference,
-                                  userSnap.data.uid,
-                                  hasSaved,
-                                )),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      document['title'],
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  _causeButton(
-                    context,
-                    reference,
-                    userSnap.data.uid,
-                    hasLiked,
-                  ),
-                  SizedBox(height: 16),
-                  Container(
-                    color: color,
-                    child: Row(
-                      children: <Widget>[
-                        FlatButton.icon(
-                          onPressed: () => _repost(
-                            context,
-                            reference,
-                            userSnap.data.uid,
-                            document['title'],
-                            document['info'],
-                            document['creator'],
-                            document['createdAt'],
-                            hasReposted,
-                          ),
-                          icon: Icon(GalupFont.repost,
-                              color: hasReposted
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.black),
-                          label: Text(reposts == 0 ? '' : '$reposts'),
-                        ),
-                        IconButton(
-                          icon: Icon(GalupFont.share),
-                          onPressed: () => _share(reference, document['title']),
-                        ),
-                        Expanded(child: SizedBox(height: 1)),
-                        Text(likes == 0 ? '' : '$likes Votos'),
-                        SizedBox(width: 16),
-                      ],
-                    ),
-                  )
-                ],
+                    )
+                  ],
+                ),
               );
             },
           );

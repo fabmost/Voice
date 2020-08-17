@@ -1,17 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-import '../translations.dart';
-import '../screens/auth_screen.dart';
 import '../screens/view_profile_screen.dart';
 
 class InfluencerItem extends StatelessWidget {
   final DocumentReference reference;
   final String userName;
   final String image;
-  final String influencer;
   final bool isFollowing;
 
   final Color color = Color(0xFFF8F8FF);
@@ -20,7 +15,6 @@ class InfluencerItem extends StatelessWidget {
     this.reference,
     this.userName,
     this.image,
-    this.influencer,
     this.isFollowing,
   });
 
@@ -28,6 +22,8 @@ class InfluencerItem extends StatelessWidget {
     Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
         arguments: reference.documentID);
   }
+
+  /*
 
   void _anonymousAlert(context) {
     showDialog(
@@ -137,6 +133,7 @@ class InfluencerItem extends StatelessWidget {
       ),
     );
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +153,7 @@ class InfluencerItem extends StatelessWidget {
           children: <Widget>[
             Container(
               width: double.infinity,
-              height: 100,
+              height: 125,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(7),
@@ -184,12 +181,6 @@ class InfluencerItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              influencer,
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
             /*
             Container(
               width: double.infinity,

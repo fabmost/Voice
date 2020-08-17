@@ -23,6 +23,10 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final GlobalKey keyFace = GlobalKey();
+  final GlobalKey keyTik = GlobalKey();
+  final GlobalKey keyInsta = GlobalKey();
+  final GlobalKey keyYt = GlobalKey();
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
@@ -395,6 +399,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
+  Widget _infoButton(key, tooltip) {
+    return Tooltip(
+      key: key,
+      message: tooltip,
+      child: GestureDetector(
+        onTap: () {
+          final dynamic tooltip = key.currentState;
+          tooltip.ensureTooltipVisible();
+        },
+        child: Icon(
+          Icons.info_outline,
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -550,6 +570,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
+                          suffixIcon: _infoButton(keyTik, 'Introduce tu username, ejemplo @miusuario'),
                           labelText: 'Tiktok',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -562,6 +583,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
+                          suffixIcon: _infoButton(keyFace, 'Introduce tu username, ejemplo @miusuario'),
                           labelText: 'Facebook',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -574,6 +596,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
+                          suffixIcon: _infoButton(keyInsta, 'Introduce tu username, ejemplo @miusuario'),
                           labelText: 'Instagram',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -585,6 +608,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
+                          suffixIcon: _infoButton(keyYt, 'Introduce el nombre de tu canal sin espacios'),
                           labelText: 'Youtube (canal)',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                         ),

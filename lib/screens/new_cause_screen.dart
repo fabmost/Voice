@@ -15,35 +15,36 @@ import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
-import 'new_content_category_screen.dart';
 import '../translations.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
 
-class NewChallengeScreen extends StatefulWidget {
-  static const routeName = '/new-challenge';
+class NewCauseScreen extends StatefulWidget {
+  static const routeName = '/new-cause';
 
   @override
-  _NewChallengeScreenState createState() => _NewChallengeScreenState();
+  _NewCauseScreenState createState() => _NewCauseScreenState();
 }
 
-class _NewChallengeScreenState extends State<NewChallengeScreen> {
+class _NewCauseScreenState extends State<NewCauseScreen> {
   final Trimmer _trimmer = Trimmer();
   bool _isLoading = false;
   bool _isVideo = false;
   bool _isSearching = false;
-  String metric = 'Likes';
   double goal = 0;
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _webController = TextEditingController();
+  TextEditingController _bankController = TextEditingController();
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
   Algolia algolia;
   AlgoliaQuery searchQuery;
 
-  String category;
+  //String category;
 
   void _imageOptions() {
     FocusScope.of(context).requestFocus(FocusNode());
@@ -161,64 +162,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     }
   }
 
-  void _metricSelected() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return SimpleDialog(
-          title: Text('Selecciona el tipo de meta'),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: Text(
-                'Likes',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Likes'),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                'Comentarios',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Comentarios'),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                'Regalups',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Regalups'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _optionSelected(value) {
-    Navigator.of(context).pop();
-    setState(() {
-      metric = value;
-    });
-  }
-
-  void _selectCategory() {
-    Navigator.of(context)
-        .pushNamed(NewContentCategoryScreen.routeName)
-        .then((value) {
-      if (value != null) {
-        setState(() {
-          category = value;
-        });
-      }
-    });
-  }
-
   void _validate() {
-    if (_titleController.text.isNotEmpty &&
-        _imageFile != null &&
-        goal > 0 &&
-        category != null) {
+    if (_titleController.text.isNotEmpty && _imageFile != null && goal > 0) {
       _saveChallenge();
       return;
     }
@@ -249,7 +194,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                'Tu reto se ha creado correctamente',
+                'Tu causa se ha creado correctamente',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -292,14 +237,14 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     if (_isVideo) {
       ref = FirebaseStorage.instance
           .ref()
-          .child('challenges')
+          .child('causes')
           .child('$challengeId.mp4');
 
       await ref.putFile(_videoFile).onComplete;
     } else {
       ref = FirebaseStorage.instance
           .ref()
-          .child('challenges')
+          .child('causes')
           .child(challengeId + '.jpg');
 
       await ref.putFile(_imageFile).onComplete;
@@ -328,9 +273,12 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
 
     batch.setData(
         Firestore.instance.collection('content').document(challengeId), {
-      'type': 'challenge',
+      'type': 'cause',
       'title': _titleController.text,
       'description': _descriptionController.text,
+      'phone': _phoneController.text,
+      'web': _webController.text,
+      'bank': _bankController.text,
       'user_name': userData['user_name'],
       'user_id': user.uid,
       'user_image': userData['image'],
@@ -338,14 +286,14 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       'createdAt': Timestamp.now(),
       'images': [url],
       'is_video': _isVideo,
-      'metric_type': metric.toLowerCase(),
-      'metric_goal': goal,
+      'goal': goal,
       'comments': 0,
       'endDate': Timestamp.now(),
-      'category': category,
       'tags': hashes,
       'interactions': 0,
       'home': userData['followers'] ?? [],
+      'creator': userData['user_name'],
+      'info': '',
     });
     hashes.forEach((element) {
       batch.setData(
@@ -454,8 +402,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   decoration: InputDecoration(
                     counterText: '',
                     border: InputBorder.none,
-                    hintText:
-                        Translations.of(context).text('hint_challenge_title'),
+                    hintText: Translations.of(context).text('hint_cause_title'),
                   ),
                   style: TextStyle(fontSize: 22),
                 ),
@@ -515,7 +462,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               Container(
                 width: double.infinity,
                 child: Slider(
-                  activeColor: Color(0xFFA4175D),
+                  activeColor: Colors.black,
                   value: goal,
                   onChanged: (newValue) {
                     setState(() {
@@ -528,48 +475,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   label: '${NumberFormat.compact().format(goal)}',
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      '${goal.toInt()}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: _metricSelected,
-                      child: Container(
-                        height: 42,
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            Text(metric),
-                            Icon(Icons.arrow_drop_down),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(height: 16),
-              _title(Translations.of(context).text('hint_category')),
               SizedBox(height: 8),
-              InkWell(
-                onTap: _selectCategory,
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.black),
-                  ),
-                  child: Text('${category ?? 'Selecciona una categoría'}'),
-                ),
-              ),
               SuggestionField(
                 textFieldConfiguration: TextFieldConfiguration(
                   spanBuilder: MySpecialTextSpanBuilder(),
@@ -614,6 +520,31 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 },
                 autoFlipDirection: true,
               ),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  counterText: '',
+                  labelText:
+                      Translations.of(context).text('hint_contact_phone'),
+                ),
+              ),
+              TextField(
+                controller: _webController,
+                keyboardType: TextInputType.url,
+                decoration: InputDecoration(
+                  counterText: '',
+                  labelText: Translations.of(context).text('hint_web'),
+                ),
+              ),
+              TextField(
+                controller: _bankController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  counterText: '',
+                  labelText: Translations.of(context).text('hint_bank'),
+                ),
+              ),
               SizedBox(height: 16),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -621,7 +552,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                       width: double.infinity,
                       height: 42,
                       child: RaisedButton(
-                        color: Color(0xFFA4175D),
+                        color: Colors.black,
                         textColor: Colors.white,
                         child:
                             Text(Translations.of(context).text('button_save')),

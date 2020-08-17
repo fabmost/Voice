@@ -14,6 +14,7 @@ import 'poll_gallery_screen.dart';
 import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
 import '../widgets/tip_list.dart';
+import '../widgets/cause_list.dart';
 import '../widgets/influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -154,7 +155,8 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
     batch.updateData(
       Firestore.instance.collection('users').document(userId),
       {
-        'followers': FieldValue.arrayRemove([myUser.uid])
+        'followers': FieldValue.arrayRemove([myUser.uid]),
+        'followers_count': FieldValue.increment(-1)
       },
     );
     batch.updateData(
@@ -197,7 +199,8 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
         {
-          'followers': FieldValue.arrayUnion([myId])
+          'followers': FieldValue.arrayUnion([myId]),
+          'followers_count': FieldValue.increment(1)
         },
       );
       batch.updateData(
@@ -219,7 +222,8 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
       batch.updateData(
         Firestore.instance.collection('users').document(userId),
         {
-          'followers': FieldValue.arrayRemove([myId])
+          'followers': FieldValue.arrayRemove([myId]),
+          'followers_count': FieldValue.increment(-1)
         },
       );
       batch.updateData(
@@ -420,7 +424,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                       if ((document['tiktok'] ?? '').toString().isNotEmpty)
                         GestureDetector(
                           onTap: () => _launchURL(
-                              'https://www.tiktok.com/${document['tiktok'].replaceAll('@', '')}'),
+                              'https://www.tiktok.com/${document['tiktok']}'),
                           child: CircleAvatar(
                             backgroundColor: Colors.black,
                             child: Icon(
@@ -527,7 +531,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
           return new Future(() => false);
         },
         child: DefaultTabController(
-          length: 3,
+          length: 4,
           child: NestedScrollView(
             headerSliverBuilder: (ctx, isScrolled) {
               return <Widget>[
@@ -574,6 +578,10 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                           icon: Icon(GalupFont.tips),
                           text: 'Tips',
                         ),
+                        Tab(
+                          icon: Icon(GalupFont.cause),
+                          text: 'Causas',
+                        ),
                       ],
                     ),
                   ),
@@ -586,6 +594,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                 PollList(profileId),
                 ChallengeList(profileId),
                 TipList(profileId),
+                CauseList(profileId),
               ],
             ),
           ),

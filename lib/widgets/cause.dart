@@ -176,7 +176,6 @@ class Cause extends StatelessWidget with ShareContent {
         'user_id': user.uid,
         'createdAt': Timestamp.now(),
         'title': title,
-        'info': info,
         'creator': creator,
         'originalDate': Timestamp.fromDate(date),
         'parent': reference,
