@@ -37,6 +37,7 @@ class RespostCause extends StatelessWidget {
         arguments: reference.documentID);
   }
 
+/*
   Widget _causeButton(context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -53,6 +54,7 @@ class RespostCause extends StatelessWidget {
       ),
     );
   }
+  */
 
   Widget _userTile(context) {
     if (info.isNotEmpty)

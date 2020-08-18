@@ -9,8 +9,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
+//import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -135,8 +135,8 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoCompress.getFileThumbnail(
-        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,

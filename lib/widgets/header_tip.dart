@@ -250,7 +250,7 @@ class HeaderTip extends StatelessWidget with ShareContent {
   }
 
   void _share(title) {
-    shareChallenge(reference.documentID, title);
+    shareTip(reference.documentID, title);
   }
 
   void _flag(context) {
@@ -349,6 +349,7 @@ class HeaderTip extends StatelessWidget with ShareContent {
     isVideo,
     images,
   ) {
+    double width = (MediaQuery.of(context).size.width / 3) * 2;
     if (isVideo) return PollVideo('', images[0], null);
 
     return Align(
@@ -358,8 +359,8 @@ class HeaderTip extends StatelessWidget with ShareContent {
         child: Hero(
           tag: images[0],
           child: Container(
-            width: 144,
-            height: 144,
+            width: width,
+            height: width,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.black),

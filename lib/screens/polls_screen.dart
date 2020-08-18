@@ -389,17 +389,11 @@ class PollsScreen extends StatelessWidget {
                   separatorBuilder: (context, index) => SizedBox(width: 16),
                   itemCount: documents.length,
                   itemBuilder: (context, i) {
-                    bool isFollowing = false;
-                    if (documents[i]['followers'] != null) {
-                      isFollowing =
-                          (documents[i]['followers'] as List).contains(userId);
-                    }
-                    if (isFollowing) return Container();
                     return InfluencerItem(
                       reference: documents[i].reference,
                       userName: documents[i]['user_name'],
                       image: documents[i]['image'] ?? '',
-                      isFollowing: isFollowing,
+                      isFollowing: true,
                     );
                   },
                 ),
