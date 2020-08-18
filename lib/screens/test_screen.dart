@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -103,10 +104,12 @@ class TestScreen extends StatelessWidget {
               ),
               RaisedButton(
                 onPressed: () {
-                  Provider.of<UserProvider>(context, listen: false)
-                      .getAutocomplete('test');
+                  FirebaseMessaging().getToken().then((token) {
+                    Provider.of<AuthProvider>(context, listen: false)
+                        .setFCM(token);
+                  });
                 },
-                child: Text('Get Autocomplete'),
+                child: Text('Get Token'),
               ),
             ],
           ),

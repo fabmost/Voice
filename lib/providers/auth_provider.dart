@@ -230,6 +230,33 @@ class AuthProvider with ChangeNotifier {
     return {'result': false, 'message': dataMap['alert']['message']};
   }
 
+  Future<void> setFCM(fcm) async {
+    var url = '${API.baseURL}/registerFCM';
+    _token = await _storage.read(key: API.sessionToken) ?? null;
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $_token'
+      },
+      body: jsonEncode({
+        'fcm': fcm,
+      }),
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+
+    return;
+  }
+
   Future<void> renewToken() async {
     var url = '${API.baseURL}/token';
     final hash = await _storage.read(key: API.userHash) ?? null;

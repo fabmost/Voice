@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:badges/badges.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,6 +16,7 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/preferences_provider.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 
 import 'home_screen.dart';
 import 'upgrade_screen.dart';
@@ -215,11 +215,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     fm.subscribeToTopic('cause');
     FirebaseAuth.instance.currentUser().then((value) {
       fm.getToken().then((token) {
-        print('token: $token');
-        Firestore.instance
-            .collection('users')
-            .document(value.uid)
-            .updateData({'pushToken': token});
+        //Provider.of<AuthProvider>(context, listen: false).setFCM(token);
       });
     });
 
