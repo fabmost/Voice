@@ -1,6 +1,5 @@
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -10,23 +9,23 @@ import 'poll_images.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import 'menu_content.dart';
+import 'tip_total.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
-import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
 import '../models/resource_model.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
-import '../screens/poll_gallery_screen.dart';
 import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
 
-class HeaderChallenge extends StatelessWidget with ShareContent {
-  final ChallengeModel challengeModel;
-  final Color color = Color(0xFFFFF5FB);
+class HeaderTip extends StatelessWidget with ShareContent {
+  final TipModel tipModel;
+  final Color color = Color(0xFFF4FDFF);
 
-  HeaderChallenge(this.challengeModel);
+  HeaderTip(this.tipModel);
 
   void _toProfile(context, creatorId) {
     if (Provider.of<UserProvider>(context, listen: false).getUser !=
@@ -91,120 +90,24 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    shareChallenge(challengeModel.id, challengeModel.title);
+    shareTip(tipModel.id, tipModel.title);
   }
 
   Widget _challengeGoal(context) {
-    //bool goalReached = false;
-    String goal;
-    int amount;
-    switch (challengeModel.parameter) {
-      case 'L':
-        goal = 'Likes';
-        amount = challengeModel.likes;
-        /*
-        if (likes >= goal) {
-          goalReached = true;
-        }*/
-        break;
-      case 'C':
-        goal = 'Comentarios';
-        amount = challengeModel.comments;
-        /*
-        if (comments >= goal) {
-          goalReached = true;
-        }*/
-        break;
-      case 'R':
-        goal = 'Regalups';
-        amount = challengeModel.regalups;
-        /*
-        if (reposts >= goal) {
-          goalReached = true;
-        }*/
-        break;
-    }
-    var totalPercentage = (amount == 0) ? 0.0 : amount / challengeModel.goal;
-    if (totalPercentage > 1) totalPercentage = 1;
-    final format = NumberFormat('###.##');
-
-    ResourceModel resource = challengeModel.resources[0];
-    return Column(
-      children: <Widget>[
-        if (resource.type == 'V') PollVideo('', resource.url, null),
-        if (resource.type == 'I') PollImages([resource.url], null),
-        Container(
-          height: 42,
-          margin: EdgeInsets.all(16),
-          child: Stack(
-            children: <Widget>[
-              FractionallySizedBox(
-                widthFactor: totalPercentage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xAAA4175D),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      topRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                      bottomRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        goal,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(),
-                      ),
-                      Text(
-                        '${format.format(totalPercentage * 100)}%',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+    ResourceModel resource = tipModel.resources[0];
+    if (resource.type == 'V') return PollVideo('', resource.url, null);
+    if (resource.type == 'I') return PollImages([resource.url], null);
+    return Container();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (challengeModel == null) {
+    if (tipModel == null) {
       _noExists(context);
       return Container();
     }
     final now = new DateTime.now();
-    final difference = now.difference(challengeModel.createdAt);
+    final difference = now.difference(tipModel.createdAt);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,19 +115,19 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         Container(
           color: color,
           child: ListTile(
-            onTap: () => _toProfile(context, challengeModel.user.userName),
+            onTap: () => _toProfile(context, tipModel.user.userName),
             leading: CircleAvatar(
               radius: 18,
-              backgroundColor: Color(0xFFA4175D),
-              backgroundImage: challengeModel.user.icon == null
+              backgroundColor: Color(0xFF00B2E3),
+              backgroundImage: tipModel.user.icon == null
                   ? null
-                  : NetworkImage(challengeModel.user.icon),
+                  : NetworkImage(tipModel.user.icon),
             ),
             title: Row(
               children: <Widget>[
                 Flexible(
                   child: Text(
-                    challengeModel.user.userName,
+                    tipModel.user.userName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -239,31 +142,43 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
             ),
             subtitle: Text(timeago.format(now.subtract(difference))),
             trailing: MenuContent(
-              id: challengeModel.id,
-              type: 'C',
-              isSaved: challengeModel.hasSaved,
+              id: tipModel.id,
+              type: 'TIP',
+              isSaved: tipModel.hasSaved,
             ),
           ),
         ),
         SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            challengeModel.title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            children: [
+              TipTotal(
+                id: tipModel.id,
+                total: tipModel.total,
+                hasRated: tipModel.hasRated,
+              ),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  tipModel.title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(height: 16),
-        _challengeGoal(context),
-        SizedBox(height: 16),
-        if (challengeModel.description.isNotEmpty)
+        if (tipModel.resources.isNotEmpty) _challengeGoal(context),
+        if (tipModel.resources.isNotEmpty) SizedBox(height: 16),
+        if (tipModel.description.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ExtendedText(
-              challengeModel.description,
+              tipModel.description,
               style: TextStyle(fontSize: 16),
               specialTextSpanBuilder: MySpecialTextSpanBuilder(canClick: true),
               onSpecialTextTap: (parameter) {
@@ -279,23 +194,23 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
               },
             ),
           ),
-        if (challengeModel.description.isNotEmpty) SizedBox(height: 16),
+        if (tipModel.description.isNotEmpty) SizedBox(height: 16),
         Container(
           color: color,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               LikeContent(
-                id: challengeModel.id,
-                type: 'C',
-                likes: challengeModel.likes,
-                hasLiked: challengeModel.hasLiked,
+                id: tipModel.id,
+                type: 'TIP',
+                likes: tipModel.likes,
+                hasLiked: tipModel.hasLiked,
               ),
               RegalupContent(
-                id: challengeModel.id,
-                type: 'C',
-                regalups: challengeModel.regalups,
-                hasRegalup: challengeModel.hasRegalup,
+                id: tipModel.id,
+                type: 'TIP',
+                regalups: tipModel.regalups,
+                hasRegalup: tipModel.hasRegalup,
               ),
               IconButton(
                 icon: Icon(GalupFont.share),

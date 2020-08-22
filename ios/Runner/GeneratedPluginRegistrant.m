@@ -88,6 +88,12 @@
 @import flutter_user_agent;
 #endif
 
+#if __has_include(<flutter_video_compress/FlutterVideoCompressPlugin.h>)
+#import <flutter_video_compress/FlutterVideoCompressPlugin.h>
+#else
+@import flutter_video_compress;
+#endif
+
 #if __has_include(<image_cropper/ImageCropperPlugin.h>)
 #import <image_cropper/ImageCropperPlugin.h>
 #else
@@ -142,12 +148,6 @@
 @import url_launcher;
 #endif
 
-#if __has_include(<video_compress/VideoCompressPlugin.h>)
-#import <video_compress/VideoCompressPlugin.h>
-#else
-@import video_compress;
-#endif
-
 #if __has_include(<video_player/FLTVideoPlayerPlugin.h>)
 #import <video_player/FLTVideoPlayerPlugin.h>
 #else
@@ -183,6 +183,7 @@
   [FlutterKeyboardVisibilityPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterKeyboardVisibilityPlugin"]];
   [FlutterSecureStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterSecureStoragePlugin"]];
   [FlutterUserAgentPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterUserAgentPlugin"]];
+  [FlutterVideoCompressPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterVideoCompressPlugin"]];
   [FLTImageCropperPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImageCropperPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [FLTPackageInfoPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTPackageInfoPlugin"]];
@@ -192,7 +193,6 @@
   [FLTSharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTSharedPreferencesPlugin"]];
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
   [FLTURLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTURLLauncherPlugin"]];
-  [VideoCompressPlugin registerWithRegistrar:[registry registrarForPlugin:@"VideoCompressPlugin"]];
   [FLTVideoPlayerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTVideoPlayerPlugin"]];
   [VideoThumbnailPlugin registerWithRegistrar:[registry registrarForPlugin:@"VideoThumbnailPlugin"]];
   [WakelockPlugin registerWithRegistrar:[registry registrarForPlugin:@"WakelockPlugin"]];

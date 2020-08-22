@@ -1,13 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'session_auth_screen.dart';
 import 'forgot_password_screen.dart';
 import '../api.dart';
 import '../translations.dart';
+import '../providers/auth_provider.dart';
 
 class SessionLoginScreen extends StatefulWidget {
   @override
@@ -17,7 +16,6 @@ class SessionLoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<SessionLoginScreen> {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
-  final _auth = FirebaseAuth.instance;
   var _isLoading = false;
   String _email, _password;
 
@@ -32,27 +30,27 @@ class _LoginScreenState extends State<SessionLoginScreen> {
   }
 
   void _submit() async {
-    String salt = API().getSalt(_password);
-
     try {
       setState(() {
         _isLoading = true;
       });
-      final authResult = await _auth.signInWithEmailAndPassword(
+       Map result =
+          await Provider.of<AuthProvider>(context, listen: false).login(
         email: _email.trim(),
-        password: _password,
+        password: API().getSalt(_password),
       );
-      await Firestore.instance
-          .collection('users')
-          .document(authResult.user.uid)
-          .updateData({'salt': salt});
-      final userData =
-          await Firestore.instance.collection('users').document(authResult.user.uid).get();
-
-      List following = userData['following'] ?? [];
-      following.forEach((element) async {
-        await FirebaseMessaging().subscribeToTopic(element);
-      });
+      if (!result['result']) {
+        var message = result['message'] ?? 'Ocurrió un error';
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Theme.of(context).errorColor,
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {

@@ -59,6 +59,7 @@ class PollImages extends StatelessWidget {
     double width =
         (MediaQuery.of(context).size.width - 52 - (5 * images.length)) /
             images.length;
+    double widthSingle = MediaQuery.of(context).size.width / 3 * 2;
     if (images.length == 1) {
       return Align(
           alignment: Alignment.center,
@@ -67,10 +68,10 @@ class PollImages extends StatelessWidget {
                   onTap: () => _toGallery(context, 0),
                   child: Hero(
                       tag: '$images[0]$reference',
-                      child: _image(144.0, images[0], 0)),
+                      child: _image(widthSingle, images[0], 0)),
                 )
               : _image(
-                  144.0,
+                  widthSingle,
                   images[0],
                   0,
                 ));

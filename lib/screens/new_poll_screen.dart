@@ -6,8 +6,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
+//import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -289,8 +289,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoCompress.getFileThumbnail(
-          //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -424,16 +424,34 @@ class _NewPollScreenState extends State<NewPollScreen> {
     await showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Tu encuesta se ha creado correctamente'),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('Ok'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          )
-        ],
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Tu encuesta se ha creado correctamente',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
     Navigator.of(context).pop();
@@ -503,7 +521,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
       }
     }
 
-    List<String> images = [];
+    List<Map> images = [];
     for (int i = 0; i < pollImages.length; i++) {
       final element = pollImages[i];
       String idResource =
@@ -513,7 +531,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
         'I',
         'P',
       );
-      images.add(idResource);
+      images.add({"id": idResource});
     }
 
     await Provider.of<ContentProvider>(context, listen: false).newPoll(

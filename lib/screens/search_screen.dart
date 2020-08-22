@@ -12,16 +12,15 @@ class SearchScreen extends StatefulWidget {
   final Function stopVideo;
 
   const SearchScreen({Key key, this.stopVideo}) : super(key: key);
-  
+
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   TabController _controller;
   VideoPlayerController _videoController;
-
 
   @override
   void initState() {
@@ -36,8 +35,11 @@ class _SearchScreenState extends State<SearchScreen>
     super.dispose();
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
   void _playVideo(VideoPlayerController controller) {
-    if(_videoController != null){
+    if (_videoController != null) {
       _videoController.pause();
     }
     _videoController = controller;
@@ -53,8 +55,9 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return DefaultTabController(
-      length: 6,
+      length: 5,
       child: Scaffold(
         appBar: CustomAppBar(
           GestureDetector(
@@ -91,7 +94,7 @@ class _SearchScreenState extends State<SearchScreen>
                   labelColor: Theme.of(context).accentColor,
                   unselectedLabelColor: Colors.grey,
                   tabs: [
-                    Tab(text: 'Tendencia'),
+                    //Tab(text: 'Tendencia'),
                     Tab(text: 'Salud'),
                     Tab(text: 'Tecnología'),
                     Tab(text: 'Deportes'),
@@ -104,7 +107,7 @@ class _SearchScreenState extends State<SearchScreen>
             Expanded(
               child: TabBarView(
                 children: [
-                  TopContent(_playVideo),
+                  //TopContent(_playVideo),
                   FilteredContent('1', _playVideo),
                   FilteredContent('2', _playVideo),
                   FilteredContent('5', _playVideo),

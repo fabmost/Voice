@@ -2,19 +2,17 @@ import 'package:intl/intl.dart';
 
 import 'content_model.dart';
 import 'resource_model.dart';
-import 'poll_answer_model.dart';
 import 'user_model.dart';
 
-class PollModel extends ContentModel {
+class TipModel extends ContentModel {
   final String body;
   final String description;
-  final int votes;
-  final bool hasVoted;
-  final List<PollAnswerModel> answers;
   final List<ResourceModel> resources;
   final int comments;
+  final double total;
+  final bool hasRated;
 
-  PollModel({
+  TipModel({
     id,
     type,
     user,
@@ -28,11 +26,10 @@ class PollModel extends ContentModel {
     hasSaved,
     this.body,
     this.description,
-    this.votes,
-    this.hasVoted,
-    this.answers,
     this.resources,
     this.comments,
+    this.total,
+    this.hasRated
   }) : super(
             id: id,
             type: type,
@@ -46,27 +43,25 @@ class PollModel extends ContentModel {
             hasRegalup: hasRegalup,
             hasSaved: hasSaved);
 
-  static PollModel fromJson(Map content) {
-    return PollModel(
+  static TipModel fromJson(Map content) {
+    return TipModel(
       id: content['id'],
-      type: content['type'],
+      type: 'tip',
       user: UserModel(
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
-      creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
-      title: content['body'],
+      title: content['title'],
       description: content['description'],
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
-      votes: content['votes'],
       likes: content['likes'],
       regalups: content['regalups'],
-      comments: content['comments'],
-      hasVoted: content['is_vote'],
+      comments: content['comments'] ?? 0,
+      total: double.parse(content['total'].toString()),
       hasLiked: content['is_like'],
       hasRegalup: content['is_regalup'] ?? false,
       hasSaved: content['is_save'],
-      answers: PollAnswerModel.listFromJson(content['answer']),
+      hasRated: content['is_value'],
       resources: ResourceModel.listFromJson(content['resource']),
     );
   }

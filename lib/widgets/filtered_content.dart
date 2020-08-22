@@ -101,6 +101,7 @@ class _FilteredContentState extends State<FilteredContent> {
     setState(() {
       _isLoading = true;
     });
+    loadMoreStatus = LoadMoreStatus.LOADING;
     List results = await Provider.of<ContentProvider>(context, listen: false)
         .getCategory(widget.category, _currentPageNumber);
     setState(() {
@@ -111,6 +112,7 @@ class _FilteredContentState extends State<FilteredContent> {
       }
       _isLoading = false;
     });
+    loadMoreStatus = LoadMoreStatus.STABLE;
   }
 
   @override

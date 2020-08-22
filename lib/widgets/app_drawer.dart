@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../translations.dart';
-import '../providers/preferences_provider.dart';
+import '../providers/auth_provider.dart';
 import '../mixins/share_mixin.dart';
 
 class AppDrawer extends StatelessWidget with ShareContent {
@@ -26,16 +24,7 @@ class AppDrawer extends StatelessWidget with ShareContent {
   }
 
   void _signOut(context) async {
-    Provider.of<Preferences>(context, listen: false).setAccount();
-    final user = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-
-    List following = userData['following'] ?? [];
-    following.forEach((element) async {
-      await FirebaseMessaging().unsubscribeFromTopic(element);
-    });
-    FirebaseAuth.instance.signOut();
+    Provider.of<AuthProvider>(context, listen: false).signOut();
   }
 
   @override

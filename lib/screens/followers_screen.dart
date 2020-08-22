@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'view_profile_screen.dart';
-import 'auth_screen.dart';
 import '../translations.dart';
 import '../providers/user_provider.dart';
 import '../widgets/influencer_badge.dart';
@@ -29,25 +28,31 @@ class _FollowersScreenState extends State<FollowersScreen> {
   String _filter;
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
+  String _currentUser;
 
   void _toProfile(userId) async {
-    //final user = await FirebaseAuth.instance.currentUser();
-    //if (user.uid != userId) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-    //}
+    if (_currentUser != userId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    }
   }
 
   void _getData() async {
     setState(() {
       _isLoading = true;
     });
+    loadMoreStatus = LoadMoreStatus.LOADING;
     final users = await Provider.of<UserProvider>(context, listen: false)
         .getFollowers(widget.userId, _currentPageNumber);
+    _currentUser = Provider.of<UserProvider>(context, listen: false).getUser;
     setState(() {
+      if (users.isEmpty) {
+        _hasMore = false;
+      }
       _userList = users;
       _isLoading = false;
     });
+    loadMoreStatus = LoadMoreStatus.STABLE;
   }
 
   bool onNotification(ScrollNotification notification) {
@@ -76,32 +81,6 @@ class _FollowersScreenState extends State<FollowersScreen> {
       }
     }
     return true;
-  }
-
-  void _anonymousAlert(context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(Translations.of(context).text('dialog_need_account')),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -141,10 +120,12 @@ class _FollowersScreenState extends State<FollowersScreen> {
         ],
       ),
       subtitle: Text('@${user.userName}'),
-      trailing: FollowButton(
-        userName: user.userName,
-        isFollowing: user.isFollowing,
-      ),
+      trailing: (_currentUser != user.userName)
+          ? FollowButton(
+              userName: user.userName,
+              isFollowing: user.isFollowing,
+            )
+          : SizedBox(),
     );
   }
 

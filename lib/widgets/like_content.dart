@@ -50,6 +50,9 @@ class _LikeContentState extends State<LikeContent> {
       case 'C':
         _color = Color(0xFFA4175D);
         break;
+      case 'TIP':
+        _color = Color(0xFF00B2E3);
+        break;
     }
     super.initState();
   }

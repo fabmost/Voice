@@ -4,7 +4,6 @@ import 'package:algolia/algolia.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 //import 'package:video_compress/video_compress.dart';
@@ -21,20 +20,18 @@ import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
 
-class NewChallengeScreen extends StatefulWidget {
-  static const routeName = '/new-challenge';
+class NewTipScreen extends StatefulWidget {
+  static const routeName = '/new-tip';
 
   @override
-  _NewChallengeScreenState createState() => _NewChallengeScreenState();
+  _NewTipScreenState createState() => _NewTipScreenState();
 }
 
-class _NewChallengeScreenState extends State<NewChallengeScreen> {
+class _NewTipScreenState extends State<NewTipScreen> {
   final Trimmer _trimmer = Trimmer();
   bool _isLoading = false;
   bool _isVideo = false;
   bool _isSearching = false;
-  String metric = 'Likes';
-  double goal = 0;
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   FocusNode _descFocus = FocusNode();
@@ -184,47 +181,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     }
   }
 
-  void _metricSelected() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return SimpleDialog(
-          title: Text('Selecciona el tipo de meta'),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: Text(
-                'Likes',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Likes'),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                'Comentarios',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Comentarios'),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                'Regalups',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Regalups'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _optionSelected(value) {
-    Navigator.of(context).pop();
-    setState(() {
-      metric = value;
-    });
-  }
-
   void _selectCategory() {
     Navigator.of(context)
         .pushNamed(NewContentCategoryScreen.routeName)
@@ -240,7 +196,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
   void _validate() {
     if (_titleController.text.isNotEmpty &&
         _imageFile != null &&
-        goal > 0 &&
         category != null) {
       _saveChallenge();
       return;
@@ -272,7 +227,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                'Tu reto se ha creado correctamente',
+                'Tu tip se ha creado correctamente',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -309,37 +264,22 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           .uploadResource(
         _videoFile.path,
         'V',
-        'C',
+        'TIP',
       );
     } else {
       idResource = await Provider.of<ContentProvider>(context, listen: false)
           .uploadResource(
         _imageFile.path,
         'I',
-        'C',
+        'TIP',
       );
     }
 
-    String metricString;
-    switch (metric) {
-      case 'Likes':
-        metricString = 'L';
-        break;
-      case 'Comentarios':
-        metricString = 'C';
-        break;
-      case 'Regalups':
-        metricString = 'R';
-        break;
-    }
-
-    await Provider.of<ContentProvider>(context, listen: false).newChallenge(
+    await Provider.of<ContentProvider>(context, listen: false).newTip(
       name: _titleController.text,
       description: _descriptionController.text,
       category: category.id,
       resource: {'id': idResource},
-      parameter: metricString,
-      goal: goal,
     );
     /*
     List<String> hashes = [];
@@ -502,52 +442,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              _title(Translations.of(context).text('label_goal')),
-              SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                child: Slider(
-                  activeColor: Color(0xFFA4175D),
-                  value: goal,
-                  onChanged: (newValue) {
-                    setState(() {
-                      goal = newValue;
-                    });
-                  },
-                  min: 0,
-                  max: 5000,
-                  divisions: 50,
-                  label: '${NumberFormat.compact().format(goal)}',
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      '${goal.toInt()}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: _metricSelected,
-                      child: Container(
-                        height: 42,
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            Text(metric),
-                            Icon(Icons.arrow_drop_down),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(height: 16),
               _title(Translations.of(context).text('hint_category')),
               SizedBox(height: 8),
               InkWell(
@@ -570,7 +464,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   controller: _descriptionController,
                   focusNode: _descFocus,
                   maxLines: null,
-                  maxLength: 240,
+                  maxLength: 2000,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),
@@ -615,7 +509,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                       width: double.infinity,
                       height: 42,
                       child: RaisedButton(
-                        color: Color(0xFFA4175D),
+                        color: Color(0xFF00B2E3),
                         textColor: Colors.white,
                         child:
                             Text(Translations.of(context).text('button_save')),

@@ -119,7 +119,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
                   controller: _userController,
                   maxLength: 22,
                   inputFormatters: [
-                    WhitelistingTextInputFormatter(RegExp("[a-zA-Z0-9_.]")),
+                    FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9_.]")),
                   ],
                   decoration: InputDecoration(
                     counterText: '',

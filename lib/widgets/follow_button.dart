@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../translations.dart';
 import '../providers/user_provider.dart';
+import '../screens/auth_screen.dart';
 
 class FollowButton extends StatefulWidget {
   final String userName;
@@ -18,6 +20,10 @@ class _FollowButtonState extends State<FollowButton> {
   bool _isLoading = false;
 
   void _follow() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      _anonymousAlert();
+      return;
+    }
     setState(() {
       _isLoading = true;
     });
@@ -27,6 +33,32 @@ class _FollowButtonState extends State<FollowButton> {
       _isLoading = false;
       _isFollowing = result;
     });
+  }
+
+  void _anonymousAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_need_account')),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_cancel')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text(Translations.of(context).text('button_create_account')),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

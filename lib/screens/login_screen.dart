@@ -37,25 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _isLoading = true;
       });
-      /*
-      final authResult = await _auth.signInWithEmailAndPassword(
-        email: _email.trim(),
-        password: _password,
-      );
-      await Firestore.instance
-          .collection('users')
-          .document(authResult.user.uid)
-          .updateData({'salt': salt});
-
-      final userData = await Firestore.instance
-          .collection('users')
-          .document(authResult.user.uid)
-          .get();
-
-      List following = userData['following'] ?? [];
-      following.forEach((element) async {
-        await FirebaseMessaging().subscribeToTopic(element);
-      });*/
+     
       Map result =
           await Provider.of<AuthProvider>(context, listen: false).login(
         email: _email.trim(),

@@ -104,7 +104,7 @@ class ProfileHeader extends StatelessWidget {
                 if ((user.tiktok ?? '').isNotEmpty)
                   GestureDetector(
                     onTap: () => _launchURL(
-                        'https://www.tiktok.com/${user.tiktok.replaceAll('@', '')}'),
+                        'https://www.tiktok.com/${user.tiktok}'),
                     child: CircleAvatar(
                       backgroundColor: Colors.black,
                       child: Icon(

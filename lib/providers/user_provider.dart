@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import '../api.dart';
 import '../models/user_model.dart';
@@ -43,6 +44,10 @@ class UserProvider with ChangeNotifier {
 
       return UserModel.fromJson(dataMap['profile']);
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return userProfile();
+    }
     return null;
   }
 
@@ -72,6 +77,10 @@ class UserProvider with ChangeNotifier {
 
       return UserModel.fromJson(dataMap['profile']);
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getProfile(userName);
+    }
     return null;
   }
 
@@ -86,6 +95,7 @@ class UserProvider with ChangeNotifier {
     youtube,
     bio,
     gender,
+    icon,
     cover,
     birth,
   }) async {
@@ -104,6 +114,7 @@ class UserProvider with ChangeNotifier {
     if (youtube != null) parameters['youtube'] = youtube;
     if (bio != null) parameters['biography'] = bio;
     if (gender != null) parameters['gender'] = gender;
+    if (icon != null) parameters['icon'] = icon;
     if (cover != null) parameters['cover'] = cover;
     if (birth != null) parameters['birhtday'] = birth;
 
@@ -130,6 +141,7 @@ class UserProvider with ChangeNotifier {
       await _saveToken(dataMap['session']['token']);
       return {'result': true};
     }
+    await _renewToken();
     return {'result': false, 'message': dataMap['alert']['message']};
   }
 
@@ -160,6 +172,10 @@ class UserProvider with ChangeNotifier {
       _saveToken(dataMap['session']['token']);
       return dataMap['is_following'];
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return followUser(id);
+    }
     return null;
   }
 
@@ -189,10 +205,14 @@ class UserProvider with ChangeNotifier {
 
       return UserModel.listFromJson(dataMap['followers']);
     }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getFollowers(user, page);
+    }
     return [];
   }
 
-  Future<List> getFollowing(user, page) async {
+  Future<List<UserModel>> getFollowing(user, page) async {
     var url = '${API.baseURL}/following/$user/$page';
     final token = await _getToken();
 
@@ -217,6 +237,10 @@ class UserProvider with ChangeNotifier {
       _saveToken(dataMap['session']['token']);
 
       return UserModel.listFromJson(dataMap['followings']);
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getFollowing(user, page);
     }
     return [];
   }
@@ -255,6 +279,10 @@ class UserProvider with ChangeNotifier {
         }).toList()
       };
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getAutocomplete(query);
+    }
     return {'users': [], 'hashtags': []};
   }
 
@@ -264,6 +292,39 @@ class UserProvider with ChangeNotifier {
 
   Future<void> _saveToken(token) async {
     await _storage.write(key: API.sessionToken, value: token);
+    return;
+  }
+
+  Future<void> _renewToken() async {
+    var url = '${API.baseURL}/token';
+    final hash = await _storage.read(key: API.userHash) ?? null;
+    final datetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader:
+            'Bearer ${API().getHash(hash, datetime)}'
+      },
+      body: jsonEncode({
+        'hash': hash,
+        'datetime': datetime,
+      }),
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+    }
     return;
   }
 }

@@ -24,6 +24,7 @@ import 'screens/chat_screen.dart';
 import 'screens/detail_comment_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
+import 'screens/detail_tip_screen.dart';
 import 'screens/detail_cause_screen.dart';
 import 'screens/flag_screen.dart';
 import 'screens/user_name_screen.dart';
@@ -34,6 +35,7 @@ import 'screens/session_auth_screen.dart';
 import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
+import 'screens/new_tip_screen.dart';
 import 'screens/new_content_category_screen.dart';
 
 import 'screens/verify_type_screen.dart';
@@ -41,7 +43,6 @@ import 'screens/verify_category_screen.dart';
 import 'screens/verify_id_screen.dart';
 
 import 'screens/test_screen.dart';
-import 'screens/home_screen.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/database_provider.dart';
@@ -124,6 +125,7 @@ class App extends StatelessWidget {
             const TranslationsDelegate(),
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: [
             const Locale('en', ''),
@@ -136,7 +138,9 @@ class App extends StatelessWidget {
                   builder: (ctx, snapshot) =>
                       snapshot.connectionState == ConnectionState.waiting
                           ? SplashScreen()
-                          : PreferencesScreen(),
+                          : provider.hasAccount
+                              ? SessionLoginScreen()
+                              : PreferencesScreen(),
                 ),
           /*StreamBuilder(
             stream: FirebaseAuth.instance.onAuthStateChanged,
@@ -173,10 +177,12 @@ class App extends StatelessWidget {
             DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
+            NewTipScreen.routeName: (ctx) => NewTipScreen(),
             NewContentCategoryScreen.routeName: (ctx) =>
                 NewContentCategoryScreen(),
             DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
             DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
+            DetailTipScreen.routeName: (ctx) => DetailTipScreen(),
             DetailCauseScreen.routeName: (ctx) => DetailCauseScreen(),
             VerifyTypeScreen.routeName: (ctx) => VerifyTypeScreen(),
             VerifyCategoryScreen.routeName: (ctx) => VerifyCategoryScreen(),

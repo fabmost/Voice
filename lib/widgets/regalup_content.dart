@@ -53,6 +53,9 @@ class _RegalupContentState extends State<RegalupContent> {
       case 'CA':
         _color = Color(0xFF722282);
         break;
+      case 'TIP':
+        _color = Color(0xFF00B2E3);
+        break;
     }
     super.initState();
   }

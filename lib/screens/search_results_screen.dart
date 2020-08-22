@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
 import '../widgets/poll_tile.dart';
 import '../widgets/challenge_tile.dart';
+import '../widgets/tip_tile.dart';
 import '../providers/content_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
@@ -79,6 +81,26 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     );
     */
     return Container();
+  }
+
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+    );
   }
 
   bool onNotification(ScrollNotification notification) {
@@ -163,6 +185,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                           return _challengeWidget(doc);
                         case 'cause':
                           return _causeWidget(doc);
+                        case 'tip':
+                          return _tipWidget(doc);
                         default:
                           return SizedBox();
                       }

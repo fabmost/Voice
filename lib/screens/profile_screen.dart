@@ -1,11 +1,4 @@
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -19,16 +12,24 @@ import '../widgets/user_profile_header.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
+import '../widgets/tip_list.dart';
 import '../widgets/saved_list.dart';
 import '../widgets/influencer_badge.dart';
 import '../models/user_model.dart';
 import '../providers/user_provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final Function stopVideo;
-  VideoPlayerController _controller;
 
   ProfileScreen({Key key, this.stopVideo}) : super(key: key);
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen>
+    with AutomaticKeepAliveClientMixin {
+  VideoPlayerController _controller;
 
   void _toEdit(context) {
     Navigator.of(context).pushNamed(EditProfileScreen.routeName);
@@ -39,115 +40,7 @@ class ProfileScreen extends StatelessWidget {
       _controller.pause();
     }
     _controller = controller;
-    stopVideo(_controller);
-  }
-
-  void _imageOptions(context, isProfile) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return new Container(
-          color: Colors.transparent,
-          child: new Wrap(
-            children: <Widget>[
-              new ListTile(
-                onTap: () => _openCamera(context, isProfile),
-                leading: new Icon(
-                  Icons.camera_alt,
-                ),
-                title: Text("Cámara"),
-              ),
-              new ListTile(
-                onTap: () => _openGallery(context, isProfile),
-                leading: new Icon(
-                  Icons.image,
-                ),
-                title: Text("Galería"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _openCamera(context, isProfile) {
-    Navigator.of(context).pop();
-    _takePicture(isProfile);
-  }
-
-  void _openGallery(context, isProfile) {
-    Navigator.of(context).pop();
-    _getPicture(isProfile);
-  }
-
-  Future<void> _takePicture(isProfile) async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.camera,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path, isProfile);
-    }
-  }
-
-  Future<void> _getPicture(isProfile) async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path, isProfile);
-    }
-  }
-
-  void _cropImage(pathFile, isProfile) async {
-    File cropped = await ImageCropper.cropImage(
-      sourcePath: pathFile,
-      aspectRatio: isProfile
-          ? CropAspectRatio(ratioX: 1, ratioY: 1)
-          : CropAspectRatio(ratioX: 25, ratioY: 8),
-    );
-    if (cropped != null) {
-      _saveCover(cropped, isProfile);
-    }
-  }
-
-  void _saveCover(file, isProfile) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    StorageReference ref;
-
-    if (isProfile) {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('user_images')
-          .child(user.uid + '.jpg');
-    } else {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('user_covers')
-          .child(user.uid + '.jpg');
-    }
-
-    await ref.putFile(file).onComplete;
-
-    final url = await ref.getDownloadURL();
-
-    if (isProfile) {
-      await Firestore.instance
-          .collection('users')
-          .document(user.uid)
-          .updateData(
-        {'image': url},
-      );
-    } else {
-      await Firestore.instance
-          .collection('users')
-          .document(user.uid)
-          .updateData(
-        {'cover': url},
-      );
-    }
+    widget.stopVideo(_controller);
   }
 
   Widget _anonymousView(context) {
@@ -212,7 +105,11 @@ class ProfileScreen extends StatelessWidget {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: AppDrawer(),
@@ -243,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
               }
 
               return DefaultTabController(
-                length: 3,
+                length: 4,
                 child: NestedScrollView(
                   headerSliverBuilder: (ctx, isScrolled) {
                     return <Widget>[
@@ -288,6 +185,10 @@ class ProfileScreen extends StatelessWidget {
                                 text: 'Retos',
                               ),
                               Tab(
+                                icon: Icon(GalupFont.tips),
+                                text: 'Tips',
+                              ),
+                              Tab(
                                 icon: Icon(GalupFont.saved),
                                 text: 'Guardados',
                               ),
@@ -302,6 +203,7 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       PollUserList(user.userName, _playVideo),
                       ChallengeUserList(user.userName),
+                      TipList(user.userName, _playVideo),
                       SavedList(_playVideo),
                     ],
                   ),

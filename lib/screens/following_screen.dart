@@ -9,6 +9,8 @@ import '../models/user_model.dart';
 import '../widgets/influencer_badge.dart';
 import '../widgets/follow_button.dart';
 
+enum LoadMoreStatus { LOADING, STABLE }
+
 class FollowingScreen extends StatefulWidget {
   final userId;
 
@@ -22,54 +24,64 @@ class _FollowingScreenState extends State<FollowingScreen> {
   TextEditingController _controller = new TextEditingController();
   List<UserModel> _userList = [];
   bool _isLoading = false;
-  bool _hasMore = false;
-  int page = 0;
+  bool _hasMore = true;
+  int _currentPageNumber = 0;
   String _filter;
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  final ScrollController scrollController = new ScrollController();
+  String _currentUser;
 
   void _toProfile(userId) async {
-    //final user = await FirebaseAuth.instance.currentUser();
-    //if (user.uid != userId) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-    //  }
+    if (_currentUser != userId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    }
   }
 
   void _getData() async {
     setState(() {
       _isLoading = true;
     });
+    loadMoreStatus = LoadMoreStatus.LOADING;
     final users = await Provider.of<UserProvider>(context, listen: false)
-        .getFollowing(widget.userId, page);
+        .getFollowing(widget.userId, _currentPageNumber);
+    _currentUser = Provider.of<UserProvider>(context, listen: false).getUser;
     setState(() {
+      if (users.isEmpty) {
+        _hasMore = false;
+      }
       _userList = users;
       _isLoading = false;
     });
+    loadMoreStatus = LoadMoreStatus.STABLE;
   }
 
-  void _anonymousAlert(context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(Translations.of(context).text('dialog_need_account')),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
-      ),
-    );
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (scrollController.position.maxScrollExtent > scrollController.offset &&
+          scrollController.position.maxScrollExtent - scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<UserProvider>(context, listen: false)
+              .getFollowing(widget.userId, _currentPageNumber)
+              .then((newUsers) {
+            setState(() {
+              if (newUsers.isEmpty) {
+                _hasMore = false;
+              } else {
+                _userList.addAll(newUsers);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
+    }
+    return true;
   }
 
   @override
@@ -81,6 +93,12 @@ class _FollowingScreenState extends State<FollowingScreen> {
         _filter = _controller.text;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   Widget _userTile(UserModel user) {
@@ -103,10 +121,12 @@ class _FollowingScreenState extends State<FollowingScreen> {
         ],
       ),
       subtitle: Text('@${user.userName}'),
-      trailing: FollowButton(
-        userName: user.userName,
-        isFollowing: user.isFollowing,
-      ),
+      trailing: (_currentUser != user.userName)
+          ? FollowButton(
+              userName: user.userName,
+              isFollowing: user.isFollowing,
+            )
+          : SizedBox(),
     );
   }
 
@@ -135,21 +155,28 @@ class _FollowingScreenState extends State<FollowingScreen> {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: _userList.length,
-                        itemBuilder: (ctx, i) {
-                          final doc = _userList[i];
+                      child: NotificationListener(
+                        onNotification: onNotification,
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: _userList.length,
+                          itemBuilder: (ctx, i) {
+                            final doc = _userList[i];
 
-                          return _filter == null || _filter == ""
-                              ? Column(
-                                  children: <Widget>[_userTile(doc), Divider()],
-                                )
-                              : doc.userName
-                                      .toLowerCase()
-                                      .contains(_filter.toLowerCase())
-                                  ? _userTile(doc)
-                                  : Container();
-                        },
+                            return _filter == null || _filter == ""
+                                ? Column(
+                                    children: <Widget>[
+                                      _userTile(doc),
+                                      Divider()
+                                    ],
+                                  )
+                                : doc.userName
+                                        .toLowerCase()
+                                        .contains(_filter.toLowerCase())
+                                    ? _userTile(doc)
+                                    : Container();
+                          },
+                        ),
                       ),
                     ),
                   ],

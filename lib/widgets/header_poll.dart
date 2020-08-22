@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,16 +9,16 @@ import 'poll_video.dart';
 import 'poll_images.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
+import 'menu_content.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../models/poll_model.dart';
-import '../providers/preferences_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
-import '../screens/flag_screen.dart';
 import '../screens/search_results_screen.dart';
+import '../providers/user_provider.dart';
 
 class HeaderPoll extends StatelessWidget with ShareContent {
   final PollModel pollModel;
@@ -30,13 +28,17 @@ class HeaderPoll extends StatelessWidget with ShareContent {
   HeaderPoll(this.pollModel);
 
   void _toProfile(context, creatorId) {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
+    if (Provider.of<UserProvider>(context, listen: false).getUser !=
+        creatorId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
+    }
   }
 
   void _toHash(context, hashtag) {
-    // Navigator.of(context)
-    //   .pushNamed(SearchResultsScreen.routeName, arguments: hashtag);
+    MaterialPageRoute(
+      builder: (context) => SearchResultsScreen(hashtag),
+    );
   }
 
   void _noExists(context) {
@@ -91,87 +93,6 @@ class HeaderPoll extends StatelessWidget with ShareContent {
     sharePoll(pollModel.id, pollModel.title);
   }
 
-  void _flag(context) {
-    /*
-    Navigator.of(context)
-        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
-        */
-  }
-
-  void _save(context, hasSaved) async {
-    /*
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasSaved) {
-      batch
-          .updateData(Firestore.instance.collection('users').document(userId), {
-        'saved': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayRemove([userId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      batch
-          .updateData(Firestore.instance.collection('users').document(userId), {
-        'saved': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayUnion([userId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-
-    Navigator.of(context).pop();
-    */
-  }
-
-  void _options(context, creatorId, hasSaved) {
-    /*
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return Container(
-          color: Colors.transparent,
-          child: Wrap(
-            children: <Widget>[
-              if (creatorId != userId)
-                ListTile(
-                  onTap: () => _save(context, hasSaved),
-                  leading: Icon(
-                    GalupFont.saved,
-                  ),
-                  title: Text(hasSaved
-                      ? Translations.of(context).text('button_delete')
-                      : Translations.of(context).text('button_save')),
-                ),
-              ListTile(
-                onTap: () => _flag(context),
-                leading: Icon(
-                  Icons.flag,
-                  color: Colors.red,
-                ),
-                title: Text(
-                  Translations.of(context).text('title_flag'),
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    */
-  }
-
   Widget _handleResources() {
     if (pollModel.resources[0].type == 'V')
       return PollVideo('', pollModel.resources[0].url, null);
@@ -198,7 +119,9 @@ class HeaderPoll extends StatelessWidget with ShareContent {
             leading: CircleAvatar(
               radius: 18,
               backgroundColor: Theme.of(context).accentColor,
-              backgroundImage: NetworkImage(pollModel.user.icon),
+              backgroundImage: pollModel.user.icon == null
+                  ? null
+                  : NetworkImage(pollModel.user.icon),
             ),
             title: Row(
               children: <Widget>[
@@ -218,12 +141,10 @@ class HeaderPoll extends StatelessWidget with ShareContent {
               ],
             ),
             subtitle: Text(timeago.format(now.subtract(difference))),
-            trailing: Transform.rotate(
-              angle: 270 * pi / 180,
-              child: IconButton(
-                icon: Icon(Icons.chevron_left),
-                // onPressed: () => _options(context, creatorId, hasSaved),
-              ),
+            trailing: MenuContent(
+              id: pollModel.id,
+              type: 'P',
+              isSaved: pollModel.hasSaved,
             ),
           ),
         ),
@@ -238,10 +159,8 @@ class HeaderPoll extends StatelessWidget with ShareContent {
             ),
           ),
         ),
-        if (pollModel.resources.isNotEmpty)
-          SizedBox(height: 16),
-        if (pollModel.resources.isNotEmpty)
-          _handleResources(),
+        if (pollModel.resources.isNotEmpty) SizedBox(height: 16),
+        if (pollModel.resources.isNotEmpty) _handleResources(),
         //if (images.isNotEmpty) PollImages(images, reference),
         //if (video.isNotEmpty) SizedBox(height: 16),
         //if (video.isNotEmpty) PollVideo(thumb, video, null),
@@ -288,8 +207,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
               },
             ),
           ),
-        if (pollModel.description.isNotEmpty)
-          SizedBox(height: 16),
+        if (pollModel.description.isNotEmpty) SizedBox(height: 16),
         Container(
           color: color,
           child: Row(

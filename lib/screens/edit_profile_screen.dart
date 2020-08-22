@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -536,7 +535,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         focusNode: _userFocus,
                         maxLength: 22,
                         inputFormatters: [
-                          WhitelistingTextInputFormatter(
+                          FilteringTextInputFormatter.allow(
                               RegExp("[a-zA-Z0-9_.]")),
                         ],
                         decoration: InputDecoration(
@@ -596,7 +595,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _tiktokController,
                         focusNode: _tiktokFocus,
                         inputFormatters: [
-                          WhitelistingTextInputFormatter(
+                          FilteringTextInputFormatter.allow(
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
@@ -608,7 +607,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _facebookController,
                         focusNode: _facebookFocus,
                         inputFormatters: [
-                          WhitelistingTextInputFormatter(
+                          FilteringTextInputFormatter.allow(
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
@@ -620,7 +619,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _instagramController,
                         focusNode: _instagramFocus,
                         inputFormatters: [
-                          WhitelistingTextInputFormatter(
+                          FilteringTextInputFormatter.allow(
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
@@ -631,7 +630,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       TextFormField(
                         controller: _youtubeController,
                         inputFormatters: [
-                          WhitelistingTextInputFormatter(
+                          FilteringTextInputFormatter.allow(
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(

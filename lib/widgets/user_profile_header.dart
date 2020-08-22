@@ -52,7 +52,6 @@ class UserProfileHeader extends StatelessWidget {
   }
 
   void _imageOptions(context, isProfile) {
-    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -132,8 +131,13 @@ class UserProfileHeader extends StatelessWidget {
       'U',
     );
 
-    await Provider.of<UserProvider>(context, listen: false)
-        .editProfile(cover: idResource);
+    if (isProfile) {
+      await Provider.of<UserProvider>(context, listen: false)
+          .editProfile(icon: idResource);
+    } else {
+      await Provider.of<UserProvider>(context, listen: false)
+          .editProfile(cover: idResource);
+    }
   }
 
   Widget _usersWidget(amount, type, action) {

@@ -5,20 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:voice_inc/models/user_model.dart';
 
 import '../api.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
 import '../models/cause_model.dart';
 import '../models/comment_model.dart';
 
 class ContentProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
   List<ContentModel> _homeContent = [];
+  List<ContentModel> _causesContent = [];
+  List<UserModel> _usersList = [];
 
   List<ContentModel> get getHome => [..._homeContent];
+  List<ContentModel> get getCauses => [..._causesContent];
+  List<UserModel> get getUsers => [..._usersList];
 
   Future<bool> getBaseTimeline(int page, String type) async {
     var url = '${API.baseURL}/timeLine/';
@@ -45,8 +51,14 @@ class ContentProvider with ChangeNotifier {
     if (dataMap == null) {
       return false;
     }
+
+    if (page == 0) {
+      _homeContent.clear();
+      notifyListeners();
+    }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+
       List timeLine = dataMap['timeline'];
       if (timeLine.isEmpty) {
         return false;
@@ -55,21 +67,81 @@ class ContentProvider with ChangeNotifier {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
+          case 'regalup_p':
             _homeContent.add(PollModel.fromJson(content));
             break;
           case 'challenge':
+          case 'regalup_c':
             _homeContent.add(ChallengeModel.fromJson(content));
+            break;
+          case 'Tips':
+            _homeContent.add(TipModel.fromJson(content));
             break;
         }
       });
       notifyListeners();
       return true;
     }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getBaseTimeline(page, type);
+    }
+    return false;
+  }
+
+  Future<bool> getCausesCarrousel() async {
+    var url = '${API.baseURL}/timeLine/';
+    final token = await _getToken();
+
+    _causesContent.clear();
+    final Map parameters = {'page': 0, 'type': 'CA'};
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+
+      List timeLine = dataMap['timeline'];
+      if (timeLine.isEmpty) {
+        return false;
+      }
+      timeLine.forEach((element) {
+        Map content = element as Map;
+        switch (content['type']) {
+          case 'cause':
+            _causesContent.add(CauseModel.fromJson(content));
+            break;
+        }
+      });
+      notifyListeners();
+      return true;
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getCausesCarrousel();
+    }
     return false;
   }
 
   Future<List<ContentModel>> getUserTimeline(
-      String user, int page, String type) async {
+    String user,
+    int page,
+    String type,
+  ) async {
     var url = '${API.baseURL}/timeLine/$user';
     final token = await _getToken();
 
@@ -107,9 +179,16 @@ class ContentProvider with ChangeNotifier {
           case 'challenge':
             contentList.add(ChallengeModel.fromJson(content));
             break;
+          case 'Tips':
+            contentList.add(TipModel.fromJson(content));
+            break;
         }
       });
       return contentList;
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getUserTimeline(user, page, type);
     }
     return [];
   }
@@ -146,18 +225,24 @@ class ContentProvider with ChangeNotifier {
           case 'challenge':
             contentList.add(ChallengeModel.fromJson(content));
             break;
+          case 'Tips':
+            contentList.add(TipModel.fromJson(content));
+            break;
         }
       });
       return contentList;
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getSaved(page);
+    }
     return [];
   }
 
-  Future<List<ContentModel>> getCategory(
-      String category, int page) async {
-    var url = '${API.baseURL}/search/previews/$category/$page';
+  Future<List<ContentModel>> getTopContent() async {
+    var url = '${API.baseURL}/topContent/0';
     final token = await _getToken();
-   
+
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
     final response = await http.get(
@@ -186,9 +271,96 @@ class ContentProvider with ChangeNotifier {
           case 'challenge':
             contentList.add(ChallengeModel.fromJson(content));
             break;
+          case 'Tips':
+            contentList.add(TipModel.fromJson(content));
+            break;
         }
       });
       return contentList;
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getTopContent();
+    }
+    return [];
+  }
+
+  Future<void> getTopUsers() async {
+    var url = '${API.baseURL}/topUsers/0';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+
+      _usersList = UserModel.listFromJson(dataMap['users']);
+      notifyListeners();
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getTopUsers();
+    }
+    return;
+  }
+
+  Future<List<ContentModel>> getCategory(String category, int page) async {
+    var url = '${API.baseURL}/search/previews/$category/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      List<ContentModel> contentList = [];
+      List timeLine = dataMap['timeline'];
+      timeLine.forEach((element) {
+        Map content = element as Map;
+        switch (content['type']) {
+          case 'poll':
+            contentList.add(PollModel.fromJson(content));
+            break;
+          case 'challenge':
+            contentList.add(ChallengeModel.fromJson(content));
+            break;
+          case 'Tips':
+            contentList.add(TipModel.fromJson(content));
+            break;
+        }
+      });
+      return contentList;
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getCategory(category, page);
     }
     return [];
   }
@@ -225,9 +397,16 @@ class ContentProvider with ChangeNotifier {
           case 'challenge':
             contentList.add(ChallengeModel.fromJson(content));
             break;
+          case 'Tips':
+            contentList.add(TipModel.fromJson(content));
+            break;
         }
       });
       return contentList;
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return search(query, page);
     }
     return [];
   }
@@ -260,7 +439,13 @@ class ContentProvider with ChangeNotifier {
           return ChallengeModel.fromJson(dataMap['data']);
         case 'CA':
           return CauseModel.fromJson(dataMap['data']);
+        case 'T':
+          return TipModel.fromJson(dataMap['data']);
       }
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getContent(type, id);
     }
     return null;
   }
@@ -287,6 +472,14 @@ class ContentProvider with ChangeNotifier {
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
       return CommentModel.listFromJson(dataMap['comments']);
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getComments(
+        id: id,
+        page: page,
+        type: type,
+      );
     }
     return [];
   }
@@ -411,6 +604,36 @@ class ContentProvider with ChangeNotifier {
     }
   }
 
+  Future<double> rateTip(id, rate) async {
+    var url = '${API.baseURL}/valueTips/$id';
+    final token = await _getToken();
+    Map parameters = {
+      'value': rate,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return 0;
+    }
+    if (dataMap['success'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return dataMap['total'];
+    }
+    return 0;
+  }
+
   Future<void> newPoll(
       {name, category, resources, description, answers}) async {
     var url = '${API.baseURL}/registerPoll';
@@ -462,6 +685,41 @@ class ContentProvider with ChangeNotifier {
       'hashtag': [],
       'med_param': parameter,
       'goal': goal
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+    }
+  }
+
+  Future<void> newTip({name, category, resource, description}) async {
+    var url = '${API.baseURL}/registerTips';
+    final token = await _getToken();
+
+    Map parameters = {
+      'title': name,
+      'category': category,
+      'resources': [resource],
+      'description': description,
+      'timelife': null,
+      'taged': [],
+      'hashtag': [],
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -735,6 +993,39 @@ class ContentProvider with ChangeNotifier {
 
   Future<void> _saveToken(token) async {
     await _storage.write(key: API.sessionToken, value: token);
+    return;
+  }
+
+  Future<void> _renewToken() async {
+    var url = '${API.baseURL}/token';
+    final hash = await _storage.read(key: API.userHash) ?? null;
+    final datetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader:
+            'Bearer ${API().getHash(hash, datetime)}'
+      },
+      body: jsonEncode({
+        'hash': hash,
+        'datetime': datetime,
+      }),
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+    }
     return;
   }
 }

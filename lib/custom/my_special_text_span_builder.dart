@@ -4,13 +4,18 @@ import 'package:flutter/material.dart';
 
 import 'at_span.dart';
 import 'tag_span.dart';
+import 'link_span.dart';
 
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
-  MySpecialTextSpanBuilder({this.showAtBackground = false, this.canClick = false});
+  MySpecialTextSpanBuilder(
+      {this.showAtBackground = false, this.canClick = false});
 
   /// whether show background for @somebody
   final bool showAtBackground;
   final bool canClick;
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
+
   @override
   TextSpan build(String data,
       {TextStyle textStyle, SpecialTextGestureTapCallback onTap}) {
@@ -36,12 +41,20 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
         start: index - (AtText.flag.length - 1),
         showAtBackground: showAtBackground,
       );
-    }else if (isStart(flag, TagText.flag)) {
+    } else if (isStart(flag, TagText.flag)) {
       return TagText(
         textStyle,
         canClick ? onTap : null,
         start: index - (TagText.flag.length - 1),
         showAtBackground: showAtBackground,
+      );
+    } else if (regex.hasMatch(flag)) {
+      return LinkText(
+        textStyle,
+        canClick ? onTap : null,
+        start: index,
+        showAtBackground: showAtBackground,
+        startFlag: flag,
       );
     }
     return null;

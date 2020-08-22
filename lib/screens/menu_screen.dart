@@ -27,6 +27,7 @@ import 'messages_screen.dart';
 import 'profile_screen.dart';
 import 'new_poll_screen.dart';
 import 'new_challenge_screen.dart';
+import 'new_tip_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
 
@@ -48,23 +49,26 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   int _selectedPageIndex = 0;
   List<Widget> _pages = [
     HomeScreen(
-        //key: PageStorageKey('Page1'),
-        //homeController: _homeController,
-        //stopVideo: _playVideo,
-        ),
+      //key: PageStorageKey('Page1'),
+      _homeController,
+      //stopVideo: _playVideo,
+    ),
     SearchScreen(
       key: PageStorageKey('Page2'),
       stopVideo: _playVideo,
     ),
-    MessagesScreen(
+    Container(),
+    /*MessagesScreen(
       key: PageStorageKey('Page3'),
     ),
+    */
     ProfileScreen(
       key: PageStorageKey('Page4'),
       stopVideo: _playVideo,
     ),
   ];
   List<FabMenuItem> items = [];
+  final pageController = PageController();
 
   static VideoPlayerController _controller;
 
@@ -85,8 +89,25 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         );
       }
       _selectedPageIndex = index;
+
       if (index == 2) {
         _showBadge = false;
+      }
+    });
+  }
+
+  void _bottomBarSelect(index) {
+    pageController.jumpToPage(index);
+    setState(() {
+      if (_controller != null) {
+        _controller.pause();
+      }
+      if (_selectedPageIndex == index && index == 0) {
+        _homeController.animateTo(
+          0.0,
+          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 300),
+        );
       }
     });
   }
@@ -116,6 +137,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       return;
     }
     Navigator.of(context).pushNamed(NewChallengeScreen.routeName);
+  }
+
+  void _newTip() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      _anonymousAlert();
+      return;
+    }
+    Navigator.of(context).pushNamed(NewTipScreen.routeName);
   }
 
   void _anonymousAlert() {
@@ -168,6 +197,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         label: 'Reto',
         ontap: _newChallenge,
         color: Color(0xFFA4175D),
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.tips),
+        label: 'Tip',
+        ontap: _newTip,
+        color: Color(0xFF00B2E3),
       )
     ];
 
@@ -416,9 +451,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
-            IndexedStack(
-              index: _selectedPageIndex,
+            PageView(
+              controller: pageController,
+              onPageChanged: _selectPage,
               children: _pages,
+              physics: NeverScrollableScrollPhysics(), // No sliding
             ),
             _isOpen ? _buildBlurWidget() : Container(),
             _isOpen ? _buildMenuItemList() : Container(),
@@ -447,14 +484,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 GalupFont.home,
                 color: _selectedPageIndex == 0 ? Colors.black : Colors.grey,
               ),
-              onPressed: () => _selectPage(0),
+              onPressed: () => _bottomBarSelect(0),
             ),
             IconButton(
               icon: Icon(
                 GalupFont.search,
                 color: _selectedPageIndex == 1 ? Colors.black : Colors.grey,
               ),
-              onPressed: () => _selectPage(1),
+              onPressed: () => _bottomBarSelect(1),
             ),
             Text(''),
             Badge(
@@ -469,7 +506,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                   GalupFont.message_select,
                   color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
                 ),
-                onPressed: () => _selectPage(2),
+                onPressed: () => _bottomBarSelect(2),
               ),
             ),
             IconButton(
@@ -477,7 +514,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 GalupFont.profile,
                 color: _selectedPageIndex == 3 ? Colors.black : Colors.grey,
               ),
-              onPressed: () => _selectPage(3),
+              onPressed: () => _bottomBarSelect(3),
             ),
           ],
         ),

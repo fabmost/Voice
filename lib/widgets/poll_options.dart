@@ -147,7 +147,7 @@ class _PollOptionsState extends State<PollOptions> {
       child: Stack(
         children: <Widget>[
           FractionallySizedBox(
-            widthFactor: totalPercentage,
+            widthFactor: totalPercentage * 1.0,
             child: Container(
               decoration: BoxDecoration(
                 color: Color(0xAA6767CB),

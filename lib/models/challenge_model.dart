@@ -51,6 +51,7 @@ class ChallengeModel extends ContentModel {
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
+      creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
       title: content['body'],
       description: content['description'],
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),

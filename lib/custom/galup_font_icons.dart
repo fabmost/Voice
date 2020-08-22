@@ -36,6 +36,7 @@ class GalupFont {
   static const IconData instagram = IconData(0xe808, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData like = IconData(0xe809, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData empty_saved = IconData(0xe80a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData tips = IconData(0xe80b, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData message_select = IconData(0xe80c, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData message = IconData(0xe80d, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData dislike = IconData(0xe80e, fontFamily: _kFontFam, fontPackage: _kFontPkg);
@@ -49,6 +50,7 @@ class GalupFont {
   static const IconData survey = IconData(0xe816, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData empty_content = IconData(0xe817, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData tik_tok = IconData(0xe818, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData cause = IconData(0xe819, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData challenge = IconData(0xe81a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData info_circled_alt = IconData(0xf086, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

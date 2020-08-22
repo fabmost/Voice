@@ -5,17 +5,17 @@ import '../models/user_model.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
 import '../models/cause_model.dart';
 import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../widgets/poll_tile.dart';
 import '../widgets/challenge_tile.dart';
-import '../widgets/search_cause.dart';
+import '../widgets/tip_tile.dart';
 import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
-
   Widget _pollWidget(PollModel content) {
     return PollTile(
       reference: 'home',
@@ -60,6 +60,26 @@ class CustomSearchDelegate extends SearchDelegate {
 
   Widget _causeWidget(CauseModel doc) {
     return Container();
+  }
+
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+    );
   }
 
   Widget _tagTile(context, doc) {
@@ -144,8 +164,8 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget buildResults(BuildContext context) {
     return FutureBuilder(
-      future: Provider.of<ContentProvider>(context, listen: false)
-          .search(query, 0),
+      future:
+          Provider.of<ContentProvider>(context, listen: false).search(query, 0),
       builder: (ct, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
@@ -167,6 +187,8 @@ class CustomSearchDelegate extends SearchDelegate {
                 return _challengeWidget(result);
               case 'cause':
                 return _causeWidget(result);
+              case 'tip':
+                return _tipWidget(result);
               default:
                 return SizedBox();
             }

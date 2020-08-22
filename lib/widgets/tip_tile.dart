@@ -3,62 +3,57 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'poll_options.dart';
-import 'poll_video.dart';
-import 'poll_images.dart';
-import 'menu_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
-import '../mixins/share_mixin.dart';
+import 'poll_video.dart';
+import 'poll_images.dart';
+import 'tip_total.dart';
+import 'menu_content.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
-import '../screens/view_profile_screen.dart';
+import '../mixins/share_mixin.dart';
+import '../models/resource_model.dart';
 import '../screens/comments_screen.dart';
+import '../screens/view_profile_screen.dart';
 import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
 
-class PollTile extends StatelessWidget with ShareContent {
-  final String reference;
+class TipTile extends StatelessWidget with ShareContent {
   final String id;
   final String userName;
   final String userImage;
   final String title;
   final String description;
   final DateTime date;
-  final int votes;
   final int likes;
   final int regalups;
   final int comments;
-  final bool hasVoted;
+  final double rate;
   final bool hasLiked;
   final bool hasRegalup;
   final bool hasSaved;
-  final List answers;
+  final bool hasRated;
   final List resources;
-  final String regalupName;
 
-  PollTile({
-    @required this.reference,
+  TipTile({
     @required this.id,
     @required this.title,
     @required this.description,
     @required this.date,
     @required this.userName,
     @required this.userImage,
-    @required this.votes,
     @required this.likes,
     @required this.regalups,
     @required this.comments,
-    @required this.hasVoted,
+    @required this.rate,
     @required this.hasLiked,
     @required this.hasRegalup,
     @required this.hasSaved,
-    @required this.answers,
+    @required this.hasRated,
     @required this.resources,
-    this.regalupName,
   });
 
-  final Color color = Color(0xFFF8F8FF);
+  final Color color = Color(0xFFF4FDFF);
 
   void _toProfile(context) {
     if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
@@ -82,20 +77,21 @@ class PollTile extends StatelessWidget with ShareContent {
       MaterialPageRoute(
         builder: (context) => CommentsScreen(
           id: id,
-          type: 'P',
+          type: 'TIP',
         ),
       ),
     );
   }
 
   void _share() {
-    sharePoll(id, title);
+    shareChallenge(id, title);
   }
 
-  Widget _handleResources() {
-    if (resources[0].type == 'V') return PollVideo('', resources[0].url, null);
-    List urls = resources.map((e) => e.url).toList();
-    return PollImages(urls, reference);
+  Widget _challengeGoal(context) {
+    ResourceModel resource = resources[0];
+    if (resource.type == 'V') return PollVideo('', resource.url, null);
+    if (resource.type == 'I') return PollImages([resource.url], null);
+    return Container();
   }
 
   @override
@@ -108,7 +104,7 @@ class PollTile extends StatelessWidget with ShareContent {
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: Theme.of(context).accentColor, width: 0.5),
+          side: BorderSide(color: Color(0xFF00B2E3), width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -116,105 +112,64 @@ class PollTile extends StatelessWidget with ShareContent {
           children: <Widget>[
             Container(
               color: color,
-              child: Column(
-                children: [
-                  if (regalupName != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        top: 16,
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(
-                            GalupFont.repost,
-                            color: Colors.grey,
-                            size: 12,
+              child: ListTile(
+                  onTap: () => _toProfile(context),
+                  leading: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color(0xFF00B2E3),
+                    backgroundImage: NetworkImage(userImage),
+                  ),
+                  title: Row(
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          userName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
-                          SizedBox(width: 8),
-                          Text(
-                            '$regalupName Regalup',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ListTile(
-                    onTap: () => _toProfile(context),
-                    leading: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Theme.of(context).accentColor,
-                      backgroundImage:
-                          userImage == null ? null : NetworkImage(userImage),
-                    ),
-                    title: Row(
-                      children: <Widget>[
-                        Flexible(
-                          child: Text(
-                            userName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(width: 8),
-                        //InfluencerBadge(influencer, 16),
-                      ],
-                    ),
-                    subtitle: Text(timeago.format(now.subtract(difference))),
-                    trailing: MenuContent(
-                      id: id,
-                      type: 'P',
-                      isSaved: hasSaved,
+                      ),
+                      SizedBox(width: 8),
+                      //InfluencerBadge(influencer, 16),
+                    ],
+                  ),
+                  subtitle: Text(timeago.format(now.subtract(difference))),
+                  trailing: MenuContent(
+                    id: id,
+                    type: 'TIP',
+                    isSaved: hasSaved,
+                  )),
+            ),
+            SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  TipTotal(
+                    id: id,
+                    total: rate,
+                    hasRated: hasRated,
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            if (resources.isNotEmpty) _challengeGoal(context),
             if (resources.isNotEmpty) SizedBox(height: 16),
-            if (resources.isNotEmpty) _handleResources(),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: 8,
-              ),
-              child: PollOptions(
-                id: id,
-                votes: votes,
-                hasVoted: hasVoted,
-                answers: answers,
-              ),
-            ),
-            if (votes > 0)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  bottom: 16,
-                ),
-                child: Text(votes == 1
-                    ? '$votes participante'
-                    : '$votes participantes'),
-              ),
-            if (description != null && description.isNotEmpty)
+            if (description.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ExtendedText(
@@ -235,8 +190,7 @@ class PollTile extends StatelessWidget with ShareContent {
                   },
                 ),
               ),
-            if (description != null && description.isNotEmpty)
-              SizedBox(height: 16),
+            if (description.isNotEmpty) SizedBox(height: 16),
             Container(
               color: color,
               child: Row(
@@ -249,13 +203,13 @@ class PollTile extends StatelessWidget with ShareContent {
                   ),
                   LikeContent(
                     id: id,
-                    type: 'P',
+                    type: 'TIP',
                     likes: likes,
                     hasLiked: hasLiked,
                   ),
                   RegalupContent(
                     id: id,
-                    type: 'P',
+                    type: 'TIP',
                     regalups: regalups,
                     hasRegalup: hasRegalup,
                   ),
@@ -265,7 +219,7 @@ class PollTile extends StatelessWidget with ShareContent {
                   ),
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),

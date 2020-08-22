@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'database_provider.dart';
 import '../api.dart';
@@ -14,16 +15,20 @@ class AuthProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
   String _token;
   String _userName;
+  bool _hasAccount = false;
 
   String get geToken => _token;
   String get getUsername => _userName;
   bool get isAuth {
     return _token != null;
   }
+  bool get hasAccount => _hasAccount;
 
   Future<bool> hasToken() async {
+    final prefs = await SharedPreferences.getInstance();
     _token = await _storage.read(key: API.sessionToken) ?? null;
     _userName = await _storage.read(key: API.userName) ?? null;
+    _hasAccount = prefs.getBool('hasAccount') ?? false;
     if (_token == null) {
       return false;
     }
@@ -32,11 +37,16 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    final prefs = await SharedPreferences.getInstance();
     _storage.delete(key: API.sessionToken);
     _storage.delete(key: API.userHash);
     _storage.delete(key: API.userName);
+    prefs.setBool('hasAccount', true);
+    _hasAccount = true;
     _token = null;
     _userName = null;
+    _hasAccount = true;
+    await installation();
     notifyListeners();
   }
 
@@ -99,6 +109,7 @@ class AuthProvider with ChangeNotifier {
           phone: dataMap['code_phone'],
         );
       });
+      _token = dataMap['session']['token'];
       return dataMap['session']['token'];
     } else {
       return null;
