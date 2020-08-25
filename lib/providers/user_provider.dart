@@ -13,10 +13,12 @@ import '../models/user_model.dart';
 class UserProvider with ChangeNotifier {
   final String _myUser;
   final _storage = FlutterSecureStorage();
+  UserModel _currentUser;
 
   UserProvider(this._myUser);
 
   String get getUser => _myUser;
+  UserModel get getUserModel => _currentUser;
 
   Future<UserModel> userProfile() async {
     var url = '${API.baseURL}/profile/$_myUser';
@@ -42,7 +44,9 @@ class UserProvider with ChangeNotifier {
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
 
-      return UserModel.fromJson(dataMap['profile']);
+      _currentUser = UserModel.fromJson(dataMap['profile']);
+      notifyListeners();
+      return _currentUser;
     }
     if (dataMap['alert']['action'] == 4) {
       await _renewToken();
@@ -104,19 +108,58 @@ class UserProvider with ChangeNotifier {
 
     Map parameters = {};
 
-    if (name != null) parameters['name'] = name;
-    if (lastName != null) parameters['last_name'] = lastName;
-    if (userName != null) parameters['“user_name”'] = userName;
-    if (country != null) parameters['country_code'] = country;
-    if (tiktok != null) parameters['country_code'] = tiktok;
-    if (facebook != null) parameters['facebook'] = facebook;
-    if (instagram != null) parameters['instagram'] = instagram;
-    if (youtube != null) parameters['youtube'] = youtube;
-    if (bio != null) parameters['biography'] = bio;
-    if (gender != null) parameters['gender'] = gender;
-    if (icon != null) parameters['icon'] = icon;
-    if (cover != null) parameters['cover'] = cover;
-    if (birth != null) parameters['birhtday'] = birth;
+    if (name != null) {
+      parameters['name'] = name;
+      _currentUser.name = name;
+    }
+    if (lastName != null) {
+      parameters['last_name'] = lastName;
+      _currentUser.lastName = lastName;
+    }
+    if (userName != null) {
+      parameters['user_name'] = userName;
+      _currentUser.userName = userName;
+    }
+    if (country != null) {
+      parameters['country_code'] = country;
+      _currentUser.country = country;
+    }
+    if (tiktok != null) {
+      parameters['tiktok'] = tiktok;
+      _currentUser.tiktok = tiktok;
+    }
+    if (facebook != null) {
+      parameters['facebook'] = facebook;
+      _currentUser.facebook = facebook;
+    }
+    if (instagram != null) {
+      parameters['instagram'] = instagram;
+      _currentUser.instagram = instagram;
+    }
+    if (youtube != null) {
+      parameters['youtube'] = youtube;
+      _currentUser.youtube = youtube;
+    }
+    if (bio != null) {
+      parameters['biography'] = bio;
+      _currentUser.biography = bio;
+    }
+    if (gender != null) {
+      parameters['gender'] = gender;
+      _currentUser.gender = gender;
+    }
+    if (icon != null) {
+      parameters['icon'] = icon;
+      _currentUser.icon = icon;
+    }
+    if (cover != null) {
+      parameters['cover'] = cover;
+      _currentUser.cover = cover;
+    }
+    if (birth != null) {
+      parameters['birhtday'] = birth;
+      _currentUser.birthday = birth;
+    }
 
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -139,6 +182,7 @@ class UserProvider with ChangeNotifier {
 
     if (dataMap['status'] == 'success') {
       await _saveToken(dataMap['session']['token']);
+      notifyListeners();
       return {'result': true};
     }
     await _renewToken();

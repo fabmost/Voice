@@ -11,8 +11,9 @@ enum LoadMoreStatus { LOADING, STABLE }
 
 class PollList extends StatefulWidget {
   final String userId;
+  final ScrollController scrollController;
 
-  PollList(this.userId);
+  PollList(this.userId, this.scrollController);
 
   @override
   _PollListState createState() => _PollListState();
@@ -20,7 +21,6 @@ class PollList extends StatefulWidget {
 
 class _PollListState extends State<PollList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
-  final ScrollController scrollController = new ScrollController();
   List<ContentModel> _list = [];
   int _currentPageNumber = 0;
   bool _isLoading = false;
@@ -50,8 +50,8 @@ class _PollListState extends State<PollList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (scrollController.position.maxScrollExtent > scrollController.offset &&
-          scrollController.position.maxScrollExtent - scrollController.offset <=
+      if (widget.scrollController.position.maxScrollExtent > widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent - widget.scrollController.offset <=
               50) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
@@ -100,7 +100,6 @@ class _PollListState extends State<PollList> {
 
   @override
   void dispose() {
-    scrollController.dispose();
     super.dispose();
   }
 
@@ -134,7 +133,6 @@ class _PollListState extends State<PollList> {
             : NotificationListener(
                 onNotification: onNotification,
                 child: ListView.builder(
-                  controller: scrollController,
                   itemCount: _list.length,
                   itemBuilder: (context, i) => _pollWidget(_list[i]),
                 ),

@@ -29,6 +29,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with AutomaticKeepAliveClientMixin {
+  ScrollController _scrollController = new ScrollController();
   VideoPlayerController _controller;
 
   void _toEdit(context) {
@@ -118,98 +119,105 @@ class _ProfileScreenState extends State<ProfileScreen>
           if (provider.getUser == null) {
             return _anonymousView(context);
           }
-          return FutureBuilder(
-            future: provider.userProfile(),
-            builder: (context, AsyncSnapshot<UserModel> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
-                return Center(child: CircularProgressIndicator());
+          if (provider.getUserModel == null) {
+            provider.userProfile();
+            return Center(child: CircularProgressIndicator());
+          }
+          bool hasSocialMedia = false;
 
-              UserModel user = snapshot.data;
-              bool hasSocialMedia = false;
+          double containerHeight = 410;
+          if (provider.getUserModel.biography != null &&
+              provider.getUserModel.biography.isNotEmpty) {
+            containerHeight += 66;
+          }
+          if ((provider.getUserModel.tiktok ?? '').isNotEmpty ||
+              (provider.getUserModel.facebook ?? '').isNotEmpty ||
+              (provider.getUserModel.instagram ?? '').isNotEmpty ||
+              (provider.getUserModel.youtube ?? '').isNotEmpty) {
+            hasSocialMedia = true;
+            containerHeight += 60;
+          }
 
-              double containerHeight = 410;
-              if (user.biography != null && user.biography.isNotEmpty) {
-                containerHeight += 66;
-              }
-              if ((user.tiktok ?? '').isNotEmpty ||
-                  (user.facebook ?? '').isNotEmpty ||
-                  (user.instagram ?? '').isNotEmpty ||
-                  (user.youtube ?? '').isNotEmpty) {
-                hasSocialMedia = true;
-                containerHeight += 60;
-              }
-
-              return DefaultTabController(
-                length: 4,
-                child: NestedScrollView(
-                  headerSliverBuilder: (ctx, isScrolled) {
-                    return <Widget>[
-                      SliverAppBar(
-                        pinned: true,
-                        title: Text(
-                            Translations.of(context).text('title_profile')),
-                        actions: <Widget>[
-                          FlatButton(
-                            textColor: Colors.white,
-                            child: Text(Translations.of(context)
-                                .text('button_edit_profile')),
-                            onPressed: () => _toEdit(context),
-                          )
-                        ],
-                      ),
-                      SliverPersistentHeader(
-                        pinned: false,
-                        delegate: _SliverHeaderDelegate(
-                          containerHeight,
-                          containerHeight,
-                          UserProfileHeader(
-                            hasSocialMedia: hasSocialMedia,
-                            user: user,
-                          ),
-                        ),
-                      ),
-                      SliverPersistentHeader(
-                        delegate: _SliverAppBarDelegate(
-                          TabBar(
-                            labelColor: Theme.of(context).accentColor,
-                            unselectedLabelColor: Colors.grey,
-                            indicatorPadding:
-                                EdgeInsets.symmetric(horizontal: 42),
-                            tabs: [
-                              Tab(
-                                icon: Icon(GalupFont.survey),
-                                text: 'Encuestas',
-                              ),
-                              Tab(
-                                icon: Icon(GalupFont.challenge),
-                                text: 'Retos',
-                              ),
-                              Tab(
-                                icon: Icon(GalupFont.tips),
-                                text: 'Tips',
-                              ),
-                              Tab(
-                                icon: Icon(GalupFont.saved),
-                                text: 'Guardados',
-                              ),
-                            ],
-                          ),
-                        ),
-                        pinned: true,
-                      ),
-                    ];
-                  },
-                  body: TabBarView(
-                    children: [
-                      PollUserList(user.userName, _playVideo),
-                      ChallengeUserList(user.userName),
-                      TipList(user.userName, _playVideo),
-                      SavedList(_playVideo),
+          return DefaultTabController(
+            length: 4,
+            child: NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (ctx, isScrolled) {
+                return <Widget>[
+                  SliverAppBar(
+                    pinned: true,
+                    title: Text(Translations.of(context).text('title_profile')),
+                    actions: <Widget>[
+                      FlatButton(
+                        textColor: Colors.white,
+                        child: Text(Translations.of(context)
+                            .text('button_edit_profile')),
+                        onPressed: () => _toEdit(context),
+                      )
                     ],
                   ),
-                ),
-              );
-            },
+                  SliverPersistentHeader(
+                    pinned: false,
+                    delegate: _SliverHeaderDelegate(
+                      containerHeight,
+                      containerHeight,
+                      UserProfileHeader(
+                        hasSocialMedia: hasSocialMedia,
+                        user: provider.getUserModel,
+                      ),
+                    ),
+                  ),
+                  SliverPersistentHeader(
+                    delegate: _SliverAppBarDelegate(
+                      TabBar(
+                        labelColor: Theme.of(context).accentColor,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorPadding: EdgeInsets.symmetric(horizontal: 42),
+                        tabs: [
+                          Tab(
+                            icon: Icon(GalupFont.survey),
+                            text: 'Encuestas',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.challenge),
+                            text: 'Retos',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.tips),
+                            text: 'Tips',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.saved),
+                            text: 'Guardados',
+                          ),
+                        ],
+                      ),
+                    ),
+                    pinned: true,
+                  ),
+                ];
+              },
+              body: TabBarView(
+                children: [
+                  PollUserList(
+                    provider.getUserModel.userName,
+                    _scrollController,
+                    _playVideo,
+                  ),
+                  ChallengeUserList(
+                    provider.getUserModel.userName,
+                    _scrollController,
+                    _playVideo,
+                  ),
+                  TipList(
+                    provider.getUserModel.userName,
+                    _scrollController,
+                    _playVideo,
+                  ),
+                  SavedList(_scrollController, _playVideo),
+                ],
+              ),
+            ),
           );
         },
       ),

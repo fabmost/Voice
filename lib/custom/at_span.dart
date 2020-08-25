@@ -3,7 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class AtText extends SpecialText {
-  static const String flag = "@[";
+  static const String flag = "@";
   final int start;
 
   /// whether show background for @somebody
@@ -24,16 +24,11 @@ class AtText extends SpecialText {
         this.textStyle?.copyWith(color: Color(0xFF722282), fontWeight: FontWeight.bold);
 
     final String atText = toString();
-    int start = atText.indexOf('[');
-    int finish = atText.indexOf(']');
-    String toRemove = atText.substring(start, finish + 1);
-
-    final String shownText = atText.replaceAll(toRemove, '');
 
     return showAtBackground
         ? BackgroundTextSpan(
             background: Paint()..color = Colors.blue.withOpacity(0.15),
-            text: shownText,
+            text: atText,
             actualText: atText,
             start: start,
 
@@ -45,7 +40,7 @@ class AtText extends SpecialText {
                 if (onTap != null) onTap(atText);
               }))
         : SpecialTextSpan(
-            text: shownText,
+            text: atText,
             actualText: atText,
             deleteAll: true,
             start: start,

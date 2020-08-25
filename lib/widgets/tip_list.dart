@@ -11,9 +11,10 @@ enum LoadMoreStatus { LOADING, STABLE }
 
 class TipList extends StatefulWidget {
   final String userId;
+  final ScrollController scrollController;
   final Function setVideo;
 
-  TipList(this.userId, this.setVideo);
+  TipList(this.userId, this.scrollController, this.setVideo);
 
   @override
   _TipListState createState() => _TipListState();
@@ -21,7 +22,6 @@ class TipList extends StatefulWidget {
 
 class _TipListState extends State<TipList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
-  final ScrollController scrollController = new ScrollController();
   List<ContentModel> _list = [];
   int _currentPageNumber;
   bool _isLoading = false;
@@ -49,8 +49,8 @@ class _TipListState extends State<TipList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (scrollController.position.maxScrollExtent > scrollController.offset &&
-          scrollController.position.maxScrollExtent - scrollController.offset <=
+      if (widget.scrollController.position.maxScrollExtent > widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent - widget.scrollController.offset <=
               50) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
@@ -100,7 +100,6 @@ class _TipListState extends State<TipList> {
 
   @override
   void dispose() {
-    scrollController.dispose();
     super.dispose();
   }
 
@@ -134,7 +133,6 @@ class _TipListState extends State<TipList> {
             : NotificationListener(
                 onNotification: onNotification,
                 child: ListView.builder(
-                  controller: scrollController,
                   itemCount: _list.length,
                   itemBuilder: (context, i) => _tipWidget(_list[i]),
                 ),

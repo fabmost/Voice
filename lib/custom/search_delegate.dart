@@ -12,6 +12,7 @@ import '../providers/content_provider.dart';
 import '../widgets/poll_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
+import '../widgets/cause_tile.dart';
 import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
 
@@ -58,8 +59,17 @@ class CustomSearchDelegate extends SearchDelegate {
     );
   }
 
-  Widget _causeWidget(CauseModel doc) {
-    return Container();
+  Widget _causeWidget(CauseModel content) {
+    return CauseTile(
+      id: content.id,
+      title: content.title,
+      date: content.createdAt,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+    );
   }
 
   Widget _tipWidget(TipModel content) {
@@ -185,9 +195,9 @@ class CustomSearchDelegate extends SearchDelegate {
                 return _pollWidget(result);
               case 'challenge':
                 return _challengeWidget(result);
-              case 'cause':
+              case 'causes':
                 return _causeWidget(result);
-              case 'tip':
+              case 'Tips':
                 return _tipWidget(result);
               default:
                 return SizedBox();

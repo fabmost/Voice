@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../mixins/alert_mixin.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 
 class LikeContent extends StatefulWidget {
@@ -21,12 +23,17 @@ class LikeContent extends StatefulWidget {
   _LikeContentState createState() => _LikeContentState();
 }
 
-class _LikeContentState extends State<LikeContent> {
+class _LikeContentState extends State<LikeContent> with AlertMixin {
   int _likes;
   bool _hasLiked;
   Color _color;
 
   void _like() async {
+    bool canInteract = await Provider.of<AuthProvider>(context, listen: false).canInteract();
+    if (!canInteract) {
+      anonymousAlert(context);
+      return;
+    }
     bool result = await Provider.of<ContentProvider>(context, listen: false)
         .likeContent(widget.type, widget.id);
     setState(() {

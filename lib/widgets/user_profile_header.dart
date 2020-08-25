@@ -1,14 +1,9 @@
-import 'dart:io';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:voice_inc/providers/content_provider.dart';
-import 'package:voice_inc/providers/user_provider.dart';
 
+import 'user_icon.dart';
+import 'user_cover.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/user_model.dart';
@@ -51,95 +46,6 @@ class UserProfileHeader extends StatelessWidget {
     );
   }
 
-  void _imageOptions(context, isProfile) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return new Container(
-          color: Colors.transparent,
-          child: new Wrap(
-            children: <Widget>[
-              new ListTile(
-                onTap: () => _openCamera(context, isProfile),
-                leading: new Icon(
-                  Icons.camera_alt,
-                ),
-                title: Text("Cámara"),
-              ),
-              new ListTile(
-                onTap: () => _openGallery(context, isProfile),
-                leading: new Icon(
-                  Icons.image,
-                ),
-                title: Text("Galería"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _openCamera(context, isProfile) {
-    Navigator.of(context).pop();
-    _takePicture(context, isProfile);
-  }
-
-  void _openGallery(context, isProfile) {
-    Navigator.of(context).pop();
-    _getPicture(context, isProfile);
-  }
-
-  Future<void> _takePicture(context, isProfile) async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.camera,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(context, imageFile.path, isProfile);
-    }
-  }
-
-  Future<void> _getPicture(context, isProfile) async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(context, imageFile.path, isProfile);
-    }
-  }
-
-  void _cropImage(context, pathFile, isProfile) async {
-    File cropped = await ImageCropper.cropImage(
-      sourcePath: pathFile,
-      aspectRatio: isProfile
-          ? CropAspectRatio(ratioX: 1, ratioY: 1)
-          : CropAspectRatio(ratioX: 16, ratioY: 9),
-    );
-    if (cropped != null) {
-      _saveImage(context, cropped, isProfile);
-    }
-  }
-
-  void _saveImage(context, file, isProfile) async {
-    String idResource =
-        await Provider.of<ContentProvider>(context, listen: false)
-            .uploadResourceGetUrl(
-      file.path,
-      'I',
-      'U',
-    );
-
-    if (isProfile) {
-      await Provider.of<UserProvider>(context, listen: false)
-          .editProfile(icon: idResource);
-    } else {
-      await Provider.of<UserProvider>(context, listen: false)
-          .editProfile(cover: idResource);
-    }
-  }
-
   Widget _usersWidget(amount, type, action) {
     return Expanded(
       flex: 1,
@@ -173,66 +79,13 @@ class UserProfileHeader extends StatelessWidget {
             height: containerHeight + 60,
             child: Stack(
               children: <Widget>[
-                Container(
-                  width: double.infinity,
-                  height: containerHeight,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFECECEC),
-                    image: DecorationImage(
-                        image: user.cover == null
-                            ? null
-                            : NetworkImage(user.cover),
-                        fit: BoxFit.cover),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      right: 8,
-                      top: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: IconButton(
-                      icon: Icon(Icons.camera_alt),
-                      onPressed: () => _imageOptions(context, false),
-                    ),
-                  ),
-                ),
+                UserCover(user.cover),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
                     height: 122,
                     width: 122,
-                    child: Stack(
-                      children: <Widget>[
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundImage: user.icon == null
-                              ? null
-                              : NetworkImage(user.icon),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () => _imageOptions(context, true),
-                            child: CircleAvatar(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              radius: 15,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: UserIcon(user.icon),
                   ),
                 ),
               ],
@@ -287,7 +140,7 @@ class UserProfileHeader extends StatelessWidget {
                 if ((user.tiktok ?? '').isNotEmpty)
                   GestureDetector(
                     onTap: () => _launchURL(
-                        'https://www.tiktok.com/${user.tiktok.replaceAll('@', '')}'),
+                        'https://www.tiktok.com/${user.tiktok}'),
                     child: CircleAvatar(
                       backgroundColor: Colors.black,
                       child: Icon(

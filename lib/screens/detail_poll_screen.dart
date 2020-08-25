@@ -86,6 +86,8 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
                         final doc = _commentsList[i - 1];
 
                         return CommentTile(
+                          contentId: widget.id,
+                          type: 'P',
                           id: doc.id,
                           title: doc.body,
                           comments: doc.comments,

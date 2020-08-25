@@ -43,20 +43,6 @@ class TestScreen extends StatelessWidget {
               ),
               RaisedButton(
                 onPressed: () {
-                  Provider.of<ContentProvider>(context, listen: false)
-                      .getTopContent();
-                },
-                child: Text('Top Content'),
-              ),
-              RaisedButton(
-                onPressed: () {
-                  Provider.of<ContentProvider>(context, listen: false)
-                      .getTopUsers();
-                },
-                child: Text('Top Users'),
-              ),
-              RaisedButton(
-                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(

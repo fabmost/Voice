@@ -1,18 +1,60 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../widgets/header_comment.dart';
+import '../widgets/comment_tile.dart';
 import '../widgets/new_comment.dart';
+import '../models/comment_model.dart';
+import '../providers/content_provider.dart';
 
-class DetailCommentScreen extends StatelessWidget {
+class DetailCommentScreen extends StatefulWidget {
   static const routeName = '/detail-comment';
+  final String id;
+  final String type;
+  final CommentModel comment;
+
+  DetailCommentScreen({this.id, this.type, this.comment});
+
+  @override
+  _DetailCommentScreenState createState() => _DetailCommentScreenState();
+}
+
+class _DetailCommentScreenState extends State<DetailCommentScreen> {
+  List<CommentModel> _commentsList = [];
+  bool _isLoading = false;
+
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    List results =
+        await Provider.of<ContentProvider>(context, listen: false).getReplys(
+      id: widget.comment.id,
+      type: widget.type,
+      idContent: widget.id,
+      page: 0,
+    );
+    setState(() {
+      _commentsList = results;
+      _isLoading = false;
+    });
+  }
+
+  void _setComment(comment) {
+    setState(() {
+      _commentsList.insert(0, comment);
+    });
+  }
+
+  @override
+  void initState() {
+    _getData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final reference =
-        ModalRoute.of(context).settings.arguments as DocumentReference;
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_comments')),
@@ -20,66 +62,48 @@ class DetailCommentScreen extends StatelessWidget {
       body: Column(
         children: <Widget>[
           Expanded(
-            child: FutureBuilder(
-              future: FirebaseAuth.instance.currentUser(),
-              builder: (ctx, userSnap) {
-                if (userSnap.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+            child: ListView.builder(
+              itemCount: _commentsList.isEmpty ? 2 : _commentsList.length + 1,
+              itemBuilder: (context, i) {
+                if (i == 0) {
+                  return HeaderComment(widget.comment);
                 }
-                return StreamBuilder(
-                  stream: Firestore.instance
-                      .collection('comments')
-                      .where('parent', isEqualTo: reference)
-                      .orderBy('createdAt', descending: true)
-                      .snapshots(),
-                  builder: (ct, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    final documents = snapshot.data.documents;
+                if (_commentsList.isEmpty) {
+                  if (_isLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Center(
+                      child:
+                          Text(Translations.of(context).text('empty_comments')),
+                    ),
+                  );
+                }
+                final doc = _commentsList[i - 1];
 
-                    return ListView.builder(
-                      itemCount: documents.isEmpty ? 2 : documents.length + 1,
-                      itemBuilder: (context, i) {
-                        if (i == 0) {
-                          return HeaderComment(reference, userSnap.data.uid);
-                        }
-                        if (documents.isEmpty) {
-                          return Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Center(
-                              child: Text(Translations.of(context)
-                                  .text('empty_comments')),
-                            ),
-                          );
-                        }
-                        final doc = documents[i - 1];
-                        int ups = 0;
-                        bool hasUp = false;
-                        int downs = 0;
-                        bool hasDown = false;
-
-                        if (doc['up'] != null) {
-                          ups = doc['up'].length;
-                          hasUp = doc['up'].contains(userSnap.data.uid);
-                        }
-                        if (doc['down'] != null) {
-                          downs = doc['down'].length;
-                          hasDown = doc['down'].contains(userSnap.data.uid);
-                        }
-
-                        return Container();
-                      },
-                    );
-                  },
+                return CommentTile(
+                  contentId: widget.id,
+                  type: widget.type,
+                  id: doc.id,
+                  title: doc.body,
+                  comments: doc.comments,
+                  date: doc.createdAt,
+                  userName: doc.user.userName,
+                  userImage: doc.user.icon ?? '',
+                  ups: doc.likes,
+                  hasUp: doc.hasLike,
+                  downs: doc.dislikes,
+                  hasDown: doc.hasDislike,
                 );
               },
             ),
           ),
           NewComment(
-            id: '',
-            type: '',
-            function: null,
+            id: widget.id,
+            type: widget.type,
+            idComment: widget.comment.id,
+            function: _setComment,
           ),
         ],
       ),

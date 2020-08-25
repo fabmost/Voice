@@ -10,9 +10,7 @@ import 'regalup_content.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
-import '../screens/auth_screen.dart';
 import '../screens/comments_screen.dart';
-import '../screens/view_profile_screen.dart';
 import '../screens/analytics_screen.dart';
 
 class UserPollTile extends StatelessWidget with ShareContent {
@@ -53,8 +51,15 @@ class UserPollTile extends StatelessWidget with ShareContent {
   });
 
   void _toComments(context) {
-    //Navigator.of(context)
-    //  .pushNamed(CommentsScreen.routeName, arguments: reference);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CommentsScreen(
+          id: id,
+          type: 'P',
+        ),
+      ),
+    );
   }
 
   void _toAnalytics(context) {
@@ -66,32 +71,6 @@ class UserPollTile extends StatelessWidget with ShareContent {
           title: title,
           answers: answers,
         ),
-      ),
-    );
-  }
-
-  void _anonymousAlert(context, text) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(text),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
       ),
     );
   }
@@ -136,7 +115,6 @@ class UserPollTile extends StatelessWidget with ShareContent {
   void _deleteContent() async {}
 
   void _options(context) {
-    //FocusScope.of(context).requestFocus(FocusNode());
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -163,7 +141,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
   }
 
   Widget _handleResources() {
-    if (resources[0].type == 'V') return PollVideo('', resources[0].url, null);
+    if (resources[0].type == 'V') return PollVideo(resources[0].url, null);
     List urls = resources.map((e) => e.url).toList();
     return PollImages(
       urls,

@@ -1,13 +1,15 @@
-import 'package:algolia/algolia.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'influencer_badge.dart';
+import '../translations.dart';
+import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../screens/auth_screen.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom//my_special_text_span_builder.dart';
-import '../translations.dart';
 
 class NewComment extends StatefulWidget {
   final String type;
@@ -26,69 +28,68 @@ class NewComment extends StatefulWidget {
   _NewCommentState createState() => _NewCommentState();
 }
 
-class _NewCommentState extends State<NewComment> {
+class _NewCommentState extends State<NewComment> with AlertMixin{
   final _controller = TextEditingController();
   //var _enteredMessage = '';
   var _toCheck = '';
-  Algolia algolia;
-  AlgoliaQuery searchQuery;
   bool _isSearching = false;
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, content) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
           Text(
-            doc['name'],
+            content.userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          //InfluencerBadge(doc['influencer'] ?? '', 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
-    );
-  }
-
-  void _anonymousAlert() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(Translations.of(context).text('dialog_need_account')),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
-      ),
+      //subtitle: Text(doc['user_name']),
     );
   }
 
   void _sendComment() async {
     FocusScope.of(context).unfocus();
-    var result = await Provider.of<ContentProvider>(context, listen: false).newComment(
-      comment: _controller.text,
-      type: widget.type,
-      id: widget.id,
-    );
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      anonymousAlert(context);
+      return;
+    }
+    var result;
+
+    List<Map> hashes = [];
+    RegExp exp = new RegExp(r"\B#\w\w+");
+    exp.allMatches(_controller.text).forEach((match) {
+      if (!hashes.contains(match.group(0))) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
+      }
+    });
+
+    if (widget.idComment != null) {
+      result = await Provider.of<ContentProvider>(context, listen: false)
+          .newReply(
+              comment: _controller.text,
+              type: widget.type,
+              idContent: widget.id,
+              id: widget.idComment,
+              hashtags: hashes);
+    } else {
+      result =
+          await Provider.of<ContentProvider>(context, listen: false).newComment(
+        comment: _controller.text,
+        type: widget.type,
+        id: widget.id,
+        hashtag: hashes,
+      );
+    }
     widget.function(result);
     setState(() {
       _controller.clear();
@@ -100,23 +101,16 @@ class _NewCommentState extends State<NewComment> {
       _isSearching = false;
       return null;
     }
-    searchQuery = algolia.instance.index('suggestions');
     int index = query.lastIndexOf('@');
-    String realQuery = query.substring(index);
-    searchQuery = searchQuery.search(realQuery);
-    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
-    return results.hits;
+    String realQuery = query.substring(index + 1);
+    Map results = await Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(realQuery);
+    return results['users'];
   }
 
   @override
   void initState() {
     super.initState();
-
-    // Start listening to changes.
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
   }
 
   @override
@@ -157,19 +151,14 @@ class _NewCommentState extends State<NewComment> {
                 return null;
               },
               itemBuilder: (context, itemData) {
-                AlgoliaObjectSnapshot result = itemData;
-                if (result.data['interactions'] == null) {
-                  return _userTile(context, result.objectID, result.data);
-                }
-                return Container();
+                return _userTile(context, itemData);
               },
               onSuggestionSelected: (suggestion) {
                 _isSearching = false;
                 //TextSelection selection = _descriptionController.selection;
                 int index = _controller.text.lastIndexOf('@');
                 String subs = _controller.text.substring(0, index);
-                _controller.text =
-                    '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                _controller.text = '$subs@${suggestion.userName} ';
                 _controller.selection = TextSelection.fromPosition(
                     TextPosition(offset: _controller.text.length));
                 //_descFocus.requestFocus();

@@ -38,7 +38,7 @@ class CauseModel extends ContentModel {
   static CauseModel fromJson(Map content) {
     return CauseModel(
       id: content['id'],
-      type: 'challenge',
+      type: content['type'],
       title: content['body'],
       by: content['by'],
       info: content['info'],

@@ -75,6 +75,7 @@ class ContentProvider with ChangeNotifier {
             _homeContent.add(ChallengeModel.fromJson(content));
             break;
           case 'Tips':
+          case 'regalup_ti':
             _homeContent.add(TipModel.fromJson(content));
             break;
         }
@@ -122,7 +123,7 @@ class ContentProvider with ChangeNotifier {
       timeLine.forEach((element) {
         Map content = element as Map;
         switch (content['type']) {
-          case 'cause':
+          case 'causes':
             _causesContent.add(CauseModel.fromJson(content));
             break;
         }
@@ -228,6 +229,9 @@ class ContentProvider with ChangeNotifier {
           case 'Tips':
             contentList.add(TipModel.fromJson(content));
             break;
+          case 'causes':
+            contentList.add(CauseModel.fromJson(content));
+            break;
         }
       });
       return contentList;
@@ -239,8 +243,8 @@ class ContentProvider with ChangeNotifier {
     return [];
   }
 
-  Future<List<ContentModel>> getTopContent() async {
-    var url = '${API.baseURL}/topContent/0';
+  Future<List<ContentModel>> getTopContent(page) async {
+    var url = '${API.baseURL}/topContent/$page';
     final token = await _getToken();
 
     await FlutterUserAgent.init();
@@ -274,13 +278,16 @@ class ContentProvider with ChangeNotifier {
           case 'Tips':
             contentList.add(TipModel.fromJson(content));
             break;
+          case 'causes':
+            contentList.add(CauseModel.fromJson(content));
+            break;
         }
       });
       return contentList;
     }
     if (dataMap['alert']['action'] == 4) {
       await _renewToken();
-      return getTopContent();
+      return getTopContent(page);
     }
     return [];
   }
@@ -346,12 +353,15 @@ class ContentProvider with ChangeNotifier {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
+          case 'regalup_p':
             contentList.add(PollModel.fromJson(content));
             break;
           case 'challenge':
+          case 'regalup_c':
             contentList.add(ChallengeModel.fromJson(content));
             break;
           case 'Tips':
+          case 'regalup_ti':
             contentList.add(TipModel.fromJson(content));
             break;
         }
@@ -399,6 +409,9 @@ class ContentProvider with ChangeNotifier {
             break;
           case 'Tips':
             contentList.add(TipModel.fromJson(content));
+            break;
+          case 'causes':
+            contentList.add(CauseModel.fromJson(content));
             break;
         }
       });
@@ -484,6 +497,40 @@ class ContentProvider with ChangeNotifier {
     return [];
   }
 
+  Future<List<CommentModel>> getReplys({type, idContent, page, id}) async {
+    var url = '${API.baseURL}/comments/$type/$idContent/$page/$id';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return CommentModel.listFromJson(dataMap['comments']);
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getComments(
+        id: id,
+        page: page,
+        type: type,
+      );
+    }
+    return [];
+  }
+
   Future<bool> likeContent(type, id) async {
     var url = '${API.baseURL}/registerLikes/$type/$id';
     final token = await _getToken();
@@ -531,7 +578,7 @@ class ContentProvider with ChangeNotifier {
             break;
           case 'challenge':
             break;
-          case 'cause':
+          case 'causes':
             break;
         }
         _homeContent[index] = content;
@@ -635,7 +682,7 @@ class ContentProvider with ChangeNotifier {
   }
 
   Future<void> newPoll(
-      {name, category, resources, description, answers}) async {
+      {name, category, resources, description, answers, taged, hashtag}) async {
     var url = '${API.baseURL}/registerPoll';
     final token = await _getToken();
     Map parameters = {
@@ -643,10 +690,10 @@ class ContentProvider with ChangeNotifier {
       'category': category,
       'description': description,
       'timelife': null,
-      'hashtag': [],
+      'hashtag': hashtag,
       'answers': answers,
       'resources': resources,
-      'taged': [],
+      'taged': taged,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -671,7 +718,7 @@ class ContentProvider with ChangeNotifier {
   }
 
   Future<void> newChallenge(
-      {name, category, resource, description, parameter, goal}) async {
+      {name, category, resource, description, parameter, goal, taged, hashtag}) async {
     var url = '${API.baseURL}/registerChallenge';
     final token = await _getToken();
 
@@ -681,8 +728,8 @@ class ContentProvider with ChangeNotifier {
       'resources': [resource],
       'description': description,
       'timelife': null,
-      'taged': [],
-      'hashtag': [],
+      'taged': taged,
+      'hashtag': hashtag,
       'med_param': parameter,
       'goal': goal
     };
@@ -708,7 +755,7 @@ class ContentProvider with ChangeNotifier {
     }
   }
 
-  Future<void> newTip({name, category, resource, description}) async {
+  Future<void> newTip({name, category, resource, description, taged, hashtag}) async {
     var url = '${API.baseURL}/registerTips';
     final token = await _getToken();
 
@@ -718,8 +765,8 @@ class ContentProvider with ChangeNotifier {
       'resources': [resource],
       'description': description,
       'timelife': null,
-      'taged': [],
-      'hashtag': [],
+      'taged': taged,
+      'hashtag': hashtag,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -743,12 +790,43 @@ class ContentProvider with ChangeNotifier {
     }
   }
 
-  Future<CommentModel> newComment({comment, type, id}) async {
+  Future<CommentModel> newComment({comment, type, id, hashtag}) async {
     var url = '${API.baseURL}/registerComments/$type/$id/';
     final token = await _getToken();
     Map parameters = {
       'comment': comment,
-      'hashtags': [],
+      'hashtags': hashtag,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return CommentModel.fromJson(dataMap['comment']);
+    }
+    return null;
+  }
+
+  Future<CommentModel> newReply({comment, type, idContent, id, hashtags}) async {
+    var url = '${API.baseURL}/registerComments/$type/$idContent/$id';
+    final token = await _getToken();
+    Map parameters = {
+      'comment': comment,
+      'hashtags': hashtags,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;

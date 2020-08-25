@@ -19,10 +19,10 @@ import '../mixins/share_mixin.dart';
 
 class ViewProfileScreen extends StatelessWidget with ShareContent {
   static const routeName = '/profile';
+  final ScrollController _scrollController = new ScrollController();
 
   void _toChat(context, userId) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert(context);
       return;
     }
@@ -192,6 +192,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
           return DefaultTabController(
             length: 3,
             child: NestedScrollView(
+              controller: _scrollController,
               headerSliverBuilder: (ctx, isScrolled) {
                 return <Widget>[
                   SliverAppBar(
@@ -200,7 +201,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                     actions: <Widget>[
                       IconButton(
                         icon: Icon(GalupFont.message),
-                        onPressed: () => _toChat(context, profileId),
+                        onPressed: () => _toChat(context, user.hash),
                       ),
                       IconButton(
                         icon: Icon(Icons.more_vert),
@@ -247,9 +248,9 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
               },
               body: TabBarView(
                 children: [
-                  PollList(profileId),
-                  ChallengeList(profileId),
-                  TipList(profileId, null),
+                  PollList(profileId, _scrollController),
+                  ChallengeList(profileId, _scrollController),
+                  TipList(profileId, _scrollController, null),
                 ],
               ),
             ),

@@ -57,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         appBar: CustomAppBar(
           GestureDetector(
@@ -94,7 +94,7 @@ class _SearchScreenState extends State<SearchScreen>
                   labelColor: Theme.of(context).accentColor,
                   unselectedLabelColor: Colors.grey,
                   tabs: [
-                    //Tab(text: 'Tendencia'),
+                    Tab(text: 'Tendencia'),
                     Tab(text: 'Salud'),
                     Tab(text: 'Tecnología'),
                     Tab(text: 'Deportes'),
@@ -107,7 +107,7 @@ class _SearchScreenState extends State<SearchScreen>
             Expanded(
               child: TabBarView(
                 children: [
-                  //TopContent(_playVideo),
+                  TopContent(_playVideo),
                   FilteredContent('1', _playVideo),
                   FilteredContent('2', _playVideo),
                   FilteredContent('5', _playVideo),

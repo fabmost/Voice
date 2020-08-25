@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:algolia/algolia.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -16,6 +16,7 @@ import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
 import '../models/category_model.dart';
+import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
@@ -40,8 +41,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
-  Algolia algolia;
-  AlgoliaQuery searchQuery;
 
   CategoryModel category;
 
@@ -157,8 +156,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        final mFile = await VideoCompress.getFileThumbnail(
+          //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -333,6 +332,32 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
         break;
     }
 
+    List<Map> hashes = [];
+    RegExp exp = new RegExp(r"\B#\w\w+");
+    exp.allMatches(_titleController.text).forEach((match) {
+      if (!hashes.contains({'text': match.group(0)})) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
+      }
+    });
+    exp.allMatches(_descriptionController.text).forEach((match) {
+      if (!hashes.contains({'text': match.group(0)})) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
+      }
+    });
+
+    List<Map> tags = [];
+    RegExp exps = new RegExp(r"\B@\w\w+");
+    exps.allMatches(_titleController.text).forEach((match) {
+      if (!tags.contains({'user_name': match.group(0)})) {
+        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      }
+    });
+    exps.allMatches(_descriptionController.text).forEach((match) {
+      if (!tags.contains({'user_name': match.group(0)})) {
+        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      }
+    });
+
     await Provider.of<ContentProvider>(context, listen: false).newChallenge(
       name: _titleController.text,
       description: _descriptionController.text,
@@ -340,6 +365,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       resource: {'id': idResource},
       parameter: metricString,
       goal: goal,
+      hashtag: hashes,
+      taged: tags,
     );
     /*
     List<String> hashes = [];
@@ -398,25 +425,26 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     );
   }
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, content) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
           Text(
-            doc['name'],
+            content.userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          //InfluencerBadge(doc['influencer'] ?? '', 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
+      //subtitle: Text(doc['user_name']),
     );
   }
 
@@ -425,23 +453,16 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       _isSearching = false;
       return null;
     }
-    searchQuery = algolia.instance.index('suggestions');
     int index = query.lastIndexOf('@');
-    String realQuery = query.substring(index);
-    searchQuery = searchQuery.search(realQuery);
-    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
-    return results.hits;
+    String realQuery = query.substring(index + 1);
+    Map results = await Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(realQuery);
+    return results['users'];
   }
 
   @override
   void initState() {
     super.initState();
-
-    // Start listening to changes.
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
   }
 
   @override
@@ -588,19 +609,14 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   return null;
                 },
                 itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
+                  return _userTile(context, itemData);
                 },
                 onSuggestionSelected: (suggestion) {
                   _isSearching = false;
                   //TextSelection selection = _descriptionController.selection;
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
-                  _descriptionController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                  _descriptionController.text = '$subs@${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();

@@ -12,9 +12,13 @@ class CauseCard extends StatelessWidget {
   final Color color = Color(0xFFE0E0E0);
 
   void _toDetail(context) {
-    Navigator.of(context).pushNamed(
-      DetailCauseScreen.routeName,
-      arguments: id,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailCauseScreen(
+          id: id,
+        ),
+      ),
     );
   }
 

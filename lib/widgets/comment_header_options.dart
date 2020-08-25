@@ -4,28 +4,26 @@ import 'package:provider/provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 
-class CommentOptions extends StatefulWidget {
+class CommentHeaderOptions extends StatefulWidget {
   final String id;
   final int likes;
   final int dislikes;
   final bool hasLike;
   final bool hasDislike;
-  final Function toComments;
 
-  CommentOptions({
+  CommentHeaderOptions({
     @required this.id,
     @required this.likes,
     @required this.dislikes,
     @required this.hasLike,
     @required this.hasDislike,
-    @required this.toComments,
   });
 
   @override
   _CommentOptionsState createState() => _CommentOptionsState();
 }
 
-class _CommentOptionsState extends State<CommentOptions> {
+class _CommentOptionsState extends State<CommentHeaderOptions> {
   int _likes;
   int _disLikes;
   bool _hasLike;
@@ -38,15 +36,15 @@ class _CommentOptionsState extends State<CommentOptions> {
       if (result['like']) {
         _likes++;
         _hasLike = true;
-      }else{
-        if(_hasLike) _likes--;
+      } else {
+        if (_hasLike) _likes--;
         _hasLike = false;
       }
       if (result['dislike']) {
         _disLikes++;
         _hasDislike = true;
-      }else{
-        if(_hasDislike) _disLikes--;
+      } else {
+        if (_hasDislike) _disLikes--;
         _hasDislike = false;
       }
     });
@@ -64,7 +62,7 @@ class _CommentOptionsState extends State<CommentOptions> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         FlatButton.icon(
           icon: Icon(
@@ -81,10 +79,6 @@ class _CommentOptionsState extends State<CommentOptions> {
           ),
           label: Text(_disLikes == 0 ? '' : '$_disLikes'),
           onPressed: () => _setLike('D'),
-        ),
-        FlatButton(
-          child: Text('Responder'),
-          onPressed: widget.toComments,
         ),
       ],
     );

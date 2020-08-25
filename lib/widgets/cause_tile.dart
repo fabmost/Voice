@@ -1,95 +1,183 @@
 import 'package:flutter/material.dart';
 
-import '../screens/detail_cause_screen.dart';
+import 'menu_content.dart';
+import 'cause_button.dart';
+import 'regalup_content.dart';
+import '../mixins/share_mixin.dart';
+import '../translations.dart';
+import '../screens/auth_screen.dart';
+import '../screens/flag_screen.dart';
+import '../custom/galup_font_icons.dart';
 
-class CauseTile extends StatelessWidget {
-  final objId;
+class CauseTile extends StatelessWidget with ShareContent {
+  final String id;
+  final String userName;
+  final String userImage;
+  final DateTime date;
   final String title;
-  final bool liked;
+  final int likes;
+  final int regalups;
+  final bool hasLiked;
+  final bool hasRegalup;
+  final bool hasSaved;
 
-  CauseTile(this.objId, this.title, this.liked);
+  final Color color = Color(0xFFF0F0F0);
 
-  final Color color = Color(0xFFE0E0E0);
+  CauseTile({
+    this.id,
+    this.userName,
+    this.userImage,
+    this.title,
+    this.likes,
+    this.hasLiked,
+    this.regalups,
+    this.hasRegalup,
+    this.hasSaved,
+    this.date,
+  });
 
-  void _toDetail(context) {
-    Navigator.of(context).pushNamed(
-      DetailCauseScreen.routeName,
-      arguments: objId,
+  void _infoAlert(context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text('info'),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Ok'),
+          )
+        ],
+      ),
     );
+  }
+
+  void _anonymousAlert(context, String text) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(text),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_cancel')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(AuthScreen.routeName);
+            },
+            textColor: Theme.of(context).accentColor,
+            child: Text(Translations.of(context).text('button_create_account')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _share() async {
+    shareCause(id, title);
+  }
+
+  void _flag(context) {
+    /*
+    Navigator.of(context)
+        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
+        */
+  }
+
+  void _setVote(test){
+
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180,
-      width: 150,
-      decoration: BoxDecoration(
+      margin: const EdgeInsets.all(8),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.black, width: 0.5),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            width: 1,
-            color: Colors.black,
-          )),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(
-              color: liked ? Color(0xAA722282) : color,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(7),
-                topRight: Radius.circular(7),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(19),
-                image: DecorationImage(
-                  image: AssetImage('assets/logo.png'),
-                  fit: BoxFit.contain,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              color: color,
+              child: ListTile(
+                leading: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundImage: AssetImage('assets/logo.png'),
+                ),
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'creator',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    SizedBox(width: 2),
+                    IconButton(
+                      icon: Icon(GalupFont.info_circled_alt),
+                      onPressed: () => _infoAlert(context),
+                    )
+                  ],
+                ),
+                subtitle: Text('Por: Galup'),
+                trailing: MenuContent(
+                  id: id,
+                  isSaved: hasSaved,
+                  type: 'CA',
                 ),
               ),
             ),
-          ),
-          Container(
-            height: 84,
-            padding: EdgeInsets.all(8),
-            alignment: Alignment.center,
-            child: Text(
-              title,
-              softWrap: true,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+            SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: liked ? Color(0xAA722282) : color,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(7),
-                bottomRight: Radius.circular(7),
-              ),
+            SizedBox(height: 16),
+            CauseButton(
+              id: id,
+              hasLike: hasLiked,
+              setVotes: _setVote,
             ),
-            child: ListTile(
-              title: OutlineButton(
-                textColor: liked ? Colors.white : Colors.black,
-                borderSide:
-                    BorderSide(color: liked ? Colors.white : Colors.black),
-                onPressed: () => _toDetail(context),
-                child: Text('Ver más'),
+            SizedBox(height: 16),
+            Container(
+              color: color,
+              child: Row(
+                children: <Widget>[
+                  RegalupContent(
+                    id: id,
+                    type: 'CA',
+                    regalups: regalups,
+                    hasRegalup: hasRegalup,
+                  ),
+                  IconButton(
+                    icon: Icon(GalupFont.share),
+                    onPressed: _share,
+                  ),
+                  Expanded(child: SizedBox(height: 1)),
+                  Text(likes == 0 ? '' : '$likes Votos'),
+                  SizedBox(width: 16),
+                ],
               ),
-            ),
-          ),
-        ],
+            )
+          ],
+        ),
       ),
     );
   }

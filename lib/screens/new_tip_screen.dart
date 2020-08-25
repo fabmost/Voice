@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:algolia/algolia.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -16,6 +16,7 @@ import 'new_content_category_screen.dart';
 import '../translations.dart';
 import '../models/category_model.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -37,8 +38,6 @@ class _NewTipScreenState extends State<NewTipScreen> {
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
-  Algolia algolia;
-  AlgoliaQuery searchQuery;
 
   CategoryModel category;
 
@@ -154,8 +153,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        final mFile = await VideoCompress.getFileThumbnail(
+        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -275,52 +274,41 @@ class _NewTipScreenState extends State<NewTipScreen> {
       );
     }
 
+    List<Map> hashes = [];
+    RegExp exp = new RegExp(r"\B#\w\w+");
+    exp.allMatches(_titleController.text).forEach((match) {
+      if (!hashes.contains(match.group(0))) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
+      }
+    });
+    exp.allMatches(_descriptionController.text).forEach((match) {
+      if (!hashes.contains(match.group(0))) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
+      }
+    });
+
+    List<Map> tags = [];
+    RegExp exps = new RegExp(r"\B@\w\w+");
+    exps.allMatches(_titleController.text).forEach((match) {
+      if (!tags.contains({'user_name': match.group(0)})) {
+        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      }
+    });
+    exps.allMatches(_descriptionController.text).forEach((match) {
+      if (!tags.contains({'user_name': match.group(0)})) {
+        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      }
+    });
+
     await Provider.of<ContentProvider>(context, listen: false).newTip(
       name: _titleController.text,
       description: _descriptionController.text,
       category: category.id,
       resource: {'id': idResource},
+      hashtag: hashes,
+      taged: tags,
     );
-    /*
-    List<String> hashes = [];
-    RegExp exp = new RegExp(r"\B#\w\w+");
-    exp.allMatches(_descriptionController.text).forEach((match) {
-      hashes.add(match.group(0));
-    });
-
-    batch.setData(
-        Firestore.instance.collection('content').document(challengeId), {
-      'type': 'challenge',
-      'title': _titleController.text,
-      'description': _descriptionController.text,
-      'user_name': userData['user_name'],
-      'user_id': user.uid,
-      'user_image': userData['image'],
-      "influencer": userData['influencer'],
-      'createdAt': Timestamp.now(),
-      'images': [url],
-      'is_video': _isVideo,
-      'metric_type': metric.toLowerCase(),
-      'metric_goal': goal,
-      'comments': 0,
-      'endDate': Timestamp.now(),
-      'category': category,
-      'tags': hashes,
-      'interactions': 0,
-      'home': userData['followers'] ?? [],
-    });
-    hashes.forEach((element) {
-      batch.setData(
-        Firestore.instance.collection('hash').document(element),
-        {
-          'name': element,
-          'interactions': FieldValue.increment(1),
-        },
-        merge: true,
-      );
-    });
-    await batch.commit();
-    */
+    
     setState(() {
       _isLoading = false;
     });
@@ -338,25 +326,26 @@ class _NewTipScreenState extends State<NewTipScreen> {
     );
   }
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, content) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
           Text(
-            doc['name'],
+            content.userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          //InfluencerBadge(doc['influencer'] ?? '', 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
+      //subtitle: Text(doc['user_name']),
     );
   }
 
@@ -365,23 +354,16 @@ class _NewTipScreenState extends State<NewTipScreen> {
       _isSearching = false;
       return null;
     }
-    searchQuery = algolia.instance.index('suggestions');
     int index = query.lastIndexOf('@');
-    String realQuery = query.substring(index);
-    searchQuery = searchQuery.search(realQuery);
-    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
-    return results.hits;
+    String realQuery = query.substring(index + 1);
+    Map results = await Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(realQuery);
+    return results['users'];
   }
 
   @override
   void initState() {
     super.initState();
-
-    // Start listening to changes.
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
   }
 
   @override
@@ -482,11 +464,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   return null;
                 },
                 itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
+                  return _userTile(context, itemData);
                 },
                 onSuggestionSelected: (suggestion) {
                   _isSearching = false;
@@ -494,7 +472,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
                   _descriptionController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                      '$subs@${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();

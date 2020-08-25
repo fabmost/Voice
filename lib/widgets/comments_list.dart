@@ -114,6 +114,8 @@ class _CommentsListState extends State<CommentsList> {
                         controller: scrollController,
                         itemCount: _list.length,
                         itemBuilder: (context, i) => CommentTile(
+                          contentId: widget.id,
+                          type: widget.type,
                           id: _list[i].id,
                           title: _list[i].body,
                           comments: _list[i].comments,

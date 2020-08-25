@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 
+import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
+import '../providers/auth_provider.dart';
 
 class TipRating extends StatefulWidget {
   final String id;
@@ -14,11 +16,16 @@ class TipRating extends StatefulWidget {
   _TipRatingState createState() => _TipRatingState();
 }
 
-class _TipRatingState extends State<TipRating> {
+class _TipRatingState extends State<TipRating> with AlertMixin {
   double _rating = 0;
   bool _isLoading = false;
 
   void _saveRate() async {
+    bool canInteract = await Provider.of<AuthProvider>(context, listen: false).canInteract();
+    if (!canInteract) {
+      anonymousAlert(context);
+      return;
+    }
     setState(() {
       _isLoading = true;
     });

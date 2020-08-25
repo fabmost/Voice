@@ -131,7 +131,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
     ResourceModel resource = challengeModel.resources[0];
     return Column(
       children: <Widget>[
-        if (resource.type == 'V') PollVideo('', resource.url, null),
+        if (resource.type == 'V') PollVideo(resource.url, null),
         if (resource.type == 'I') PollImages([resource.url], null),
         Container(
           height: 42,

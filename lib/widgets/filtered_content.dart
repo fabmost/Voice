@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 
 import 'poll_tile.dart';
 import 'challenge_tile.dart';
+import 'tip_tile.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
 import '../providers/content_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
@@ -52,21 +54,115 @@ class _FilteredContentState extends State<FilteredContent> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
-        id: content.id,
-        date: content.createdAt,
-        userName: content.user.userName,
-        userImage: content.user.icon,
-        title: content.title,
-        description: content.description,
-        likes: content.likes,
-        comments: content.comments,
-        regalups: content.regalups,
-        hasLiked: content.hasLiked,
-        hasRegalup: content.hasRegalup,
-        hasSaved: content.hasSaved,
-        parameter: content.parameter,
-        goal: content.goal,
-        resources: content.resources);
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
+    );
+  }
+
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+    );
+  }
+
+  Widget _causeWidget(content) {
+    return Container();
+  }
+
+  Widget _repostPollWidget(PollModel content) {
+    return PollTile(
+      reference: 'home',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
+  Widget _repostChallengeWidget(ChallengeModel content) {
+    return ChallengeTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
+  Widget _repostTipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
+  Widget _repostCauseWidget(content) {
+    return Container();
   }
 
   bool onNotification(ScrollNotification notification) {
@@ -143,16 +239,18 @@ class _FilteredContentState extends State<FilteredContent> {
                     return _pollWidget(doc);
                   case 'challenge':
                     return _challengeWidget(doc);
-                  /*
-                  case 'cause':
+                  case 'Tips':
+                    return _tipWidget(doc);
+                  case 'causes':
                     return _causeWidget(doc);
-                  case 'repost-poll':
+                  case 'regalup_p':
                     return _repostPollWidget(doc);
-                  case 'repost-challenge':
+                  case 'regalup_c':
                     return _repostChallengeWidget(doc);
                   case 'repost-cause':
                     return _repostCauseWidget(doc);
-                    */
+                  case 'regalup_ti':
+                    return _repostTipWidget(doc);
                   default:
                     return SizedBox();
                 }

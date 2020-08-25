@@ -57,11 +57,9 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       key: PageStorageKey('Page2'),
       stopVideo: _playVideo,
     ),
-    Container(),
-    /*MessagesScreen(
+    MessagesScreen(
       key: PageStorageKey('Page3'),
     ),
-    */
     ProfileScreen(
       key: PageStorageKey('Page4'),
       stopVideo: _playVideo,

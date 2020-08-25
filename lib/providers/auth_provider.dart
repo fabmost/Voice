@@ -28,7 +28,7 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _token = await _storage.read(key: API.sessionToken) ?? null;
     _userName = await _storage.read(key: API.userName) ?? null;
-    _hasAccount = prefs.getBool('hasAccount') ?? false;
+    _hasAccount = prefs.getBool('hasAccounts') ?? false;
     if (_token == null) {
       return false;
     }
@@ -41,13 +41,28 @@ class AuthProvider with ChangeNotifier {
     _storage.delete(key: API.sessionToken);
     _storage.delete(key: API.userHash);
     _storage.delete(key: API.userName);
-    prefs.setBool('hasAccount', true);
-    _hasAccount = true;
+    prefs.setBool('hasAccounts', true);
     _token = null;
     _userName = null;
     _hasAccount = true;
-    await installation();
+    //await installation();
     notifyListeners();
+  }
+
+  Future<bool> canInteract() async {
+    final prefs = await SharedPreferences.getInstance();
+    final interactions = prefs.getInt('interactions') ?? 0;
+    _userName = await _storage.read(key: API.userName) ?? null;
+
+    if(_userName != null){
+      return true;
+    }
+
+    if(interactions < 5){
+      prefs.setInt('interactions', interactions + 1);
+      return true;
+    }
+    return false;
   }
 
   Future<String> installation() async {
@@ -126,6 +141,10 @@ class AuthProvider with ChangeNotifier {
   Future<void> saveHash(hash) async {
     await _storage.write(key: API.userHash, value: hash);
     return;
+  }
+
+  Future<String> getHash() async {
+    return await _storage.read(key: API.userHash) ?? null;
   }
 
   Future<void> saveUserName(userName) async {

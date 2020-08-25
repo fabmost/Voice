@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../mixins/alert_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 
 class RegalupContent extends StatefulWidget {
   final String id;
@@ -21,12 +23,16 @@ class RegalupContent extends StatefulWidget {
   _RegalupContentState createState() => _RegalupContentState();
 }
 
-class _RegalupContentState extends State<RegalupContent> {
+class _RegalupContentState extends State<RegalupContent> with AlertMixin {
   int _regalups;
   bool _hasRegalup;
   Color _color;
 
   void _regalup() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      anonymousAlert(context);
+      return;
+    }
     bool result = await Provider.of<ContentProvider>(context, listen: false)
         .newRegalup(widget.type, widget.id);
     setState(() {

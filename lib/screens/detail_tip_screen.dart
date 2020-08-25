@@ -85,6 +85,8 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
                         final doc = _commentsList[i - 1];
 
                         return CommentTile(
+                          contentId: widget.id,
+                          type: 'TIP',
                           id: doc.id,
                           title: doc.body,
                           comments: doc.comments,

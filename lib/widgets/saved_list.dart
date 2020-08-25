@@ -12,9 +12,10 @@ import '../providers/content_provider.dart';
 enum LoadMoreStatus { LOADING, STABLE }
 
 class SavedList extends StatefulWidget {
+  final ScrollController scrollController;
   final Function setVideo;
 
-  SavedList(this.setVideo);
+  SavedList(this.scrollController, this.setVideo);
 
   @override
   _SavedListState createState() => _SavedListState();
@@ -22,7 +23,6 @@ class SavedList extends StatefulWidget {
 
 class _SavedListState extends State<SavedList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
-  final ScrollController scrollController = new ScrollController();
   List<ContentModel> _list = [];
   int _currentPageNumber;
   bool _isLoading = false;
@@ -75,8 +75,10 @@ class _SavedListState extends State<SavedList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (scrollController.position.maxScrollExtent > scrollController.offset &&
-          scrollController.position.maxScrollExtent - scrollController.offset <=
+      if (widget.scrollController.position.maxScrollExtent >
+              widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent -
+                  widget.scrollController.offset <=
               50) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
@@ -126,7 +128,6 @@ class _SavedListState extends State<SavedList> {
 
   @override
   void dispose() {
-    scrollController.dispose();
     super.dispose();
   }
 
@@ -158,7 +159,6 @@ class _SavedListState extends State<SavedList> {
                 ),
               )
             : ListView.builder(
-                controller: scrollController,
                 itemCount: _list.length,
                 itemBuilder: (context, i) {
                   final doc = _list[i];

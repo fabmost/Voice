@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voice_inc/screens/test_screen.dart';
 
 import '../screens/notifications_screen.dart';
 
@@ -12,7 +13,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   void _toNotifications(context) {
-    Navigator.of(context).pushNamed(NotificationsScreen.routeName);
+    Navigator.of(context).pushNamed('');
   }
 
   @override

@@ -46,7 +46,7 @@ class ChallengeModel extends ContentModel {
   static ChallengeModel fromJson(Map content) {
     return ChallengeModel(
       id: content['id'],
-      type: 'challenge',
+      type: content['type'],
       user: UserModel(
         userName: content['user']['user_name'],
         icon: content['user']['icon'],

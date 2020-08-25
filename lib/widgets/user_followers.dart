@@ -5,6 +5,7 @@ import '../translations.dart';
 import '../screens/followers_screen.dart';
 import '../screens/following_screen.dart';
 import '../providers/user_provider.dart';
+import '../mixins/alert_mixin.dart';
 
 class UserFollowers extends StatefulWidget {
   final String userName;
@@ -23,7 +24,7 @@ class UserFollowers extends StatefulWidget {
   _UserFollowersState createState() => _UserFollowersState();
 }
 
-class _UserFollowersState extends State<UserFollowers> {
+class _UserFollowersState extends State<UserFollowers> with AlertMixin {
   int _followers;
   bool _isFollowing;
   bool _isLoading = false;
@@ -51,6 +52,10 @@ class _UserFollowersState extends State<UserFollowers> {
   }
 
   void _follow() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      anonymousAlert(context);
+      return;
+    }
     setState(() {
       _isLoading = true;
     });

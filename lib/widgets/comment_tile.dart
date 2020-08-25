@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'comment_options.dart';
+import '../models/comment_model.dart';
+import '../models/user_model.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/detail_comment_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/search_results_screen.dart';
 
 class CommentTile extends StatelessWidget {
+  final String contentId;
+  final String type;
   final String id;
   final String title;
   final DateTime date;
@@ -21,6 +25,8 @@ class CommentTile extends StatelessWidget {
   final bool hasDown;
 
   CommentTile({
+    @required this.contentId,
+    @required this.type,
     @required this.id,
     this.title,
     this.date,
@@ -34,8 +40,29 @@ class CommentTile extends StatelessWidget {
   });
 
   void _toComment(context) {
-    //Navigator.of(context)
-    //  .pushNamed(DetailCommentScreen.routeName, arguments: reference);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailCommentScreen(
+          id: contentId,
+          type: type,
+          comment: CommentModel(
+            id: id,
+            body: title,
+            comments: comments,
+            createdAt: date,
+            likes: ups,
+            dislikes: downs,
+            hasLike: hasUp,
+            hasDislike: hasDown,
+            user: UserModel(
+              userName: userName,
+              icon: userImage,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _toProfile(context, user) {

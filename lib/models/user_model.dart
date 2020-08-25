@@ -1,6 +1,7 @@
 class UserModel {
-  final String userName;
-  final String icon;
+  String userName;
+  String icon;
+  String hash;
 
   String name;
   String lastName;
@@ -21,6 +22,7 @@ class UserModel {
   UserModel({
     this.userName,
     this.icon,
+    this.hash,
     this.name,
     this.lastName,
     this.cover,
@@ -42,6 +44,7 @@ class UserModel {
     return UserModel(
       userName: content['user_name'] ?? '',
       icon: content['icon'],
+      hash: content['hash'],
       name: content['name'],
       lastName: content['last_name'],
       cover: content['cover'] ?? '',

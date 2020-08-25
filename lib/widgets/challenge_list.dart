@@ -11,8 +11,9 @@ enum LoadMoreStatus { LOADING, STABLE }
 
 class ChallengeList extends StatefulWidget {
   final String userId;
+  final ScrollController scrollController;
 
-  ChallengeList(this.userId);
+  ChallengeList(this.userId, this.scrollController);
 
   @override
   _ChallengeListState createState() => _ChallengeListState();
@@ -20,7 +21,6 @@ class ChallengeList extends StatefulWidget {
 
 class _ChallengeListState extends State<ChallengeList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
-  final ScrollController scrollController = new ScrollController();
   List<ContentModel> _list = [];
   int _currentPageNumber = 0;
   bool _isLoading = false;
@@ -48,8 +48,8 @@ class _ChallengeListState extends State<ChallengeList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (scrollController.position.maxScrollExtent > scrollController.offset &&
-          scrollController.position.maxScrollExtent - scrollController.offset <=
+      if (widget.scrollController.position.maxScrollExtent > widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent - widget.scrollController.offset <=
               50) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
@@ -98,7 +98,6 @@ class _ChallengeListState extends State<ChallengeList> {
 
   @override
   void dispose() {
-    scrollController.dispose();
     super.dispose();
   }
 
@@ -132,7 +131,6 @@ class _ChallengeListState extends State<ChallengeList> {
             : NotificationListener(
                 onNotification: onNotification,
                 child: ListView.builder(
-                    controller: scrollController,
                     itemCount: _list.length,
                     itemBuilder: (context, i) => _challengeWidget(_list[i])),
               );

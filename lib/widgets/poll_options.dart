@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../mixins/alert_mixin.dart';
 import '../models/poll_answer_model.dart';
-import '../providers/preferences_provider.dart';
 import '../providers/content_provider.dart';
-import '../screens/auth_screen.dart';
+import '../providers/auth_provider.dart';
 
 class PollOptions extends StatefulWidget {
   final String id;
@@ -24,38 +24,17 @@ class PollOptions extends StatefulWidget {
   _PollOptionsState createState() => _PollOptionsState();
 }
 
-class _PollOptionsState extends State<PollOptions> {
+class _PollOptionsState extends State<PollOptions> with AlertMixin{
   bool _hasVoted;
   bool _isLoading = false;
   List<PollAnswerModel> _answers;
 
-  void _anonymousAlert() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Para seguir utilizando Galup debes crear una cuenta'),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text('Cancelar'),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text('Crear cuenta'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _setVote(idAnswer, position) async {
+    bool canInteract = await Provider.of<AuthProvider>(context, listen: false).canInteract();
+    if (!canInteract) {
+      anonymousAlert(context);
+      return;
+    }
     setState(() {
       _isLoading = true;
     });

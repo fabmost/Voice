@@ -127,6 +127,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.3"
+  diacritic:
+    dependency: "direct main"
+    description:
+      name: diacritic
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1"
   extended_text:
     dependency: "direct main"
     description:
@@ -359,13 +366,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.2"
-  flutter_video_compress:
-    dependency: "direct main"
-    description:
-      name: flutter_video_compress
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.3.7+8"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -733,6 +733,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.8"
+  video_compress:
+    dependency: "direct main"
+    description:
+      name: video_compress
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   video_player:
     dependency: "direct main"
     description:
@@ -755,7 +762,7 @@ packages:
     source: hosted
     version: "0.1.3+2"
   video_thumbnail:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: video_thumbnail
       url: "https://pub.dartlang.org"

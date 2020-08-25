@@ -85,6 +85,8 @@ class _DetailChallengeScreenState extends State<DetailChallengeScreen> {
                         final doc = _commentsList[i - 1];
 
                         return CommentTile(
+                          contentId: widget.id,
+                          type: 'C',
                           id: doc.id,
                           title: doc.body,
                           comments: doc.comments,

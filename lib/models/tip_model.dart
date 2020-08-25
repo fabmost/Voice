@@ -46,11 +46,12 @@ class TipModel extends ContentModel {
   static TipModel fromJson(Map content) {
     return TipModel(
       id: content['id'],
-      type: 'tip',
+      type: content['type'],
       user: UserModel(
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
+      creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
       title: content['title'],
       description: content['description'],
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),

@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
+import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
 
 class NewMessage extends StatefulWidget {
   final String chatId;
@@ -21,9 +23,9 @@ class _NewMessageState extends State<NewMessage> {
 
   void _sendComment() async {
     FocusScope.of(context).unfocus();
-    final user = await FirebaseAuth.instance.currentUser();
+    final user = await Provider.of<AuthProvider>(context, listen: false).getHash();
     final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
+        await Provider.of<UserProvider>(context, listen: false).userProfile();
     if (widget.chatId == null) {
       String chatId =
           Firestore.instance.collection('chats').document().documentID;
@@ -32,11 +34,11 @@ class _NewMessageState extends State<NewMessage> {
           .document(widget.other)
           .get();
       await Firestore.instance.collection('chats').document(chatId).setData({
-        'participant_ids': [user.uid, widget.other],
+        'participant_ids': [user, widget.other],
         'participants': {
-          user.uid: {
-            'user_name': userData['user_name'],
-            'user_image': userData['image'],
+          user: {
+            'user_name': userData.userName,
+            'user_image': userData.icon,
           },
           otherData.documentID: {
             'user_name': otherData['user_name'],
@@ -58,13 +60,13 @@ class _NewMessageState extends State<NewMessage> {
         {
           'text': _enteredMessage,
           'createdAt': Timestamp.now(),
-          'userId': user.uid,
-          'username': userData['user_name'],
-          'userimage': userData['image'],
+          'userId': user,
+          'username': userData.userName,
+          'userimage': userData.icon,
         },
       );
       batch.updateData(
-          Firestore.instance.collection('users').document(user.uid), {
+          Firestore.instance.collection('users').document(user), {
         'chats': FieldValue.arrayUnion([chatId]),
       });
       batch.updateData(
@@ -85,9 +87,9 @@ class _NewMessageState extends State<NewMessage> {
         {
           'text': _enteredMessage,
           'createdAt': Timestamp.now(),
-          'userId': user.uid,
-          'username': userData['user_name'],
-          'userimage': userData['image'],
+          'userId': user,
+          'username': userData.userName,
+          'userimage': userData.icon,
           'receiverId': widget.other,
         },
       );

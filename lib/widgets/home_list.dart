@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'poll_tile.dart';
 import 'challenge_tile.dart';
 import 'tip_tile.dart';
+import 'cause_tile.dart';
 import 'cause_card.dart';
 import 'user_card.dart';
 import '../providers/content_provider.dart';
@@ -97,8 +98,17 @@ class _HomeListState extends State<HomeList> {
     );
   }
 
-  Widget _causeWidget(content) {
-    return Container();
+  Widget _causeWidget(CauseModel content) {
+    return CauseTile(
+      id: content.id,
+      title: content.title,
+      date: content.createdAt,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+    );
   }
 
   Widget _repostPollWidget(PollModel content) {
@@ -140,6 +150,27 @@ class _HomeListState extends State<HomeList> {
       hasSaved: content.hasSaved,
       parameter: content.parameter,
       goal: content.goal,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
+  Widget _repostTipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
       resources: content.resources,
       regalupName: content.creator,
     );
@@ -284,9 +315,9 @@ class _HomeListState extends State<HomeList> {
         onRefresh: _refreshTimeLine,
         child: ListView.builder(
           controller: widget.scrollController,
-          itemCount: widget.mList.length + 2,
+          itemCount: widget.mList.length + 3,
           itemBuilder: (ctx, i) {
-            if (i == widget.mList.length + 1) {
+            if (i == widget.mList.length + 2) {
               return Center(
                   child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -296,28 +327,27 @@ class _HomeListState extends State<HomeList> {
             if (i == 0) {
               return _usersCarrousel();
             }
-            /*
             if (i == 6) {
               return _causesCarrousel();
             }
-            */
-            final doc = widget.mList[
-                i - 1]; //(i > 6) ? widget.mList[i - 2] : widget.mList[i - 1];
+            final doc = (i > 6) ? widget.mList[i - 2] : widget.mList[i - 1];
             switch (doc.type) {
               case 'poll':
                 return _pollWidget(doc);
               case 'challenge':
                 return _challengeWidget(doc);
-              case 'tip':
+              case 'Tips':
                 return _tipWidget(doc);
-              case 'cause':
+              case 'causes':
                 return _causeWidget(doc);
               case 'regalup_p':
                 return _repostPollWidget(doc);
-              case 'repost-challenge':
+              case 'regalup_c':
                 return _repostChallengeWidget(doc);
               case 'repost-cause':
                 return _repostCauseWidget(doc);
+                case 'regalup_ti':
+                return _repostTipWidget(doc);
               default:
                 return SizedBox();
             }
