@@ -192,6 +192,7 @@ class UserChallenge extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
+    double width = (MediaQuery.of(context).size.width / 3) * 2;
     //bool goalReached = false;
     int amount;
     switch (metric) {
@@ -231,8 +232,8 @@ class UserChallenge extends StatelessWidget with ShareContent {
             child: InkWell(
               onTap: () => _toGallery(context, 0),
               child: Container(
-                width: 144,
-                height: 144,
+                width: width,
+                height: width,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.black),

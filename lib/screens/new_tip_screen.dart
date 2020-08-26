@@ -298,7 +298,6 @@ class _NewTipScreenState extends State<NewTipScreen> {
       'category': category,
       'tags': hashes,
       'interactions': 0,
-      'home': userData['followers'] ?? [],
     });
     hashes.forEach((element) {
       batch.setData(
@@ -485,6 +484,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   maxLines: null,
                   autocorrect: true,
                   maxLength: 2000,
+                  keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

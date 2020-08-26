@@ -61,14 +61,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
       _anonymousAlert(context);
       return;
     }
-    final userData =
-        await Firestore.instance.collection('users').document(userId).get();
-    final List creations = userData['created'] ?? [];
-    if (userData['reposted'] != null) {
-      (userData['reposted'] as List).forEach((element) {
-        creations.add(element.values.first);
-      });
-    }
+
     WriteBatch batch = Firestore.instance.batch();
     if (!isFollowing) {
       FirebaseMessaging().subscribeToTopic(userId);
@@ -85,14 +78,6 @@ class _FollowersScreenState extends State<FollowersScreen> {
           'following': FieldValue.arrayUnion([userId])
         },
       );
-      creations.forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('content').document(element),
-          {
-            'home': FieldValue.arrayUnion([myId])
-          },
-        );
-      });
     } else {
       FirebaseMessaging().unsubscribeFromTopic(userId);
       batch.updateData(
@@ -108,14 +93,6 @@ class _FollowersScreenState extends State<FollowersScreen> {
           'following': FieldValue.arrayRemove([userId])
         },
       );
-      creations.forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('content').document(element),
-          {
-            'home': FieldValue.arrayRemove([myId])
-          },
-        );
-      });
     }
     await batch.commit();
     _getData();

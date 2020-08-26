@@ -557,7 +557,7 @@ class ProfileScreen extends StatelessWidget {
                       TabBar(
                         labelColor: Theme.of(context).accentColor,
                         unselectedLabelColor: Colors.grey,
-                        indicatorPadding: EdgeInsets.symmetric(horizontal: 42),
+                        indicatorPadding: EdgeInsets.symmetric(horizontal: 32),
                         tabs: [
                           Tab(
                             icon: Icon(GalupFont.survey),

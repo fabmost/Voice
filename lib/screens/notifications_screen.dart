@@ -23,8 +23,7 @@ class NotificationsScreen extends StatelessWidget {
   }
 
   void _toTip(context, id) {
-    Navigator.of(context)
-        .pushNamed(DetailTipScreen.routeName, arguments: id);
+    Navigator.of(context).pushNamed(DetailTipScreen.routeName, arguments: id);
   }
 
   void _toCause(context, id) {
@@ -36,8 +35,10 @@ class NotificationsScreen extends StatelessWidget {
   }
 
   void _toComment(context, id) {
-    Navigator.of(context).pushNamed(DetailCommentScreen.routeName,
-        arguments: Firestore.instance.collection('comments').document(id));
+    Navigator.of(context).pushNamed(DetailCommentScreen.routeName, arguments: {
+      'reference': Firestore.instance.collection('comments').document(id),
+      'fromNotification': true,
+    });
   }
 
   @override

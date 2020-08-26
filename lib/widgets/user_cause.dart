@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:extended_text/extended_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -9,6 +10,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'influencer_badge.dart';
 import 'poll_video.dart';
 import '../translations.dart';
+import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
@@ -27,6 +29,7 @@ class UserCause extends StatelessWidget with ShareContent {
   final int likes;
   final int reposts;
   final bool hasSaved;
+  final bool hasReposted;
   final DateTime date;
   final String influencer;
   final List likesList;
@@ -54,6 +57,7 @@ class UserCause extends StatelessWidget with ShareContent {
     @required this.isVideo,
     @required this.images,
     @required this.description,
+    @required this.hasReposted,
   });
 
   void _toProfile(context) {
@@ -83,6 +87,76 @@ class UserCause extends StatelessWidget with ShareContent {
     );
   }
 
+  void _repost(context) async {
+    final user = await FirebaseAuth.instance.currentUser();
+    
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
+    WriteBatch batch = Firestore.instance.batch();
+
+    if (hasReposted) {
+      String repostId;
+      final item = (userData['reposted'] as List).firstWhere(
+        (element) => (element as Map).containsKey(reference.documentID),
+        orElse: () => null,
+      );
+      if (item != null) {
+        repostId = item[reference.documentID];
+      }
+      batch.delete(Firestore.instance.collection('content').document(repostId));
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayRemove([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayRemove([myId]),
+        'interactions': FieldValue.increment(-1)
+      });
+    } else {
+      String repostId =
+          Firestore.instance.collection('content').document().documentID;
+
+      batch.updateData(
+        Firestore.instance.collection('users').document(user.uid),
+        {
+          'reposted': FieldValue.arrayUnion([
+            {reference.documentID: repostId}
+          ])
+        },
+      );
+      batch.setData(
+          Firestore.instance.collection('content').document(repostId), {
+        'type': 'repost-cause',
+        'user_name': userData['user_name'],
+        'user_id': user.uid,
+        'createdAt': Timestamp.now(),
+        'title': title,
+        'creator': userName,
+        'info': '',
+        'creator_name': userName,
+        'creator_image': userImage,
+        'influencer': influencer,
+        'originalDate': Timestamp.fromDate(date),
+        'parent': reference,
+        'home': userData['followers'] ?? [],
+        'images': images,
+      });
+      batch.updateData(reference, {
+        'reposts': FieldValue.arrayUnion([myId]),
+        'interactions': FieldValue.increment(1)
+      });
+    }
+    batch.commit();
+  }
+
+  void _share() async {
+    shareCause(reference.documentID, title);
+  }
+
   void _options(context) {
     showModalBottomSheet(
       context: context,
@@ -110,6 +184,7 @@ class UserCause extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
+    double width = (MediaQuery.of(context).size.width / 3) * 2;
     var totalPercentage = (likes == 0) ? 0.0 : likes / goal;
     if (totalPercentage > 1) totalPercentage = 1;
     final format = NumberFormat('###.##');
@@ -123,8 +198,8 @@ class UserCause extends StatelessWidget with ShareContent {
             child: InkWell(
               onTap: () => _toGallery(context, 0),
               child: Container(
-                width: 144,
-                height: 144,
+                width: width,
+                height: width,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.black),
@@ -338,6 +413,29 @@ class UserCause extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             _challengeGoal(context),
             SizedBox(height: 16),
+            Container(
+              color: color,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  FlatButton.icon(
+                    onPressed: () => _repost(context),
+                    icon: Icon(GalupFont.repost,
+                        color: hasReposted
+                            ? Theme.of(context).primaryColor
+                            : Colors.black),
+                    label: Text(reposts == 0 ? '' : '$reposts'),
+                  ),
+                  IconButton(
+                    icon: Icon(GalupFont.share),
+                    onPressed: _share,
+                  ),
+                  Expanded(child: SizedBox(height: 1)),
+                  Text(likes == 0 ? '' : '$likes Votos'),
+                  SizedBox(width: 16),
+                ],
+              ),
+            )
           ],
         ),
       ),

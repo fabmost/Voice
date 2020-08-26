@@ -564,7 +564,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                     TabBar(
                       labelColor: Theme.of(context).accentColor,
                       unselectedLabelColor: Colors.grey,
-                      indicatorPadding: EdgeInsets.symmetric(horizontal: 52),
+                      indicatorPadding: EdgeInsets.symmetric(horizontal: 28),
                       tabs: [
                         Tab(
                           icon: Icon(GalupFont.survey),

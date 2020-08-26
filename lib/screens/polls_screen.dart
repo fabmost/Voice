@@ -18,15 +18,23 @@ import '../widgets/repost_cause.dart';
 import '../widgets/cause_tile.dart';
 import '../widgets/influencer_item.dart';
 
-class PollsScreen extends StatelessWidget {
+class PollsScreen extends StatefulWidget {
   final ScrollController homeController;
   final Function stopVideo;
-  VideoPlayerController _controller;
 
   PollsScreen({Key key, this.homeController, this.stopVideo}) : super(key: key);
 
+  @override
+  _PollsScreenState createState() => _PollsScreenState();
+}
+
+class _PollsScreenState extends State<PollsScreen> {
+  VideoPlayerController _controller;
+  List<DocumentSnapshot> _usersList = [];
+  List<DocumentSnapshot> _causesList = [];
+
   void _scrollToTop() {
-    homeController.animateTo(
+    widget.homeController.animateTo(
       0.0,
       curve: Curves.easeOut,
       duration: const Duration(milliseconds: 300),
@@ -38,7 +46,29 @@ class PollsScreen extends StatelessWidget {
       _controller.pause();
     }
     _controller = controller;
-    stopVideo(_controller);
+    widget.stopVideo(_controller);
+  }
+
+  void _getUsers() async {
+    final results = await Firestore.instance
+        .collection('users')
+        .orderBy('followers_count', descending: true)
+        .limit(20)
+        .getDocuments();
+    setState(() {
+      _usersList = results.documents;
+    });
+  }
+
+  void _getCauses() async {
+    final results = await Firestore.instance
+        .collection('content')
+        .where('type', isEqualTo: 'cause')
+        .orderBy('createdAt', descending: true)
+        .getDocuments();
+    setState(() {
+      _causesList = results.documents;
+    });
   }
 
   Widget _pollWidget(doc, userId) {
@@ -314,122 +344,85 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
-  Widget _causesList(userId) {
-    return FutureBuilder(
-      future: Firestore.instance
-          .collection('content')
-          .where('type', isEqualTo: 'cause')
-          .orderBy('createdAt', descending: true)
-          .getDocuments(),
-      builder: (ctx, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        final documents = snapshot.data.documents;
-        return Container(
-          height: 192,
-          child: ListView.separated(
+  Widget _causesListWidget(userId) {
+    if (_causesList.isEmpty) {
+      return Center(child: CircularProgressIndicator());
+    }
+    return Container(
+      height: 192,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        separatorBuilder: (context, index) => SizedBox(width: 16),
+        itemCount: _causesList.length,
+        itemBuilder: (context, i) {
+          bool hasLiked = false;
+          if (_causesList[i]['likes'] != null) {
+            hasLiked = (_causesList[i]['likes'] as List).contains(userId);
+          }
+          return CauseTile(
+            _causesList[i].documentID,
+            _causesList[i]['title'],
+            hasLiked,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _influencersListWidget(userId) {
+    if (_usersList.isEmpty) {
+      return Center(child: CircularProgressIndicator());
+    }
+    return Container(
+      height: 220,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: Text(
+                'Galuperos que puedas conocer',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
               separatorBuilder: (context, index) => SizedBox(width: 16),
-              itemCount: documents.length,
+              itemCount: _usersList.length,
               itemBuilder: (context, i) {
-                bool hasLiked = false;
-                if (documents[i]['likes'] != null) {
-                  hasLiked = (documents[i]['likes'] as List).contains(userId);
-                }
-                return CauseTile(
-                  documents[i].documentID,
-                  documents[i]['title'],
-                  hasLiked,
+                return InfluencerItem(
+                  reference: _usersList[i].reference,
+                  userName: _usersList[i]['user_name'],
+                  image: _usersList[i]['image'] ?? '',
+                  isFollowing: true,
                 );
-              }),
-        );
-      },
-    );
-  }
-
-  Widget _influencersList(userId) {
-    return FutureBuilder(
-      future: Firestore.instance
-          .collection('users')
-          .orderBy('followers_count', descending: true)
-          .limit(20)
-          .getDocuments(),
-      builder: (ctx, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        final documents = snapshot.data.documents;
-        return Container(
-          height: 220,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: Text(
-                    'Galuperos que puedas conocer',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  scrollDirection: Axis.horizontal,
-                  separatorBuilder: (context, index) => SizedBox(width: 16),
-                  itemCount: documents.length,
-                  itemBuilder: (context, i) {
-                    return InfluencerItem(
-                      reference: documents[i].reference,
-                      userName: documents[i]['user_name'],
-                      image: documents[i]['image'] ?? '',
-                      isFollowing: true,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
+              },
+            ),
           ),
-        );
-      },
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
-
-/*
-  Widget _likesHome(userId, userLikes) {
-    return StreamBuilder(
-      stream: Firestore.instance
-          .collection('content')
-          .where('category', whereIn: userLikes)
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
-      builder: (ctx, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        final documents = snapshot.data.documents;
-        return _contentList(documents, userId);
-      },
-    );
-  }
-  */
 
   Widget _topHome(userId) {
     return StreamBuilder(
       stream: Firestore.instance
           .collection('content')
           .orderBy('createdAt', descending: true)
+          .limit(100)
           .snapshots(),
       builder: (ctx, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -441,6 +434,7 @@ class PollsScreen extends StatelessWidget {
     );
   }
 
+/*
   Widget _userHome(userId) {
     return StreamBuilder(
       stream: Firestore.instance
@@ -460,17 +454,18 @@ class PollsScreen extends StatelessWidget {
       },
     );
   }
+  */
 
   Widget _contentList(documents, userId) {
     return ListView.builder(
-      controller: homeController,
+      controller: widget.homeController,
       itemCount: documents.length + 2,
       itemBuilder: (ctx, i) {
         if (i == 0) {
-          return _influencersList(userId);
+          return _influencersListWidget(userId);
         }
         if (i == 6) {
-          return _causesList(userId);
+          return _causesListWidget(userId);
         }
         final doc = (i > 6) ? documents[i - 2] : documents[i - 1];
         final List flagArray = doc['flag'] ?? [];
@@ -502,6 +497,13 @@ class PollsScreen extends StatelessWidget {
   }
 
   @override
+  void didChangeDependencies() {
+    _getUsers();
+    _getCauses();
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
@@ -520,10 +522,7 @@ class PollsScreen extends StatelessWidget {
           if (userSnap.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-          if (userSnap.data.isAnonymous) {
-            return _topHome(userSnap.data.uid);
-          }
-          return _userHome(userSnap.data.uid);
+          return _topHome(userSnap.data.uid);
         },
       ),
     );

@@ -607,7 +607,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
       'images': images,
       'video': videoUrl,
       'video_thumb': videoThumb,
-      'home': userData['followers'] ?? [],
     });
     hashes.forEach((element) {
       batch.setData(
@@ -809,6 +808,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   controller: _titleController,
                   spanBuilder: _mySpecialTextSpanBuilder,
                   autofocus: true,
+                  autocorrect: true,
                   maxLines: null,
                   maxLength: 120,
                   decoration: InputDecoration(
@@ -960,7 +960,9 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   spanBuilder: _mySpecialTextSpanBuilder,
                   controller: _descriptionController,
                   maxLines: null,
+                  autocorrect: true,
                   maxLength: 240,
+                  keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

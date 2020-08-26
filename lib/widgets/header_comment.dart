@@ -8,14 +8,18 @@ import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/search_results_screen.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/detail_poll_screen.dart';
+import '../screens/detail_challenge_screen.dart';
+import '../screens/detail_tip_screen.dart';
 
 class HeaderComment extends StatelessWidget {
   final DocumentReference reference;
   final String userId;
+  final bool fromNotification;
   final RegExp regex = new RegExp(
       r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
-  HeaderComment(this.reference, this.userId);
+  HeaderComment(this.reference, this.userId, [this.fromNotification = false]);
 
   void _toTaggedProfile(context, id) {
     Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
@@ -35,6 +39,25 @@ class HeaderComment extends StatelessWidget {
       await launch(newUrl.trim());
     } else {
       throw 'Could not launch $newUrl';
+    }
+  }
+
+  void _toContent(context, DocumentReference reference) async {
+    DocumentSnapshot result = await reference.get();
+    switch (result['type']) {
+      case 'poll':
+        Navigator.of(context).pushNamed(DetailPollScreen.routeName,
+            arguments: reference.documentID);
+        break;
+      case 'challenge':
+        Navigator.of(context).pushNamed(
+            DetailChallengeScreen.routeName,
+            arguments: reference.documentID);
+        break;
+      case 'tip':
+        Navigator.of(context).pushNamed(DetailTipScreen.routeName,
+            arguments: reference.documentID);
+        break;
     }
   }
 
@@ -94,9 +117,20 @@ class HeaderComment extends StatelessWidget {
 
         final now = new DateTime.now();
         final difference = now.difference(document['createdAt'].toDate());
+        final parent = document['parent'].path.split("/")[0];
+        bool showReturn = false;
+        if (parent == 'content' && fromNotification) {
+          showReturn = true;
+        }
 
         return Column(
           children: <Widget>[
+            if (showReturn)
+              FlatButton(
+                onPressed: () => _toContent(context, document['parent']),
+                textColor: Theme.of(context).primaryColor,
+                child: Text('Ver publicación'),
+              ),
             ListTile(
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(document['userImage'] ?? ''),

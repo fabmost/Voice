@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'tip.dart';
+import 'cause_user.dart';
 import '../custom/galup_font_icons.dart';
 
 class CauseList extends StatelessWidget {
@@ -10,7 +10,7 @@ class CauseList extends StatelessWidget {
 
   CauseList(this.userId);
 
-  Widget _tipWidget(doc, userId) {
+  Widget _causeWidget(doc, userId) {
     int likes = 0;
     bool hasLiked = false;
     if (doc['likes'] != null) {
@@ -27,35 +27,18 @@ class CauseList extends StatelessWidget {
     if (doc['saved'] != null) {
       hasSaved = (doc['saved'] as List).contains(userId);
     }
-    bool hasRated = false;
-    double rate = 0;
-    if (doc['rates'] != null) {
-      int amount = doc['rates'].length;
-      double rateSum = 0;
-      (doc['rates'] as List).forEach((element) {
-        Map map = (element as Map);
-        if(map.containsKey(userId)){
-          hasRated = true;
-        }
-        rateSum += map.values.first;
-      });
-      if(amount > 0 && rateSum > 0){
-        rate = rateSum / amount;
-      }
-    }
-    return Tip(
+
+    return CauseUser(
       reference: doc.reference,
       myId: userId,
       userId: doc['user_id'],
       userName: doc['user_name'],
       userImage: doc['user_image'] ?? '',
-      rating: rate,
-      hasRated: hasRated,
       title: doc['title'],
       description: doc['description'] ?? '',
+      goal: doc['goal'],
       isVideo: doc['is_video'] ?? false,
       images: doc['images'],
-      comments: doc['comments'],
       likes: likes,
       hasLiked: hasLiked,
       reposts: reposts,
@@ -63,6 +46,9 @@ class CauseList extends StatelessWidget {
       hasSaved: hasSaved,
       date: doc['createdAt'].toDate(),
       influencer: doc['influencer'] ?? '',
+      bank: doc['bank'] ?? '',
+      contact: doc['phone'],
+      web: doc['web'],
       videoFunction: null,
     );
   }
@@ -115,7 +101,7 @@ class CauseList extends StatelessWidget {
               itemCount: documents.length,
               itemBuilder: (context, i) {
                 final doc = documents[i];
-                return _tipWidget(doc, userSnap.data.uid);
+                return _causeWidget(doc, userSnap.data.uid);
               },
             );
           },

@@ -19,8 +19,10 @@ class CauseUserList extends StatelessWidget {
       hasLiked = (doc['likes'] as List).contains(userId);
     }
     int reposts = 0;
+    bool hasReposted = false;
     if (doc['reposts'] != null) {
       reposts = doc['reposts'].length;
+      hasReposted = (doc['reposts'] as List).contains(userId);
     }
     bool hasSaved = false;
     if (doc['saved'] != null) {
@@ -45,6 +47,7 @@ class CauseUserList extends StatelessWidget {
       date: doc['createdAt'].toDate(),
       likesList: doc['likes'] ?? [],
       influencer: doc['influencer'] ?? '',
+      hasReposted: hasReposted,
     );
   }
 

@@ -345,7 +345,6 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       'category': category,
       'tags': hashes,
       'interactions': 0,
-      'home': userData['followers'] ?? [],
     });
     hashes.forEach((element) {
       batch.setData(
@@ -449,6 +448,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   controller: _titleController,
                   spanBuilder: MySpecialTextSpanBuilder(),
                   autofocus: true,
+                  autocorrect: true,
                   maxLines: null,
                   maxLength: 120,
                   decoration: InputDecoration(
@@ -575,8 +575,10 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   spanBuilder: MySpecialTextSpanBuilder(),
                   controller: _descriptionController,
                   focusNode: _descFocus,
+                  autocorrect: true,
                   maxLines: null,
                   maxLength: 240,
+                  keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

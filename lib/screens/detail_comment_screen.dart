@@ -12,8 +12,9 @@ class DetailCommentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reference =
-        ModalRoute.of(context).settings.arguments as DocumentReference;
+    final args = ModalRoute.of(context).settings.arguments as Map;
+    final reference = args['reference'] as DocumentReference;
+    final fromNotification = args['fromNotification'] ?? false;
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_comments')),
@@ -31,7 +32,7 @@ class DetailCommentScreen extends StatelessWidget {
                   stream: Firestore.instance
                       .collection('comments')
                       .where('parent', isEqualTo: reference)
-                      .orderBy('createdAt', descending: true)
+                      .orderBy('createdAt', descending: false)
                       .snapshots(),
                   builder: (ct, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -43,7 +44,11 @@ class DetailCommentScreen extends StatelessWidget {
                       itemCount: documents.isEmpty ? 2 : documents.length + 1,
                       itemBuilder: (context, i) {
                         if (i == 0) {
-                          return HeaderComment(reference, userSnap.data.uid);
+                          return HeaderComment(
+                            reference,
+                            userSnap.data.uid,
+                            fromNotification,
+                          );
                         }
                         if (documents.isEmpty) {
                           return Padding(

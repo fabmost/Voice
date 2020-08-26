@@ -65,6 +65,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     ),
   ];
   List<FabMenuItem> items = [];
+  final pageController = PageController();
 
   static VideoPlayerController _controller;
 
@@ -87,6 +88,22 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       _selectedPageIndex = index;
       if (index == 2) {
         _showBadge = false;
+      }
+    });
+  }
+
+  void _bottomBarSelect(index) {
+    pageController.jumpToPage(index);
+    setState(() {
+      if (_controller != null) {
+        _controller.pause();
+      }
+      if (_selectedPageIndex == index && index == 0) {
+        _homeController.animateTo(
+          0.0,
+          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 300),
+        );
       }
     });
   }
@@ -452,9 +469,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
-            IndexedStack(
-              index: _selectedPageIndex,
+            PageView(
+              controller: pageController,
+              onPageChanged: _selectPage,
               children: _pages,
+              physics: NeverScrollableScrollPhysics(), // No sliding
             ),
             _isOpen ? _buildBlurWidget() : Container(),
             _isOpen ? _buildMenuItemList() : Container(),
@@ -483,14 +502,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 GalupFont.home,
                 color: _selectedPageIndex == 0 ? Colors.black : Colors.grey,
               ),
-              onPressed: () => _selectPage(0),
+              onPressed: () => _bottomBarSelect(0),
             ),
             IconButton(
               icon: Icon(
                 GalupFont.search,
                 color: _selectedPageIndex == 1 ? Colors.black : Colors.grey,
               ),
-              onPressed: () => _selectPage(1),
+              onPressed: () => _bottomBarSelect(1),
             ),
             Text(''),
             Badge(
@@ -505,7 +524,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                   GalupFont.message_select,
                   color: _selectedPageIndex == 2 ? Colors.black : Colors.grey,
                 ),
-                onPressed: () => _selectPage(2),
+                onPressed: () => _bottomBarSelect(2),
               ),
             ),
             IconButton(
@@ -513,7 +532,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 GalupFont.profile,
                 color: _selectedPageIndex == 3 ? Colors.black : Colors.grey,
               ),
-              onPressed: () => _selectPage(3),
+              onPressed: () => _bottomBarSelect(3),
             ),
           ],
         ),

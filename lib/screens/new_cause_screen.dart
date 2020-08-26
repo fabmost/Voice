@@ -291,7 +291,6 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       'endDate': Timestamp.now(),
       'tags': hashes,
       'interactions': 0,
-      'home': userData['followers'] ?? [],
       'creator': userData['user_name'],
       'info': '',
     });
@@ -397,6 +396,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                   controller: _titleController,
                   spanBuilder: MySpecialTextSpanBuilder(),
                   autofocus: true,
+                  autocorrect: true,
                   maxLines: null,
                   maxLength: 120,
                   decoration: InputDecoration(
@@ -481,8 +481,10 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                   spanBuilder: MySpecialTextSpanBuilder(),
                   controller: _descriptionController,
                   focusNode: _descFocus,
+                  autocorrect: true,
                   maxLines: null,
                   maxLength: 240,
+                  keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

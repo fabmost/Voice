@@ -565,9 +565,9 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
               }
 
               final String description = document['description'] ?? '';
-              final String contact = document['description'] ?? '';
-              final String web = document['description'] ?? '';
-              final String bank = document['description'] ?? '';
+              final String contact = document['phone'] ?? '';
+              final String web = document['web'] ?? '';
+              final String bank = document['bank'] ?? '';
 
               return SingleChildScrollView(
                 child: Column(
@@ -593,14 +593,15 @@ class DetailCauseScreen extends StatelessWidget with ShareContent {
                       ),
                     ),
                     SizedBox(height: 16),
-                    _challengeGoal(
-                      context,
-                      document['goal'],
-                      likes,
-                      document['is_video'] ?? false,
-                      document['images'],
-                    ),
-                    SizedBox(height: 16),
+                    if (document['goal'] != null)
+                      _challengeGoal(
+                        context,
+                        document['goal'],
+                        likes,
+                        document['is_video'] ?? false,
+                        document['images'],
+                      ),
+                    if (document['goal'] != null) SizedBox(height: 16),
                     if (description.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -44,7 +44,7 @@ class Comment extends StatelessWidget {
 
   void _toComment(context) {
     Navigator.of(context)
-        .pushNamed(DetailCommentScreen.routeName, arguments: reference);
+        .pushNamed(DetailCommentScreen.routeName, arguments: {'reference': reference});
   }
 
   void _toProfile(context) {
