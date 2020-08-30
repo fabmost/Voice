@@ -7,8 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -156,15 +155,14 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoCompress.getFileThumbnail(
-          //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-          value,
+        final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
-          _imageFile = mFile;
+          _imageFile = File(mFile);
           _videoFile = File(value);
         });
       }
@@ -297,6 +295,42 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     Navigator.of(context).pop();
   }
 
+  void _showError() async {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Ocurrió un error al guardar tu reto',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _saveChallenge() async {
     FocusScope.of(context).unfocus();
     setState(() {
@@ -346,21 +380,32 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     });
 
     List<Map> tags = [];
-    RegExp exps = new RegExp(r"\B@\w\w+");
+    RegExp exps = new RegExp(r"\B@\[\w\w+\]\w\w+");
+    /*
     exps.allMatches(_titleController.text).forEach((match) {
       if (!tags.contains({'user_name': match.group(0)})) {
         tags.add({'user_name': match.group(0).replaceAll('@', '')});
       }
     });
+    */
     exps.allMatches(_descriptionController.text).forEach((match) {
-      if (!tags.contains({'user_name': match.group(0)})) {
-        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      String toRemove;
+      int start = match.group(0).indexOf('[');
+      if (start != -1) {
+        int finish = match.group(0).indexOf(']');
+        toRemove = match.group(0).substring(start, finish + 1);
+        toRemove.replaceAll('[', '');
+        toRemove.replaceAll(']', '');
+      }
+      if (toRemove != null && !tags.contains({'user_name': toRemove})) {
+        tags.add({'user_name': toRemove});
       }
     });
 
-    await Provider.of<ContentProvider>(context, listen: false).newChallenge(
+    bool result =
+        await Provider.of<ContentProvider>(context, listen: false).newChallenge(
       name: _titleController.text,
-      description: _descriptionController.text,
+      description: '${_descriptionController.text} ',
       category: category.id,
       resource: {'id': idResource},
       parameter: metricString,
@@ -368,50 +413,14 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       hashtag: hashes,
       taged: tags,
     );
-    /*
-    List<String> hashes = [];
-    RegExp exp = new RegExp(r"\B#\w\w+");
-    exp.allMatches(_descriptionController.text).forEach((match) {
-      hashes.add(match.group(0));
-    });
 
-    batch.setData(
-        Firestore.instance.collection('content').document(challengeId), {
-      'type': 'challenge',
-      'title': _titleController.text,
-      'description': _descriptionController.text,
-      'user_name': userData['user_name'],
-      'user_id': user.uid,
-      'user_image': userData['image'],
-      "influencer": userData['influencer'],
-      'createdAt': Timestamp.now(),
-      'images': [url],
-      'is_video': _isVideo,
-      'metric_type': metric.toLowerCase(),
-      'metric_goal': goal,
-      'comments': 0,
-      'endDate': Timestamp.now(),
-      'category': category,
-      'tags': hashes,
-      'interactions': 0,
-      'home': userData['followers'] ?? [],
-    });
-    hashes.forEach((element) {
-      batch.setData(
-        Firestore.instance.collection('hash').document(element),
-        {
-          'name': element,
-          'interactions': FieldValue.increment(1),
-        },
-        merge: true,
-      );
-    });
-    await batch.commit();
-    */
     setState(() {
       _isLoading = false;
     });
-    _showAlert();
+    if (result)
+      _showAlert();
+    else
+      _showError();
   }
 
   Widget _title(text) {
@@ -616,7 +625,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   //TextSelection selection = _descriptionController.selection;
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
-                  _descriptionController.text = '$subs@${suggestion.userName} ';
+                  _descriptionController.text =
+                      '$subs@[${suggestion.userName}]${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();

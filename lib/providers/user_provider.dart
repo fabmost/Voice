@@ -56,7 +56,8 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<UserModel> getProfile(userName) async {
-    var url = '${API.baseURL}/profile/$userName';
+    
+    var url = '${API.baseURL}/profile/${Uri.encodeComponent(userName)}';
     final token = await _getToken();
 
     await FlutterUserAgent.init();

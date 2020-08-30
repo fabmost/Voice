@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
@@ -33,12 +34,6 @@ class HeaderPoll extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
     }
-  }
-
-  void _toHash(context, hashtag) {
-    MaterialPageRoute(
-      builder: (context) => SearchResultsScreen(hashtag),
-    );
   }
 
   void _noExists(context) {
@@ -188,26 +183,9 @@ class HeaderPoll extends StatelessWidget with ShareContent {
                 ? '${pollModel.votes} participante'
                 : '${pollModel.votes} participantes'),
           ),
-        if (pollModel.description.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ExtendedText(
-              pollModel.description,
-              specialTextSpanBuilder: MySpecialTextSpanBuilder(canClick: true),
-              onSpecialTextTap: (parameter) {
-                if (parameter.toString().startsWith('@')) {
-                  String atText = parameter.toString();
-                  int start = atText.indexOf('[');
-                  int finish = atText.indexOf(']');
-                  String toRemove = atText.substring(start + 1, finish);
-                  _toProfile(context, toRemove);
-                } else if (parameter.toString().startsWith('#')) {
-                  _toHash(context, parameter.toString());
-                }
-              },
-            ),
-          ),
-        if (pollModel.description.isNotEmpty) SizedBox(height: 16),
+        if (pollModel.description != null && pollModel.description.isNotEmpty)
+          Description(pollModel.description),
+        if (pollModel.description != null && pollModel.description.isNotEmpty) SizedBox(height: 16),
         Container(
           color: color,
           child: Row(

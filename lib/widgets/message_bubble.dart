@@ -99,7 +99,7 @@ class MessageBubble extends StatelessWidget {
           child: GestureDetector(
             onTap: () => _toProfile(context),
             child: CircleAvatar(
-              backgroundImage: NetworkImage(userimage),
+              backgroundImage: userimage == null ? null : NetworkImage(userimage),
             ),
           ),
         )

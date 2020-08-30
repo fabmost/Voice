@@ -28,28 +28,29 @@ class _ChallengeListState extends State<ChallengeList> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
-      id: content.id,
-      date: content.createdAt,
-      userName: content.user.userName,
-      userImage: content.user.icon,
-      title: content.title,
-      description: content.description,
-      likes: content.likes,
-      comments: content.comments,
-      regalups: content.regalups,
-      hasLiked: content.hasLiked,
-      hasRegalup: content.hasRegalup,
-      hasSaved: content.hasSaved,
-      parameter: content.parameter,
-      goal: content.goal,
-      resources: content.resources
-    );
+        id: content.id,
+        date: content.createdAt,
+        userName: content.user.userName,
+        userImage: content.user.icon,
+        title: content.title,
+        description: content.description,
+        likes: content.likes,
+        comments: content.comments,
+        regalups: content.regalups,
+        hasLiked: content.hasLiked,
+        hasRegalup: content.hasRegalup,
+        hasSaved: content.hasSaved,
+        parameter: content.parameter,
+        goal: content.goal,
+        resources: content.resources);
   }
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (widget.scrollController.position.maxScrollExtent > widget.scrollController.offset &&
-          widget.scrollController.position.maxScrollExtent - widget.scrollController.offset <=
+      if (widget.scrollController.position.maxScrollExtent >
+              widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent -
+                  widget.scrollController.offset <=
               50) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
@@ -131,8 +132,17 @@ class _ChallengeListState extends State<ChallengeList> {
             : NotificationListener(
                 onNotification: onNotification,
                 child: ListView.builder(
-                    itemCount: _list.length,
-                    itemBuilder: (context, i) => _challengeWidget(_list[i])),
+                  itemCount: _hasMore ? _list.length + 1 : _list.length,
+                  itemBuilder: (context, i) {
+                    if (i == _list.length)
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(),
+                      );
+                    return _challengeWidget(_list[i]);
+                  },
+                ),
               );
   }
 }

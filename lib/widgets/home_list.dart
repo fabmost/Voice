@@ -275,6 +275,9 @@ class _HomeListState extends State<HomeList> {
         child: CircularProgressIndicator(),
       );
     }
+    if(widget.mCauses.isEmpty){
+      return Container();
+    }
     return Container(
       height: 192,
       child: ListView.separated(
@@ -315,9 +318,9 @@ class _HomeListState extends State<HomeList> {
         onRefresh: _refreshTimeLine,
         child: ListView.builder(
           controller: widget.scrollController,
-          itemCount: widget.mList.length + 3,
+          itemCount: (widget.mList.length < 6) ? widget.mList.length + 1 :  widget.mList.length + 3,
           itemBuilder: (ctx, i) {
-            if (i == widget.mList.length + 2) {
+            if ( (widget.mList.length > 6 && i == widget.mList.length + 2)) {
               return Center(
                   child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),

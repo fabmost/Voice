@@ -29,10 +29,7 @@ class _NewMessageState extends State<NewMessage> {
     if (widget.chatId == null) {
       String chatId =
           Firestore.instance.collection('chats').document().documentID;
-      final otherData = await Firestore.instance
-          .collection('users')
-          .document(widget.other)
-          .get();
+      final otherData = await Provider.of<UserProvider>(context, listen: false).getProfile(widget.other);
       await Firestore.instance.collection('chats').document(chatId).setData({
         'participant_ids': [user, widget.other],
         'participants': {
@@ -40,9 +37,9 @@ class _NewMessageState extends State<NewMessage> {
             'user_name': userData.userName,
             'user_image': userData.icon,
           },
-          otherData.documentID: {
-            'user_name': otherData['user_name'],
-            'user_image': otherData['image'],
+          otherData.hash: {
+            'user_name': otherData.userName,
+            'user_image': otherData.icon,
           }
         },
         'createdAt': Timestamp.now(),
@@ -65,14 +62,7 @@ class _NewMessageState extends State<NewMessage> {
           'userimage': userData.icon,
         },
       );
-      batch.updateData(
-          Firestore.instance.collection('users').document(user), {
-        'chats': FieldValue.arrayUnion([chatId]),
-      });
-      batch.updateData(
-          Firestore.instance.collection('users').document(widget.other), {
-        'chats': FieldValue.arrayUnion([chatId]),
-      });
+      
       batch.commit();
       widget.setId(chatId);
     } else {

@@ -12,10 +12,9 @@ import '../widgets/user_profile_header.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
-import '../widgets/tip_list.dart';
+import '../widgets/tip_user_list.dart';
 import '../widgets/saved_list.dart';
 import '../widgets/influencer_badge.dart';
-import '../models/user_model.dart';
 import '../providers/user_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -172,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       TabBar(
                         labelColor: Theme.of(context).accentColor,
                         unselectedLabelColor: Colors.grey,
-                        indicatorPadding: EdgeInsets.symmetric(horizontal: 42),
+                        indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
                             icon: Icon(GalupFont.survey),
@@ -209,7 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     _scrollController,
                     _playVideo,
                   ),
-                  TipList(
+                  TipUserList(
                     provider.getUserModel.userName,
                     _scrollController,
                     _playVideo,

@@ -10,10 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:voice_inc/providers/content_provider.dart';
 
 import '../translations.dart';
 
 import '../custom/galup_font_icons.dart';
+import '../custom/search_delegate.dart';
+import '../widgets/appbar.dart';
+import '../widgets/no_appbar.dart';
 import '../providers/preferences_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
@@ -43,6 +47,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   bool _triggeredOnboarding = false;
   bool _isOpen = false;
   bool _showBadge = false;
+  bool _hasNotifications = false;
   Duration _duration = Duration(milliseconds: 300);
   AnimationController _iconAnimationCtrl;
   Animation<double> _iconAnimationTween;
@@ -219,6 +224,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         setState(() {
           _showBadge = true;
         });
+      } else {
+        setState(() {
+          _hasNotifications = true;
+        });
       }
       Platform.isAndroid
           ? showNotification(msg['notification'])
@@ -248,10 +257,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     fm.subscribeToTopic('cause');
     FirebaseAuth.instance.currentUser().then((value) {
       fm.getToken().then((token) {
-        //Provider.of<AuthProvider>(context, listen: false).setFCM(token);
+        Provider.of<AuthProvider>(context, listen: false).setFCM(token);
       });
     });
-
+    _checkUnread();
     _checkVersion();
   }
 
@@ -259,6 +268,23 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void dispose() {
     super.dispose();
     if (_controller != null) _controller.dispose();
+  }
+
+  void _startSearch(ct) {
+    showSearch(
+      context: ct,
+      delegate: CustomSearchDelegate(),
+    );
+  }
+
+  void _checkUnread() async {
+    Map result =
+        await Provider.of<ContentProvider>(context, listen: false).getUnread();
+    if (result['notifications'] || result['chats']) {
+      setState(() {
+        _hasNotifications = result['notifications'];
+      });
+    }
   }
 
   void _checkVersion() async {
@@ -322,6 +348,60 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       return false;
     }
     return true;
+  }
+
+  Widget _appBar() {
+    switch (_selectedPageIndex) {
+      case 0:
+        return CustomAppBar(
+          GestureDetector(
+            onTap: () {
+              _homeController.animateTo(
+                0.0,
+                curve: Curves.easeOut,
+                duration: const Duration(milliseconds: 300),
+              );
+            },
+            child: Image.asset(
+              'assets/logo.png',
+              width: 42,
+            ),
+          ),
+          _hasNotifications,
+          true,
+        );
+      case 1:
+        return CustomAppBar(
+          GestureDetector(
+            onTap: () => _startSearch(context),
+            child: Container(
+              height: 42,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Color(0xFF8E8EAB),
+              ),
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  Translations.of(context).text('hint_search'),
+                  style: TextStyle(fontSize: 16, color: Colors.black26),
+                ),
+              ),
+            ),
+          ),
+          _hasNotifications,
+          true,
+        );
+      case 2:
+        return CustomAppBar(
+          Text(Translations.of(context).text('title_messages')),
+          _hasNotifications,
+        );
+      default:
+        return NoAppBar();
+    }
   }
 
   Widget _buildBlurWidget() {
@@ -446,6 +526,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     _checkIfOnboarding();
     return Scaffold(
+      appBar: _appBar(),
       body: WillPopScope(
         child: Stack(
           children: <Widget>[

@@ -1,8 +1,8 @@
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
@@ -11,7 +11,6 @@ import 'like_content.dart';
 import 'regalup_content.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
-import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/comments_screen.dart';
 import '../screens/search_results_screen.dart';
@@ -65,15 +64,6 @@ class PollTile extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: userName);
     }
-  }
-
-  void _toHash(context, hashtag) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SearchResultsScreen(hashtag),
-      ),
-    );
   }
 
   void _toComments(context) {
@@ -214,27 +204,7 @@ class PollTile extends StatelessWidget with ShareContent {
                     ? '$votes participante'
                     : '$votes participantes'),
               ),
-            if (description != null && description.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ExtendedText(
-                  description,
-                  style: TextStyle(fontSize: 16),
-                  specialTextSpanBuilder:
-                      MySpecialTextSpanBuilder(canClick: true),
-                  onSpecialTextTap: (parameter) {
-                    if (parameter.toString().startsWith('@')) {
-                      String atText = parameter.toString();
-                      int start = atText.indexOf('[');
-                      int finish = atText.indexOf(']');
-                      String toRemove = atText.substring(start + 1, finish);
-                      //_toTaggedProfile(context, toRemove);
-                    } else if (parameter.toString().startsWith('#')) {
-                      _toHash(context, parameter.toString());
-                    }
-                  },
-                ),
-              ),
+            if (description != null && description.isNotEmpty) Description(description),
             if (description != null && description.isNotEmpty)
               SizedBox(height: 16),
             Container(

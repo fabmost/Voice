@@ -1,21 +1,19 @@
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'description.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'menu_content.dart';
 import '../custom/galup_font_icons.dart';
-import '../custom/my_special_text_span_builder.dart';
 import '../mixins/share_mixin.dart';
 import '../models/resource_model.dart';
 import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
-import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
 
 class ChallengeTile extends StatelessWidget with ShareContent {
@@ -62,15 +60,6 @@ class ChallengeTile extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: userName);
     }
-  }
-
-  void _toHash(context, hashtag) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SearchResultsScreen(hashtag),
-      ),
-    );
   }
 
   void _toComments(context) {
@@ -240,7 +229,8 @@ class ChallengeTile extends StatelessWidget with ShareContent {
                       leading: CircleAvatar(
                         radius: 18,
                         backgroundColor: Color(0xFFA4175D),
-                        backgroundImage: NetworkImage(userImage),
+                        backgroundImage:
+                            userImage == null ? null : NetworkImage(userImage),
                       ),
                       title: Row(
                         children: <Widget>[
@@ -282,28 +272,8 @@ class ChallengeTile extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             _challengeGoal(context),
             SizedBox(height: 16),
-            if (description.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ExtendedText(
-                  description,
-                  style: TextStyle(fontSize: 16),
-                  specialTextSpanBuilder:
-                      MySpecialTextSpanBuilder(canClick: true),
-                  onSpecialTextTap: (parameter) {
-                    if (parameter.toString().startsWith('@')) {
-                      String atText = parameter.toString();
-                      int start = atText.indexOf('[');
-                      int finish = atText.indexOf(']');
-                      String toRemove = atText.substring(start + 1, finish);
-                      //_toTaggedProfile(context, toRemove);
-                    } else if (parameter.toString().startsWith('#')) {
-                      _toHash(context, parameter.toString());
-                    }
-                  },
-                ),
-              ),
-            if (description.isNotEmpty) SizedBox(height: 16),
+            if (description != null && description.isNotEmpty) Description(description),
+            if (description != null && description.isNotEmpty) SizedBox(height: 16),
             Container(
               color: color,
               child: Row(

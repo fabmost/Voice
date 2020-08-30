@@ -31,6 +31,10 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
     });
     final result = await Provider.of<ContentProvider>(context, listen: false)
         .getContent('T', widget.id);
+    if (result == null) {
+      _noExists();
+      return;
+    }
     List<CommentModel> newObjects =
         await Provider.of<ContentProvider>(context, listen: false)
             .getComments(id: widget.id, type: 'TIP', page: 0);
@@ -38,6 +42,28 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
       _isLoading = false;
       _tipModel = result;
       _commentsList.addAll(newObjects);
+    });
+  }
+
+  void _noExists() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('Este contenido ya no existe'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        Navigator.of(context).pop();
+      });
     });
   }
 

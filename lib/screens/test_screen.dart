@@ -43,6 +43,13 @@ class TestScreen extends StatelessWidget {
               ),
               RaisedButton(
                 onPressed: () {
+                  Provider.of<ContentProvider>(context, listen: false)
+                      .getUnread();
+                },
+                child: Text('Get unread'),
+              ),
+              RaisedButton(
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(

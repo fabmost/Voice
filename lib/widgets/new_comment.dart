@@ -76,7 +76,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
     if (widget.idComment != null) {
       result = await Provider.of<ContentProvider>(context, listen: false)
           .newReply(
-              comment: _controller.text,
+              comment: '${_controller.text} ',
               type: widget.type,
               idContent: widget.id,
               id: widget.idComment,
@@ -84,7 +84,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
     } else {
       result =
           await Provider.of<ContentProvider>(context, listen: false).newComment(
-        comment: _controller.text,
+        comment: '${_controller.text} ',
         type: widget.type,
         id: widget.id,
         hashtag: hashes,
@@ -158,7 +158,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
                 //TextSelection selection = _descriptionController.selection;
                 int index = _controller.text.lastIndexOf('@');
                 String subs = _controller.text.substring(0, index);
-                _controller.text = '$subs@${suggestion.userName} ';
+                _controller.text = '$subs@[${suggestion.userName}]${suggestion.userName} ';
                 _controller.selection = TextSelection.fromPosition(
                     TextPosition(offset: _controller.text.length));
                 //_descFocus.requestFocus();

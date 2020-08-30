@@ -17,6 +17,9 @@ import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
+
+  String currentUser;
+
   Widget _pollWidget(PollModel content) {
     return PollTile(
       reference: 'home',
@@ -113,6 +116,9 @@ class CustomSearchDelegate extends SearchDelegate {
   }
 
   Widget _userTile(context, UserModel content) {
+    if(content.userName == currentUser){
+      return Container();
+    }
     return ListTile(
       onTap: () {
         Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
@@ -137,6 +143,12 @@ class CustomSearchDelegate extends SearchDelegate {
       ),
       //subtitle: Text(doc['user_name']),
     );
+  }
+
+  void _getCUrrentUser(context){
+    if(currentUser == null){
+      currentUser = Provider.of<UserProvider>(context, listen: false).getUser;
+    }
   }
 
   @override
@@ -173,6 +185,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
+    _getCUrrentUser(context);
     return FutureBuilder(
       future:
           Provider.of<ContentProvider>(context, listen: false).search(query, 0),
@@ -210,6 +223,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    _getCUrrentUser(context);
     if (query.length < 3) {
       return Container();
     }

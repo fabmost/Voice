@@ -1,10 +1,10 @@
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'description.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'like_content.dart';
@@ -13,13 +13,10 @@ import 'menu_content.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
-import '../custom/my_special_text_span_builder.dart';
 import '../models/challenge_model.dart';
 import '../models/resource_model.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/auth_screen.dart';
-import '../screens/poll_gallery_screen.dart';
-import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
 
 class HeaderChallenge extends StatelessWidget with ShareContent {
@@ -34,12 +31,6 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: creatorId);
     }
-  }
-
-  void _toHash(context, hashtag) {
-    MaterialPageRoute(
-      builder: (context) => SearchResultsScreen(hashtag),
-    );
   }
 
   void _noExists(context) {
@@ -259,27 +250,9 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         SizedBox(height: 16),
         _challengeGoal(context),
         SizedBox(height: 16),
-        if (challengeModel.description.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ExtendedText(
-              challengeModel.description,
-              style: TextStyle(fontSize: 16),
-              specialTextSpanBuilder: MySpecialTextSpanBuilder(canClick: true),
-              onSpecialTextTap: (parameter) {
-                if (parameter.toString().startsWith('@')) {
-                  String atText = parameter.toString();
-                  int start = atText.indexOf('[');
-                  int finish = atText.indexOf(']');
-                  String toRemove = atText.substring(start + 1, finish);
-                  _toProfile(context, toRemove);
-                } else if (parameter.toString().startsWith('#')) {
-                  _toHash(context, parameter.toString());
-                }
-              },
-            ),
-          ),
-        if (challengeModel.description.isNotEmpty) SizedBox(height: 16),
+        if (challengeModel.description != null && challengeModel.description.isNotEmpty)
+          Description(challengeModel.description),
+        if (challengeModel.description != null &&  challengeModel.description.isNotEmpty) SizedBox(height: 16),
         Container(
           color: color,
           child: Row(

@@ -1,50 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'poll_tile.dart';
+import 'tip_tile.dart';
 import '../custom/galup_font_icons.dart';
-import '../models/content_model.dart';
-import '../models/poll_model.dart';
 import '../providers/content_provider.dart';
+import '../models/content_model.dart';
+import '../models/tip_model.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
-class PollList extends StatefulWidget {
+class TipUserList extends StatefulWidget {
   final String userId;
   final ScrollController scrollController;
+  final Function setVideo;
 
-  PollList(this.userId, this.scrollController);
+  TipUserList(this.userId, this.scrollController, this.setVideo);
 
   @override
-  _PollListState createState() => _PollListState();
+  _TipListState createState() => _TipListState();
 }
 
-class _PollListState extends State<PollList> {
+class _TipListState extends State<TipUserList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<ContentModel> _list = [];
-  int _currentPageNumber = 0;
+  int _currentPageNumber;
   bool _isLoading = false;
   bool _hasMore = true;
 
-  Widget _pollWidget(PollModel content) {
-    return PollTile(
-      reference: 'list',
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
       title: content.title,
       description: content.description,
-      votes: content.votes,
       likes: content.likes,
       comments: content.comments,
       regalups: content.regalups,
-      hasVoted: content.hasVoted,
+      rate: content.total,
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
       hasSaved: content.hasSaved,
-      answers: content.answers,
       resources: content.resources,
+      hasRated: content.hasRated,
     );
   }
 
@@ -61,13 +60,13 @@ class _PollListState extends State<PollList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'P')
-              .then((newObjects) {
+              .getUserTimeline(widget.userId, _currentPageNumber, 'TIP')
+              .then((newContent) {
             setState(() {
-              if (newObjects.isEmpty) {
+              if (newContent.isEmpty) {
                 _hasMore = false;
               } else {
-                _list.addAll(newObjects);
+                _list.addAll(newContent);
               }
             });
             loadMoreStatus = LoadMoreStatus.STABLE;
@@ -83,7 +82,7 @@ class _PollListState extends State<PollList> {
       _isLoading = true;
     });
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+        .getUserTimeline(widget.userId, _currentPageNumber, 'TIP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -96,6 +95,7 @@ class _PollListState extends State<PollList> {
 
   @override
   void initState() {
+    _currentPageNumber = 0;
     _getData();
     super.initState();
   }
@@ -122,7 +122,7 @@ class _PollListState extends State<PollList> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Este usuario no ha realizado encuestas',
+                      'Realiza o regalupea tips para verlos aquí',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -143,7 +143,7 @@ class _PollListState extends State<PollList> {
                         alignment: Alignment.center,
                         child: CircularProgressIndicator(),
                       );
-                    return _pollWidget(_list[i]);
+                    return _tipWidget(_list[i]);
                   },
                 ),
               );

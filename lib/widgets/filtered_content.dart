@@ -231,8 +231,14 @@ class _FilteredContentState extends State<FilteredContent> {
             onNotification: onNotification,
             child: ListView.builder(
               controller: scrollController,
-              itemCount: _list.length,
+              itemCount: _hasMore ? _list.length + 1 : _list.length,
               itemBuilder: (context, i) {
+                if (i == _list.length)
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 16),
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(),
+                  );
                 final doc = _list[i];
                 switch (doc.type) {
                   case 'poll':

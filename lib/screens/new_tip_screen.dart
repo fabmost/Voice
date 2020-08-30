@@ -6,8 +6,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -153,15 +152,14 @@ class _NewTipScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoCompress.getFileThumbnail(
-        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-          value,
+        final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
-          _imageFile = mFile;
+          _imageFile = File(mFile);
           _videoFile = File(value);
         });
       }
@@ -196,7 +194,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
     if (_titleController.text.isNotEmpty &&
         _imageFile != null &&
         category != null) {
-      _saveChallenge();
+      _saveTip();
       return;
     }
     showDialog(
@@ -252,7 +250,43 @@ class _NewTipScreenState extends State<NewTipScreen> {
     Navigator.of(context).pop();
   }
 
-  void _saveChallenge() async {
+  void _showError() async {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Ocurrió un error al guardar tu tip',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _saveTip() async {
     FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
@@ -288,31 +322,45 @@ class _NewTipScreenState extends State<NewTipScreen> {
     });
 
     List<Map> tags = [];
-    RegExp exps = new RegExp(r"\B@\w\w+");
+    RegExp exps = new RegExp(r"\B@\[\w\w+\]\w\w+");
+    /*
     exps.allMatches(_titleController.text).forEach((match) {
       if (!tags.contains({'user_name': match.group(0)})) {
         tags.add({'user_name': match.group(0).replaceAll('@', '')});
       }
     });
+    */
     exps.allMatches(_descriptionController.text).forEach((match) {
-      if (!tags.contains({'user_name': match.group(0)})) {
-        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      String toRemove;
+      int start = match.group(0).indexOf('[');
+      if (start != -1) {
+        int finish = match.group(0).indexOf(']');
+        toRemove = match.group(0).substring(start, finish + 1);
+        toRemove.replaceAll('[', '');
+        toRemove.replaceAll(']', '');
+      }
+      if (toRemove != null && !tags.contains({'user_name': toRemove})) {
+        tags.add({'user_name': toRemove});
       }
     });
 
-    await Provider.of<ContentProvider>(context, listen: false).newTip(
+    bool result =
+        await Provider.of<ContentProvider>(context, listen: false).newTip(
       name: _titleController.text,
-      description: _descriptionController.text,
+      description: '${_descriptionController.text} ',
       category: category.id,
       resource: {'id': idResource},
       hashtag: hashes,
       taged: tags,
     );
-    
+
     setState(() {
       _isLoading = false;
     });
-    _showAlert();
+    if (result)
+      _showAlert();
+    else
+      _showError();
   }
 
   Widget _title(text) {
@@ -472,7 +520,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
                   _descriptionController.text =
-                      '$subs@${suggestion.userName} ';
+                      '$subs@[${suggestion.userName}]${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();

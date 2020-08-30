@@ -162,6 +162,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
         _isLoading = true;
       });
 
+      String token = await Provider.of<AuthProvider>(context, listen: false).installation();
       Map result =
           await Provider.of<AuthProvider>(context, listen: false).signUp(
         name: _name,
@@ -169,6 +170,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
         email: _email,
         password: API().getSalt(_passwordController.text),
         user: _userName,
+        token: token
       );
 
       if (result['result']) {

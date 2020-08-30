@@ -15,6 +15,7 @@ import '../models/challenge_model.dart';
 import '../models/tip_model.dart';
 import '../models/cause_model.dart';
 import '../models/comment_model.dart';
+import '../models/notification_model.dart';
 
 class ContentProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
@@ -26,7 +27,7 @@ class ContentProvider with ChangeNotifier {
   List<ContentModel> get getCauses => [..._causesContent];
   List<UserModel> get getUsers => [..._usersList];
 
-  Future<bool> getBaseTimeline(int page, String type) async {
+  Future<bool> getBaseTimeline(int page, String type, [tries = 1]) async {
     var url = '${API.baseURL}/timeLine/';
     final token = await _getToken();
 
@@ -67,15 +68,15 @@ class ContentProvider with ChangeNotifier {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
-          case 'regalup_p':
+          //case 'regalup_p':
             _homeContent.add(PollModel.fromJson(content));
             break;
           case 'challenge':
-          case 'regalup_c':
+          //case 'regalup_c':
             _homeContent.add(ChallengeModel.fromJson(content));
             break;
           case 'Tips':
-          case 'regalup_ti':
+          //case 'regalup_ti':
             _homeContent.add(TipModel.fromJson(content));
             break;
         }
@@ -83,9 +84,9 @@ class ContentProvider with ChangeNotifier {
       notifyListeners();
       return true;
     }
-    if (dataMap['action'] == 4) {
+    if (dataMap['action'] == 4 && tries > 3) {
       await _renewToken();
-      return getBaseTimeline(page, type);
+      return getBaseTimeline(page, type, tries+1);
     }
     return false;
   }
@@ -681,7 +682,7 @@ class ContentProvider with ChangeNotifier {
     return 0;
   }
 
-  Future<void> newPoll(
+  Future<bool> newPoll(
       {name, category, resources, description, answers, taged, hashtag}) async {
     var url = '${API.baseURL}/registerPoll';
     final token = await _getToken();
@@ -710,15 +711,24 @@ class ContentProvider with ChangeNotifier {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return false;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      await _saveToken(dataMap['session']['token']);
+      return true;
     }
+    return false;
   }
 
-  Future<void> newChallenge(
-      {name, category, resource, description, parameter, goal, taged, hashtag}) async {
+  Future<bool> newChallenge(
+      {name,
+      category,
+      resource,
+      description,
+      parameter,
+      goal,
+      taged,
+      hashtag}) async {
     var url = '${API.baseURL}/registerChallenge';
     final token = await _getToken();
 
@@ -748,14 +758,17 @@ class ContentProvider with ChangeNotifier {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return false;
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      return true;
     }
+    return false;
   }
 
-  Future<void> newTip({name, category, resource, description, taged, hashtag}) async {
+  Future<bool> newTip(
+      {name, category, resource, description, taged, hashtag}) async {
     var url = '${API.baseURL}/registerTips';
     final token = await _getToken();
 
@@ -783,11 +796,13 @@ class ContentProvider with ChangeNotifier {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return false;
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      return true;
     }
+    return false;
   }
 
   Future<CommentModel> newComment({comment, type, id, hashtag}) async {
@@ -821,7 +836,8 @@ class ContentProvider with ChangeNotifier {
     return null;
   }
 
-  Future<CommentModel> newReply({comment, type, idContent, id, hashtags}) async {
+  Future<CommentModel> newReply(
+      {comment, type, idContent, id, hashtags}) async {
     var url = '${API.baseURL}/registerComments/$type/$idContent/$id';
     final token = await _getToken();
     Map parameters = {
@@ -1105,5 +1121,100 @@ class ContentProvider with ChangeNotifier {
       _saveToken(dataMap['session']['token']);
     }
     return;
+  }
+
+  Future<List<NotificationModel>> getNotifications(page) async {
+    var url = '${API.baseURL}/notification/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return NotificationModel.listFromJson(dataMap['notification']);
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getNotifications(page);
+    }
+    return [];
+  }
+
+  Future<void> notificationRead(id) async {
+    var url = '${API.baseURL}/notifyOpen';
+    final token = await _getToken();
+
+    final body = jsonEncode({'id_notify': id});
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          HttpHeaders.userAgentHeader: webViewUserAgent,
+          HttpHeaders.authorizationHeader: 'Bearer $token'
+        },
+        body: body);
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return;
+    }
+    return;
+  }
+
+  Future<Map> getUnread() async {
+    var url = '${API.baseURL}/unread';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return {
+        'notifications': false,
+        'chats': false,
+      };
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return {
+        'notifications': dataMap['notifications'],
+        'chats': dataMap['chats'],
+      };
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getUnread();
+    }
+    return {
+        'notifications': false,
+        'chats': false,
+      };
   }
 }

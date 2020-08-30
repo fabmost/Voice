@@ -182,9 +182,9 @@ class AuthProvider with ChangeNotifier {
     return;
   }
 
-  Future<Map> signUp({name, last, email, user, password}) async {
+  Future<Map> signUp({name, last, email, user, password, token}) async {
     var url = '${API.baseURL}/registerProfile/';
-    _token = await _storage.read(key: API.sessionToken) ?? null;
+    _token = token != null ? token : await _storage.read(key: API.sessionToken) ?? null;
 
     final body = jsonEncode({
       'name': name,
@@ -220,7 +220,7 @@ class AuthProvider with ChangeNotifier {
       await saveUserName(user);
       return {'result': true};
     }
-    return {'result': false, 'message': dataMap['alert']['message']};
+    return {'result': false, 'message': dataMap['message']};
   }
 
   Future<Map> login({email, password}) async {
