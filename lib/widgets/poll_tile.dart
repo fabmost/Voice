@@ -13,7 +13,6 @@ import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/comments_screen.dart';
-import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
 
 class PollTile extends StatelessWidget with ShareContent {

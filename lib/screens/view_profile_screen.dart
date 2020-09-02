@@ -12,6 +12,7 @@ import '../widgets/profile_header.dart';
 import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
 import '../widgets/tip_list.dart';
+import '../widgets/cause_list.dart';
 import '../widgets/influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -190,7 +191,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
             containerHeight += 60;
           }
           return DefaultTabController(
-            length: 3,
+            length: 4,
             child: NestedScrollView(
               controller: _scrollController,
               headerSliverBuilder: (ctx, isScrolled) {
@@ -239,6 +240,10 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                             icon: Icon(GalupFont.tips),
                             text: 'Tips',
                           ),
+                          Tab(
+                            icon: Icon(GalupFont.cause),
+                            text: 'Causas',
+                          ),
                         ],
                       ),
                     ),
@@ -251,6 +256,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                   PollList(profileId, _scrollController),
                   ChallengeList(profileId, _scrollController),
                   TipList(profileId, _scrollController, null),
+                  CauseList(profileId, _scrollController),
                 ],
               ),
             ),

@@ -5,6 +5,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/poll_gallery_screen.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
 
@@ -20,6 +21,19 @@ class UserIcon extends StatefulWidget {
 class _UserIconState extends State<UserIcon> {
   String _url;
   bool _isLoading = false;
+
+  void _openImage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: null,
+          galleryItems: [widget.url],
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
 
   void _imageOptions(context) {
     showModalBottomSheet(
@@ -120,9 +134,12 @@ class _UserIconState extends State<UserIcon> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        CircleAvatar(
-          radius: 60,
-          backgroundImage: _url == null ? null : NetworkImage(_url),
+        GestureDetector(
+          onTap: _url == null ? null : _openImage,
+          child: CircleAvatar(
+            radius: 60,
+            backgroundImage: _url == null ? null : NetworkImage(_url),
+          ),
         ),
         if (_isLoading) Center(child: CircularProgressIndicator()),
         Positioned(

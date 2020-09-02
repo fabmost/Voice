@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import 'poll_tile.dart';
 import 'challenge_tile.dart';
 import 'tip_tile.dart';
+import 'cause_tile.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
 import '../models/tip_model.dart';
+import '../models/cause_model.dart';
 import '../providers/content_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
@@ -92,8 +94,26 @@ class _FilteredContentState extends State<FilteredContent> {
     );
   }
 
-  Widget _causeWidget(content) {
-    return Container();
+  Widget _causeWidget(CauseModel content) {
+    return CauseTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
+    );
   }
 
   Widget _repostPollWidget(PollModel content) {
@@ -162,7 +182,26 @@ class _FilteredContentState extends State<FilteredContent> {
   }
 
   Widget _repostCauseWidget(content) {
-    return Container();
+    return CauseTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
   }
 
   bool onNotification(ScrollNotification notification) {

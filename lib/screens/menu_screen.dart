@@ -32,6 +32,7 @@ import 'profile_screen.dart';
 import 'new_poll_screen.dart';
 import 'new_challenge_screen.dart';
 import 'new_tip_screen.dart';
+import 'new_cause_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
 
@@ -150,6 +151,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     Navigator.of(context).pushNamed(NewTipScreen.routeName);
   }
 
+  void _newCause() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      _anonymousAlert();
+      return;
+    }
+    Navigator.of(context).pushNamed(NewCauseScreen.routeName);
+  }
+
   void _anonymousAlert() {
     showDialog(
       context: context,
@@ -206,6 +215,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         label: 'Tip',
         ontap: _newTip,
         color: Color(0xFF00B2E3),
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.cause),
+        label: 'Causa',
+        ontap: _newCause,
+        color: Colors.black,
       )
     ];
 

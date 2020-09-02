@@ -494,6 +494,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   controller: _descriptionController,
                   focusNode: _descFocus,
                   maxLines: null,
+                  autocorrect: true,
+                  keyboardType: TextInputType.multiline,
                   maxLength: 2000,
                   decoration: InputDecoration(
                     labelText:

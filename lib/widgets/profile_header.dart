@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'user_followers.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/user_model.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class ProfileHeader extends StatelessWidget {
   final bool hasSocialMedia;
@@ -18,6 +19,19 @@ class ProfileHeader extends StatelessWidget {
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  void _openImage(context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: null,
+          galleryItems: [user.icon],
+          initialIndex: 0,
+        ),
+      ),
+    );
   }
 
   @override
@@ -46,10 +60,13 @@ class ProfileHeader extends StatelessWidget {
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundImage:
-                        user.icon == null ? null : NetworkImage(user.icon),
+                  child: GestureDetector(
+                    onTap: user.icon == null ? null : () => _openImage(context),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundImage:
+                          user.icon == null ? null : NetworkImage(user.icon),
+                    ),
                   ),
                 ),
               ],
@@ -103,8 +120,8 @@ class ProfileHeader extends StatelessWidget {
               children: <Widget>[
                 if ((user.tiktok ?? '').isNotEmpty)
                   GestureDetector(
-                    onTap: () => _launchURL(
-                        'https://www.tiktok.com/${user.tiktok}'),
+                    onTap: () =>
+                        _launchURL('https://www.tiktok.com/${user.tiktok}'),
                     child: CircleAvatar(
                       backgroundColor: Colors.black,
                       child: Icon(

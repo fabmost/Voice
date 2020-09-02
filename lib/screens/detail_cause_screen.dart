@@ -1,18 +1,21 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
-import 'flag_screen.dart';
 import 'auth_screen.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
-import '../providers/preferences_provider.dart';
 import '../models/cause_model.dart';
+import '../widgets/description.dart';
+import '../widgets/menu_content.dart';
 import '../widgets/regalup_content.dart';
 import '../widgets/cause_button.dart';
+import '../widgets/poll_images.dart';
+import '../widgets/poll_video.dart';
 
 class DetailCauseScreen extends StatefulWidget with ShareContent {
   static const routeName = '/cause';
@@ -30,6 +33,26 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   int _likes;
 
   final Color color = Color(0xFFF0F0F0);
+
+  void _call(phone) async {
+    if (await canLaunch('tel:$phone')) {
+      await launch('tel:$phone');
+    } else {
+      throw 'Could not launch $phone';
+    }
+  }
+
+  void _launchURL(String url) async {
+    String newUrl = url;
+    if (!url.contains('http')) {
+      newUrl = 'http://$url';
+    }
+    if (await canLaunch(newUrl.trim())) {
+      await launch(newUrl.trim());
+    } else {
+      throw 'Could not launch $newUrl';
+    }
+  }
 
   void _infoAlert(context, info) {
     showDialog(
@@ -76,85 +99,7 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   }
 
   void _share() {
-    widget.shareCause(_causeModel.id, _causeModel.cause);
-  }
-
-  void _flag(context, reference) {
-    /*
-    Navigator.of(context)
-        .popAndPushNamed(FlagScreen.routeName, arguments: reference.documentID);
-        */
-  }
-
-  void _save(context, reference, myId, hasSaved) async {
-    /*
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(
-        context,
-        Translations.of(context).text('dialog_need_account'),
-      );
-      return;
-    }
-    WriteBatch batch = Firestore.instance.batch();
-    if (hasSaved) {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayRemove([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayRemove([myId]),
-        'interactions': FieldValue.increment(-1)
-      });
-    } else {
-      batch.updateData(Firestore.instance.collection('users').document(myId), {
-        'saved': FieldValue.arrayUnion([reference.documentID]),
-      });
-      batch.updateData(reference, {
-        'saved': FieldValue.arrayUnion([myId]),
-        'interactions': FieldValue.increment(1)
-      });
-    }
-    batch.commit();
-
-    Navigator.of(context).pop();
-    */
-  }
-
-  void _options(context, reference, myId, hasSaved) {
-    /*
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return Container(
-          color: Colors.transparent,
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                onTap: () => _save(context, reference, myId, hasSaved),
-                leading: Icon(
-                  GalupFont.saved,
-                ),
-                title: Text(hasSaved
-                    ? Translations.of(context).text('button_delete')
-                    : Translations.of(context).text('button_save')),
-              ),
-              ListTile(
-                onTap: () => _flag(context, reference),
-                leading: new Icon(
-                  Icons.flag,
-                  color: Colors.red,
-                ),
-                title: Text(
-                  Translations.of(context).text('title_flag'),
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    */
+    widget.shareCause(_causeModel.id, _causeModel.title);
   }
 
   Future<void> _fetchCause() async {
@@ -182,6 +127,140 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
     _fetchCause();
   }
 
+  Widget _userTile(context) {
+    final now = new DateTime.now();
+    final difference = now.difference(_causeModel.createdAt);
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 18,
+        backgroundColor: Theme.of(context).primaryColor,
+        backgroundImage: _causeModel.info.isNotEmpty
+            ? AssetImage('assets/logo.png')
+            : _causeModel.user.icon == null
+                ? null
+                : NetworkImage(_causeModel.user.icon),
+      ),
+      title: _causeModel.info.isNotEmpty
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  'creator',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                SizedBox(width: 2),
+                IconButton(
+                  icon: Icon(GalupFont.info_circled_alt),
+                  onPressed: () => _infoAlert(context, _causeModel.info),
+                )
+              ],
+            )
+          : Row(
+              children: <Widget>[
+                Flexible(
+                  child: Text(
+                    _causeModel.user.userName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(width: 8),
+                //InfluencerBadge(document['influencer'] ?? '', 16),
+              ],
+            ),
+      subtitle: _causeModel.info.isNotEmpty
+          ? Text('Por: Galup')
+          : Text(timeago.format(now.subtract(difference))),
+      trailing: MenuContent(
+        id: _causeModel.id,
+        isSaved: _causeModel.hasSaved,
+        type: 'CA',
+      ),
+    );
+  }
+
+  Widget _challengeGoal(context) {
+    var totalPercentage =
+        (_causeModel.likes == 0) ? 0.0 : _causeModel.likes / _causeModel.goal;
+    if (totalPercentage > 1) totalPercentage = 1;
+    final format = NumberFormat('###.##');
+
+    return Column(
+      children: [
+        if (_causeModel.resources.isNotEmpty &&
+            _causeModel.resources[0].type == 'V')
+          PollVideo(_causeModel.resources[0].url, null),
+        if (_causeModel.resources.isNotEmpty &&
+            _causeModel.resources[0].type == 'I')
+          PollImages([_causeModel.resources[0].url], null),
+        Container(
+          height: 42,
+          margin: EdgeInsets.all(16),
+          child: Stack(
+            children: <Widget>[
+              FractionallySizedBox(
+                widthFactor: totalPercentage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                      topRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                      bottomRight: totalPercentage == 1
+                          ? Radius.circular(12)
+                          : Radius.zero,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        'Firmas',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: SizedBox(),
+                      ),
+                      Text(
+                        '${format.format(totalPercentage * 100)}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,63 +272,63 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
         child: _isLoading
             ? Center(child: CircularProgressIndicator())
             : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                    color: color,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        backgroundImage: AssetImage('assets/logo.png'),
-                      ),
-                      title: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            _causeModel.by,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                          IconButton(
-                            icon: Icon(GalupFont.info_circled_alt),
-                            onPressed: () =>
-                                _infoAlert(context, _causeModel.info),
-                          )
-                        ],
-                      ),
-                      subtitle: Text('Por: Galup'),
-                      trailing: Transform.rotate(
-                        angle: 270 * pi / 180,
-                        child: IconButton(
-                          icon: Icon(Icons.chevron_left),
-                          /*
-                            onPressed: () => _options(
-                                  context,
-                                  reference,
-                                  userSnap.data.uid,
-                                  hasSaved,
-                                )*/
-                        ),
-                      ),
-                    ),
-                  ),
+                  Container(color: color, child: _userTile(context)),
                   SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      _causeModel.cause,
+                      _causeModel.title,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                  if (_causeModel.goal != null) _challengeGoal(context),
+                  if (_causeModel.goal != null) const SizedBox(height: 16),
+                  if (_causeModel.description != null &&
+                      _causeModel.description.isNotEmpty)
+                    Description(_causeModel.description),
+                  if (_causeModel.description != null &&
+                      _causeModel.description.isNotEmpty)
+                    const SizedBox(height: 16),
                   CauseButton(
                     id: _causeModel.id,
                     hasLike: _causeModel.hasLiked,
                     setVotes: _setLike,
                   ),
+                  if (_causeModel.phone != null)
+                    ListTile(
+                      onTap: () => _call(_causeModel.phone),
+                      leading: Icon(
+                        Icons.phone,
+                        color: Colors.black,
+                      ),
+                      title: Text('Contáctame'),
+                      subtitle: Text(_causeModel.phone),
+                    ),
+                  if (_causeModel.web != null)
+                    ListTile(
+                      onTap: () => _launchURL(_causeModel.web),
+                      leading: Icon(
+                        Icons.open_in_browser,
+                        color: Colors.black,
+                      ),
+                      title: Text('Visita'),
+                      subtitle: Text(_causeModel.web),
+                    ),
+                  if (_causeModel.account != null)
+                    ListTile(
+                      leading: Icon(
+                        Icons.credit_card,
+                        color: Colors.black,
+                      ),
+                      title: Text('Donaciones'),
+                      subtitle: Text(_causeModel.account),
+                    ),
                   SizedBox(height: 16),
                   Container(
                     color: color,

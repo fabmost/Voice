@@ -4,6 +4,7 @@ import 'content_model.dart';
 import 'resource_model.dart';
 import 'poll_answer_model.dart';
 import 'user_model.dart';
+import '../mixins/text_mixin.dart';
 
 class PollModel extends ContentModel {
   final String body;
@@ -55,8 +56,8 @@ class PollModel extends ContentModel {
         icon: content['user']['icon'],
       ),
       creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
-      title: content['body'],
-      description: content['description'],
+      title: TextMixin.fixString(content['body']),
+      description: TextMixin.fixString(content['description']),
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
       votes: content['votes'],
       likes: content['likes'],

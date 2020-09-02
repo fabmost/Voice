@@ -1,3 +1,5 @@
+import '../mixins/text_mixin.dart';
+
 class PollAnswerModel {
   final String id;
   final String answer;
@@ -19,7 +21,7 @@ class PollAnswerModel {
     content.forEach((element) {
       mList.add(PollAnswerModel(
         id: element['id'],
-        answer: element['answer'],
+        answer: TextMixin.fixString(element['answer']),
         count: element['count'],
         url: element['icon'],
         isVote: element['is_vote'],

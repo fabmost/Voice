@@ -590,7 +590,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
   Widget _optionField(controller, text) {
     return TextField(
       controller: controller,
-      maxLength: 25,
+      maxLength: 30,
       decoration: InputDecoration(
         hintText: text,
         border: OutlineInputBorder(
@@ -875,6 +875,8 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   spanBuilder: _mySpecialTextSpanBuilder,
                   controller: _descriptionController,
                   focusNode: _descFocus,
+                  keyboardType: TextInputType.multiline,
+                  autocorrect: true,
                   maxLines: null,
                   maxLength: 240,
                   decoration: InputDecoration(
@@ -883,8 +885,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   ),
                 ),
                 suggestionsCallback: (pattern) {
-                  //TextSelection selection = _descriptionController.selection;
-                  //String toCheck = pattern.substring(0, selection.end);
                   if (_isSearching) {
                     return _getSuggestions(pattern);
                   }

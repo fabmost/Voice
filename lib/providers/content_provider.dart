@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:voice_inc/models/user_model.dart';
 
 import '../api.dart';
+import '../mixins/text_mixin.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
@@ -17,7 +18,7 @@ import '../models/cause_model.dart';
 import '../models/comment_model.dart';
 import '../models/notification_model.dart';
 
-class ContentProvider with ChangeNotifier {
+class ContentProvider with ChangeNotifier, TextMixin {
   final _storage = FlutterSecureStorage();
   List<ContentModel> _homeContent = [];
   List<ContentModel> _causesContent = [];
@@ -68,16 +69,19 @@ class ContentProvider with ChangeNotifier {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
-          //case 'regalup_p':
+          case 'regalup_p':
             _homeContent.add(PollModel.fromJson(content));
             break;
           case 'challenge':
-          //case 'regalup_c':
+          case 'regalup_c':
             _homeContent.add(ChallengeModel.fromJson(content));
             break;
           case 'Tips':
-          //case 'regalup_ti':
+          case 'regalup_ti':
             _homeContent.add(TipModel.fromJson(content));
+            break;
+          case 'causes':
+            _homeContent.add(CauseModel.fromJson(content));
             break;
         }
       });
@@ -86,7 +90,7 @@ class ContentProvider with ChangeNotifier {
     }
     if (dataMap['action'] == 4 && tries > 3) {
       await _renewToken();
-      return getBaseTimeline(page, type, tries+1);
+      return getBaseTimeline(page, type, tries + 1);
     }
     return false;
   }
@@ -183,6 +187,9 @@ class ContentProvider with ChangeNotifier {
             break;
           case 'Tips':
             contentList.add(TipModel.fromJson(content));
+            break;
+          case 'causes':
+            contentList.add(CauseModel.fromJson(content));
             break;
         }
       });
@@ -687,9 +694,9 @@ class ContentProvider with ChangeNotifier {
     var url = '${API.baseURL}/registerPoll';
     final token = await _getToken();
     Map parameters = {
-      'poll': name,
+      'poll': serverSafe(name),
       'category': category,
-      'description': description,
+      'description': serverSafe(description),
       'timelife': null,
       'hashtag': hashtag,
       'answers': answers,
@@ -733,10 +740,10 @@ class ContentProvider with ChangeNotifier {
     final token = await _getToken();
 
     Map parameters = {
-      'challenge': name,
+      'challenge': serverSafe(name),
       'category': category,
       'resources': [resource],
-      'description': description,
+      'description': serverSafe(description),
       'timelife': null,
       'taged': taged,
       'hashtag': hashtag,
@@ -773,10 +780,10 @@ class ContentProvider with ChangeNotifier {
     final token = await _getToken();
 
     Map parameters = {
-      'title': name,
+      'title': serverSafe(name),
       'category': category,
       'resources': [resource],
-      'description': description,
+      'description': serverSafe(description),
       'timelife': null,
       'taged': taged,
       'hashtag': hashtag,
@@ -805,11 +812,62 @@ class ContentProvider with ChangeNotifier {
     return false;
   }
 
+  Future<bool> newCause(
+      {name,
+      description,
+      resource,
+      phone,
+      web,
+      bank,
+      goal,
+      taged,
+      hashtag}) async {
+    var url = '${API.baseURL}/registerCause';
+    final token = await _getToken();
+
+    Map parameters = {
+      'by': '',
+      'title': serverSafe(name),
+      'description': serverSafe(description),
+      'goal': goal,
+      'taged': taged,
+      'hashtag': hashtag,
+      'resources': [resource],
+    };
+
+    if (phone != null) parameters['phone'] = phone;
+    if (web != null) parameters['web'] = web;
+    if (bank != null) parameters['account'] = bank;
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return true;
+    }
+    return false;
+  }
+
   Future<CommentModel> newComment({comment, type, id, hashtag}) async {
     var url = '${API.baseURL}/registerComments/$type/$id/';
     final token = await _getToken();
     Map parameters = {
-      'comment': comment,
+      'comment': serverSafe(comment),
       'hashtags': hashtag,
     };
     await FlutterUserAgent.init();
@@ -841,7 +899,7 @@ class ContentProvider with ChangeNotifier {
     var url = '${API.baseURL}/registerComments/$type/$idContent/$id';
     final token = await _getToken();
     Map parameters = {
-      'comment': comment,
+      'comment': serverSafe(comment),
       'hashtags': hashtags,
     };
     await FlutterUserAgent.init();
@@ -1213,8 +1271,8 @@ class ContentProvider with ChangeNotifier {
       return getUnread();
     }
     return {
-        'notifications': false,
-        'chats': false,
-      };
+      'notifications': false,
+      'chats': false,
+    };
   }
 }

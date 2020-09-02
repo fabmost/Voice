@@ -270,8 +270,8 @@ class ChallengeTile extends StatelessWidget with ShareContent {
               ),
             ),
             SizedBox(height: 16),
-            _challengeGoal(context),
-            SizedBox(height: 16),
+            if(goal > 0) _challengeGoal(context),
+            if(goal > 0) SizedBox(height: 16),
             if (description != null && description.isNotEmpty) Description(description),
             if (description != null && description.isNotEmpty) SizedBox(height: 16),
             Container(

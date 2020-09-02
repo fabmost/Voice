@@ -101,13 +101,22 @@ class _HomeListState extends State<HomeList> {
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
       id: content.id,
-      title: content.title,
       date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
       likes: content.likes,
       regalups: content.regalups,
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
       hasSaved: content.hasSaved,
+      resources: content.resources,
     );
   }
 
@@ -177,13 +186,34 @@ class _HomeListState extends State<HomeList> {
   }
 
   Widget _repostCauseWidget(content) {
-    return Container();
+    return CauseTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
   }
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (widget.scrollController.position.maxScrollExtent > widget.scrollController.offset &&
-          widget.scrollController.position.maxScrollExtent - widget.scrollController.offset <=
+      if (widget.scrollController.position.maxScrollExtent >
+              widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent -
+                  widget.scrollController.offset <=
               50) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
@@ -275,7 +305,7 @@ class _HomeListState extends State<HomeList> {
         child: CircularProgressIndicator(),
       );
     }
-    if(widget.mCauses.isEmpty){
+    if (widget.mCauses.isEmpty) {
       return Container();
     }
     return Container(
@@ -289,7 +319,7 @@ class _HomeListState extends State<HomeList> {
           CauseModel model = widget.mCauses[i];
           return CauseCard(
             id: model.id,
-            title: model.cause,
+            title: model.title,
             liked: model.hasLiked,
           );
         },
@@ -318,9 +348,11 @@ class _HomeListState extends State<HomeList> {
         onRefresh: _refreshTimeLine,
         child: ListView.builder(
           controller: widget.scrollController,
-          itemCount: (widget.mList.length < 6) ? widget.mList.length + 1 :  widget.mList.length + 3,
+          itemCount: (widget.mList.length < 6)
+              ? widget.mList.length + 1
+              : widget.mList.length + 3,
           itemBuilder: (ctx, i) {
-            if ( (widget.mList.length > 6 && i == widget.mList.length + 2)) {
+            if ((widget.mList.length > 6 && i == widget.mList.length + 2)) {
               return Center(
                   child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -347,9 +379,9 @@ class _HomeListState extends State<HomeList> {
                 return _repostPollWidget(doc);
               case 'regalup_c':
                 return _repostChallengeWidget(doc);
-              case 'repost-cause':
+              case 'regalup_ca':
                 return _repostCauseWidget(doc);
-                case 'regalup_ti':
+              case 'regalup_ti':
                 return _repostTipWidget(doc);
               default:
                 return SizedBox();

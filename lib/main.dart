@@ -36,6 +36,7 @@ import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
 import 'screens/new_tip_screen.dart';
+import 'screens/new_cause_screen.dart';
 import 'screens/new_content_category_screen.dart';
 
 import 'screens/verify_type_screen.dart';
@@ -142,26 +143,6 @@ class App extends StatelessWidget {
                               ? SessionLoginScreen()
                               : PreferencesScreen(),
                 ),
-          /*StreamBuilder(
-            stream: FirebaseAuth.instance.onAuthStateChanged,
-            builder: (ctx, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SplashScreen();
-              }
-              if (snapshot.hasData) {
-                return MenuScreen();
-              }
-              return provider.hasAccount
-                  ? SessionLoginScreen()
-                  : FutureBuilder(
-                      future: provider.getAccount(),
-                      builder: (ctx, snapshot) =>
-                          snapshot.connectionState == ConnectionState.waiting
-                              ? SplashScreen()
-                              : PreferencesScreen(),
-                    );
-            },
-          ),*/
           routes: {
             TestScreen.routeName: (ctx) => TestScreen(),
             MenuScreen.routeName: (ctx) => MenuScreen(),
@@ -178,6 +159,7 @@ class App extends StatelessWidget {
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
             NewTipScreen.routeName: (ctx) => NewTipScreen(),
+            NewCauseScreen.routeName: (ctx) => NewCauseScreen(),
             NewContentCategoryScreen.routeName: (ctx) =>
                 NewContentCategoryScreen(),
             DetailPollScreen.routeName: (ctx) => DetailPollScreen(),

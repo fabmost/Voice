@@ -12,36 +12,36 @@ import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
-import 'new_content_category_screen.dart';
 import '../translations.dart';
-import '../models/category_model.dart';
-import '../providers/user_provider.dart';
-import '../providers/content_provider.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
+import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
 
-class NewChallengeScreen extends StatefulWidget {
-  static const routeName = '/new-challenge';
+class NewCauseScreen extends StatefulWidget {
+  static const routeName = '/new-cause';
 
   @override
-  _NewChallengeScreenState createState() => _NewChallengeScreenState();
+  _NewCauseScreenState createState() => _NewCauseScreenState();
 }
 
-class _NewChallengeScreenState extends State<NewChallengeScreen> {
+class _NewCauseScreenState extends State<NewCauseScreen> {
   final Trimmer _trimmer = Trimmer();
   bool _isLoading = false;
   bool _isVideo = false;
   bool _isSearching = false;
-  String metric = 'Likes';
   double goal = 0;
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _webController = TextEditingController();
+  TextEditingController _bankController = TextEditingController();
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
 
-  CategoryModel category;
+  //String category;
 
   void _imageOptions() {
     FocusScope.of(context).requestFocus(FocusNode());
@@ -52,30 +52,20 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           color: Colors.transparent,
           child: new Wrap(
             children: <Widget>[
-              if (Platform.isIOS)
-                ListTile(
-                  onTap: () => _openCamera(),
-                  leading: Icon(
-                    Icons.camera_alt,
-                  ),
-                  title: Text("Cámara"),
+              ListTile(
+                onTap: () => _openCamera(),
+                leading: Icon(
+                  Icons.camera_alt,
                 ),
-              if (Platform.isAndroid)
-                ListTile(
-                  onTap: () => _openCamera(),
-                  leading: Icon(
-                    Icons.camera_alt,
-                  ),
-                  title: Text("Foto"),
+                title: Text("Foto"),
+              ),
+              ListTile(
+                onTap: () => _takeVideo(),
+                leading: Icon(
+                  Icons.videocam,
                 ),
-              if (Platform.isAndroid)
-                ListTile(
-                  onTap: () => _takeVideo(),
-                  leading: Icon(
-                    Icons.videocam,
-                  ),
-                  title: Text("Video"),
-                ),
+                title: Text("Video"),
+              ),
               ListTile(
                 onTap: () => _openGallery(),
                 leading: Icon(
@@ -97,34 +87,21 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
 
   void _openGallery() {
     Navigator.of(context).pop();
-    if (Platform.isIOS)
-      _getPicture();
-    else {
-      Navigator.of(context)
-          .pushNamed(GalleryScreen.routeName)
-          .then((value) async {
-        if (value != null) {
-          AssetEntity asset = value as AssetEntity;
-          if (asset.type == AssetType.video) {
-            File videoFile = await asset.file;
-            _trimVideo(videoFile);
-          } else {
-            File imgFile = await asset.file;
-            _cropImage(imgFile.path);
-          }
-        }
-      });
-    }
-  }
 
-  Future<void> _getPicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path);
-    }
+    Navigator.of(context)
+        .pushNamed(GalleryScreen.routeName)
+        .then((value) async {
+      if (value != null) {
+        AssetEntity asset = value as AssetEntity;
+        if (asset.type == AssetType.video) {
+          File videoFile = await asset.file;
+          _trimVideo(videoFile);
+        } else {
+          File imgFile = await asset.file;
+          _cropImage(imgFile.path);
+        }
+      }
+    });
   }
 
   Future<void> _takePicture() async {
@@ -155,6 +132,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       }),
     ).then((value) async {
       if (value != null) {
+        //final mFile = await VideoCompress.getFileThumbnail(
         final mFile = await VideoThumbnail.thumbnailFile(
           video: value,
           //imageFormat: ImageFormat.JPEG,
@@ -181,64 +159,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     }
   }
 
-  void _metricSelected() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return SimpleDialog(
-          title: Text('Selecciona el tipo de meta'),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: Text(
-                'Likes',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Likes'),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                'Comentarios',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Comentarios'),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                'Regalups',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected('Regalups'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _optionSelected(value) {
-    Navigator.of(context).pop();
-    setState(() {
-      metric = value;
-    });
-  }
-
-  void _selectCategory() {
-    Navigator.of(context)
-        .pushNamed(NewContentCategoryScreen.routeName)
-        .then((value) {
-      if (value != null) {
-        setState(() {
-          category = value;
-        });
-      }
-    });
-  }
-
   void _validate() {
-    if (_titleController.text.isNotEmpty &&
-        _imageFile != null &&
-        goal > 0 &&
-        category != null) {
+    if (_titleController.text.isNotEmpty && _imageFile != null && goal > 0) {
       _saveChallenge();
       return;
     }
@@ -269,7 +191,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                'Tu reto se ha creado correctamente',
+                'Tu causa se ha creado correctamente',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -306,7 +228,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                'Ocurrió un error al guardar tu reto',
+                'Ocurrió un error al guardar tu causa',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -342,28 +264,15 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           .uploadResource(
         _videoFile.path,
         'V',
-        'C',
+        'CA',
       );
     } else {
       idResource = await Provider.of<ContentProvider>(context, listen: false)
           .uploadResource(
         _imageFile.path,
         'I',
-        'C',
+        'CA',
       );
-    }
-
-    String metricString;
-    switch (metric) {
-      case 'Likes':
-        metricString = 'L';
-        break;
-      case 'Comentarios':
-        metricString = 'C';
-        break;
-      case 'Regalups':
-        metricString = 'R';
-        break;
     }
 
     List<Map> hashes = [];
@@ -396,15 +305,16 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
     });
 
     bool result =
-        await Provider.of<ContentProvider>(context, listen: false).newChallenge(
+        await Provider.of<ContentProvider>(context, listen: false).newCause(
       name: _titleController.text,
       description: '${_descriptionController.text} ',
-      category: category.id,
       resource: {'id': idResource},
-      parameter: metricString,
       goal: goal,
       hashtag: hashes,
       taged: tags,
+      phone: _phoneController.text.isEmpty ? null : _phoneController.text,
+      web: _webController.text.isEmpty ? null : _webController.text,
+      bank: _bankController.text.isEmpty ? null : _bankController.text,
     );
 
     setState(() {
@@ -493,13 +403,13 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               TextField(
                 controller: _titleController,
                 autofocus: true,
+                autocorrect: true,
                 maxLines: null,
                 maxLength: 120,
                 decoration: InputDecoration(
                   counterText: '',
                   border: InputBorder.none,
-                  hintText:
-                      Translations.of(context).text('hint_challenge_title'),
+                  hintText: Translations.of(context).text('hint_cause_title'),
                 ),
                 style: TextStyle(fontSize: 22),
               ),
@@ -530,7 +440,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               Container(
                 width: double.infinity,
                 child: Slider(
-                  activeColor: Color(0xFFA4175D),
+                  activeColor: Colors.black,
                   value: goal,
                   onChanged: (newValue) {
                     setState(() {
@@ -543,59 +453,16 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   label: '${NumberFormat.compact().format(goal)}',
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      '${goal.toInt()}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: _metricSelected,
-                      child: Container(
-                        height: 42,
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            Text(metric),
-                            Icon(Icons.arrow_drop_down),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(height: 16),
-              _title(Translations.of(context).text('hint_category')),
               SizedBox(height: 8),
-              InkWell(
-                onTap: _selectCategory,
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.black),
-                  ),
-                  child: (category == null)
-                      ? Text('Selecciona una categoría')
-                      : Text('${category.name}'),
-                ),
-              ),
               SuggestionField(
                 textFieldConfiguration: TextFieldConfiguration(
                   spanBuilder: MySpecialTextSpanBuilder(),
                   controller: _descriptionController,
                   focusNode: _descFocus,
-                  maxLines: null,
                   autocorrect: true,
-                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
                   maxLength: 240,
+                  keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),
@@ -629,6 +496,31 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                 },
                 autoFlipDirection: true,
               ),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  counterText: '',
+                  labelText:
+                      Translations.of(context).text('hint_contact_phone'),
+                ),
+              ),
+              TextField(
+                controller: _webController,
+                keyboardType: TextInputType.url,
+                decoration: InputDecoration(
+                  counterText: '',
+                  labelText: Translations.of(context).text('hint_web'),
+                ),
+              ),
+              TextField(
+                controller: _bankController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  counterText: '',
+                  labelText: Translations.of(context).text('hint_bank'),
+                ),
+              ),
               SizedBox(height: 16),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -636,7 +528,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                       width: double.infinity,
                       height: 42,
                       child: RaisedButton(
-                        color: Color(0xFFA4175D),
+                        color: Colors.black,
                         textColor: Colors.white,
                         child:
                             Text(Translations.of(context).text('button_save')),

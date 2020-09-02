@@ -96,13 +96,23 @@ class _FilteredContentState extends State<TopContent> {
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
       id: content.id,
-      title: content.title,
       date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
       likes: content.likes,
       regalups: content.regalups,
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
       hasSaved: content.hasSaved,
+      resources: content.resources,
+      regalupName: content.creator,
     );
   }
 

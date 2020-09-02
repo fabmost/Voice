@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'content_model.dart';
 import 'resource_model.dart';
 import 'user_model.dart';
+import '../mixins/text_mixin.dart';
 
 class TipModel extends ContentModel {
   final String body;
@@ -52,8 +53,8 @@ class TipModel extends ContentModel {
         icon: content['user']['icon'],
       ),
       creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
-      title: content['title'],
-      description: content['description'],
+      title: TextMixin.fixString(content['title']),
+      description: TextMixin.fixString(content['description']),
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
       likes: content['likes'],
       regalups: content['regalups'],

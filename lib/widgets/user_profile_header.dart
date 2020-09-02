@@ -9,6 +9,7 @@ import '../custom/galup_font_icons.dart';
 import '../models/user_model.dart';
 import '../screens/followers_screen.dart';
 import '../screens/following_screen.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class UserProfileHeader extends StatelessWidget {
   final bool hasSocialMedia;
@@ -139,8 +140,8 @@ class UserProfileHeader extends StatelessWidget {
               children: <Widget>[
                 if ((user.tiktok ?? '').isNotEmpty)
                   GestureDetector(
-                    onTap: () => _launchURL(
-                        'https://www.tiktok.com/${user.tiktok}'),
+                    onTap: () =>
+                        _launchURL('https://www.tiktok.com/${user.tiktok}'),
                     child: CircleAvatar(
                       backgroundColor: Colors.black,
                       child: Icon(

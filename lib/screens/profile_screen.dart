@@ -13,7 +13,7 @@ import '../widgets/app_drawer.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
 import '../widgets/tip_user_list.dart';
-import '../widgets/saved_list.dart';
+import '../widgets/cause_user_list.dart';
 import '../widgets/influencer_badge.dart';
 import '../providers/user_provider.dart';
 
@@ -186,8 +186,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                             text: 'Tips',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.saved),
-                            text: 'Guardados',
+                            icon: Icon(GalupFont.cause),
+                            text: 'Causas',
                           ),
                         ],
                       ),
@@ -213,7 +213,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                     _scrollController,
                     _playVideo,
                   ),
-                  SavedList(_scrollController, _playVideo),
+                  CauseUserList(
+                    provider.getUserModel.userName,
+                    _scrollController,
+                  ),
                 ],
               ),
             ),
