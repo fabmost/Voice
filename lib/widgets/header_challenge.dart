@@ -16,7 +16,6 @@ import '../custom/galup_font_icons.dart';
 import '../models/challenge_model.dart';
 import '../models/resource_model.dart';
 import '../screens/view_profile_screen.dart';
-import '../screens/auth_screen.dart';
 import '../providers/user_provider.dart';
 
 class HeaderChallenge extends StatelessWidget with ShareContent {
@@ -53,32 +52,6 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         Navigator.of(context).pop();
       });
     });
-  }
-
-  void _anonymousAlert(context, text) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(text),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
-      ),
-    );
   }
 
   void _share() {
@@ -225,10 +198,11 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                   ),
                 ),
                 SizedBox(width: 8),
-                //InfluencerBadge(document['influencer'] ?? '', 16),
+                InfluencerBadge(challengeModel.id, challengeModel.certificate, 16),
               ],
             ),
-            subtitle: Text(timeago.format(now.subtract(difference))),
+            subtitle: Text(timeago.format(now.subtract(difference),
+                locale: Translations.of(context).currentLanguage)),
             trailing: MenuContent(
               id: challengeModel.id,
               type: 'C',
@@ -250,9 +224,12 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         SizedBox(height: 16),
         _challengeGoal(context),
         SizedBox(height: 16),
-        if (challengeModel.description != null && challengeModel.description.isNotEmpty)
+        if (challengeModel.description != null &&
+            challengeModel.description.isNotEmpty)
           Description(challengeModel.description),
-        if (challengeModel.description != null &&  challengeModel.description.isNotEmpty) SizedBox(height: 16),
+        if (challengeModel.description != null &&
+            challengeModel.description.isNotEmpty)
+          SizedBox(height: 16),
         Container(
           color: color,
           child: Row(

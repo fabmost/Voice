@@ -4,10 +4,11 @@ class TextMixin {
   String serverSafe(String str) {
     return HtmlCharacterEntities.encode(str,
         characters:
-            '&ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ');
+            '¿¡&ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ');
   }
-  
+
   static String fixString(String str) {
+    if (str == null) return null;
     return HtmlCharacterEntities.decode(str);
     /*
     return str

@@ -31,10 +31,12 @@ class _CauseButtonState extends State<CauseButton> {
     setState(() {
       _isLoading = false;
       _hasLike = result;
-      if (result) {
-        widget.setVotes(true);
-      } else {
-        widget.setVotes(false);
+      if (widget.setVotes != null) {
+        if (result) {
+          widget.setVotes(true);
+        } else {
+          widget.setVotes(false);
+        }
       }
     });
   }

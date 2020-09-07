@@ -95,6 +95,7 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
                   hasUp: doc.hasLike,
                   downs: doc.dislikes,
                   hasDown: doc.hasDislike,
+                  certificate: doc.certificate,
                 );
               },
             ),

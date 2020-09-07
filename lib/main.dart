@@ -18,6 +18,7 @@ import 'screens/login_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/countries_screen.dart';
 import 'screens/edit_profile_screen.dart';
+import 'screens/saved_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/view_profile_screen.dart';
 import 'screens/chat_screen.dart';
@@ -152,6 +153,7 @@ class App extends StatelessWidget {
             ForgotPasswordScreen.routeName: (ctx) => ForgotPasswordScreen(),
             CountriesScreen.routeName: (ctx) => CountriesScreen(),
             EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
+            SavedScreen.routeName: (ctx) => SavedScreen(),
             NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),

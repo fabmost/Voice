@@ -4,12 +4,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'user_icon.dart';
 import 'user_cover.dart';
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/user_model.dart';
 import '../screens/followers_screen.dart';
 import '../screens/following_screen.dart';
-import '../screens/poll_gallery_screen.dart';
 
 class UserProfileHeader extends StatelessWidget {
   final bool hasSocialMedia;
@@ -106,7 +106,7 @@ class UserProfileHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8),
-              //InfluencerBadge(document['influencer'] ?? '', 20),
+              InfluencerBadge(user.userName, user.certificate, 20),
             ],
           ),
           Text(

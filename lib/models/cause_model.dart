@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'content_model.dart';
 import 'user_model.dart';
 import 'resource_model.dart';
+import 'certificate_model.dart';
 import '../mixins/text_mixin.dart';
 
 class CauseModel extends ContentModel {
@@ -27,6 +28,7 @@ class CauseModel extends ContentModel {
     hasLiked,
     hasRegalup,
     hasSaved,
+    certificate,
     this.description,
     this.by,
     this.info,
@@ -36,17 +38,19 @@ class CauseModel extends ContentModel {
     this.account,
     this.resources,
   }) : super(
-            id: id,
-            type: type,
-            user: user,
-            creator: creator,
-            title: title,
-            createdAt: createdAt,
-            likes: likes,
-            regalups: regalups,
-            hasLiked: hasLiked,
-            hasRegalup: hasRegalup,
-            hasSaved: hasSaved);
+          id: id,
+          type: type,
+          user: user,
+          creator: creator,
+          title: title,
+          createdAt: createdAt,
+          likes: likes,
+          regalups: regalups,
+          hasLiked: hasLiked,
+          hasRegalup: hasRegalup,
+          hasSaved: hasSaved,
+          certificate: certificate,
+        );
 
   static CauseModel fromJson(Map content) {
     return CauseModel(
@@ -59,6 +63,11 @@ class CauseModel extends ContentModel {
       creator: content['user_regalup'] == null
           ? null
           : content['user_regalup']['user_name'],
+      certificate: content['certificates'] == null
+          ? null
+          : content['certificates']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificates']),
       title: TextMixin.fixString(content['title']),
       description: TextMixin.fixString(content['description']),
       by: content['by'] ?? '',

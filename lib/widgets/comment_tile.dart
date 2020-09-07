@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'comment_options.dart';
+import 'influencer_badge.dart';
+import '../translations.dart';
 import '../models/comment_model.dart';
 import '../models/user_model.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -23,6 +25,7 @@ class CommentTile extends StatelessWidget {
   final int downs;
   final bool hasUp;
   final bool hasDown;
+  final certificate;
 
   CommentTile({
     @required this.contentId,
@@ -37,6 +40,7 @@ class CommentTile extends StatelessWidget {
     this.downs,
     this.hasUp,
     this.hasDown,
+    @required this.certificate,
   });
 
   void _toComment(context) {
@@ -90,22 +94,29 @@ class CommentTile extends StatelessWidget {
           leading: GestureDetector(
             onTap: () => _toProfile(context, userName),
             child: CircleAvatar(
-              backgroundImage: NetworkImage(userImage),
+              backgroundImage: userImage == null
+                  ? null
+                  : userImage.isEmpty ? null : NetworkImage(userImage),
             ),
           ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Flexible(
-                child: Text(
-                  userName,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: GestureDetector(
+                  onTap: () => _toProfile(context, userName),
+                  child: Text(
+                    userName,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
+              InfluencerBadge(id, certificate, 16),
               Text(
-                timeago.format(now.subtract(difference)),
+                timeago.format(now.subtract(difference),
+                    locale: Translations.of(context).currentLanguage),
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 14,

@@ -1,27 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:voice_inc/translations.dart';
+import 'package:provider/provider.dart';
+
+import '../translations.dart';
+import '../providers/content_provider.dart';
 
 class FlagScreen extends StatelessWidget {
   static const routeName = '/flag';
 
-  void _sendFlag(context, id, reason) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    WriteBatch batch = Firestore.instance.batch();
-
-    batch.updateData(Firestore.instance.collection('content').document(id), {
-      'flag': FieldValue.arrayUnion([user.uid])
-    });
-    batch.setData(Firestore.instance.collection('flag').document(), {
-      'user_id': user.uid,
-      'content_id': id,
-      'reason': reason,
-      'createdAt': Timestamp.now(),
-    });
-
-    await batch.commit();
-    _showAlert(context);
+  void _sendFlag(context, id, type, reason) async {
+    final result =
+        await Provider.of<ContentProvider>(context, listen: false).flagContent(
+      id: id,
+      action: reason,
+      type: type,
+    );
+    if (result) {
+      _showAlert(context);
+    }
   }
 
   void _showAlert(context) async {
@@ -44,7 +39,7 @@ class FlagScreen extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
-  Widget _flagCard(context, id, motive) {
+  Widget _flagCard(context, id, motive, type, motiveId) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -52,7 +47,7 @@ class FlagScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: InkWell(
-        onTap: () => _sendFlag(context, id, motive),
+        onTap: () => _sendFlag(context, id, type, motiveId),
         child: Container(
           padding: const EdgeInsets.all(16),
           width: double.infinity,
@@ -64,7 +59,9 @@ class FlagScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final id = ModalRoute.of(context).settings.arguments;
+    final Map map = ModalRoute.of(context).settings.arguments;
+    final id = map['id'];
+    final type = map['type'];
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -95,11 +92,29 @@ class FlagScreen extends StatelessWidget {
             SizedBox(height: 16),
             Text(Translations.of(context).text('label_flag')),
             SizedBox(height: 16),
-            _flagCard(context, id, Translations.of(context).text('flag_1')),
+            _flagCard(
+              context,
+              id,
+              Translations.of(context).text('flag_1'),
+              type,
+              'S',
+            ),
             SizedBox(height: 16),
-            _flagCard(context, id, Translations.of(context).text('flag_2')),
+            _flagCard(
+              context,
+              id,
+              Translations.of(context).text('flag_2'),
+              type,
+              'V',
+            ),
             SizedBox(height: 16),
-            _flagCard(context, id, Translations.of(context).text('flag_3')),
+            _flagCard(
+              context,
+              id,
+              Translations.of(context).text('flag_3'),
+              type,
+              'I',
+            ),
           ],
         ),
       ),

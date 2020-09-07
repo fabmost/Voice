@@ -14,6 +14,7 @@ import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
 import '../models/category_model.dart';
+import '../mixins/text_mixin.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
 import '../custom/galup_font_icons.dart';
@@ -28,7 +29,7 @@ class NewPollScreen extends StatefulWidget {
   _NewPollScreenState createState() => _NewPollScreenState();
 }
 
-class _NewPollScreenState extends State<NewPollScreen> {
+class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
   bool _isLoading = false;
   bool _isSearching = false;
   bool _isVideo = false;
@@ -459,12 +460,12 @@ class _NewPollScreenState extends State<NewPollScreen> {
       );
 
       pollAnswers.add({
-        'text': _firstController.text,
+        'text': serverSafe(_firstController.text),
         'image': idResource,
       });
     } else {
       pollAnswers.add({
-        'text': _firstController.text,
+        'text': serverSafe(_firstController.text),
         'id_resource': null,
       });
     }
@@ -477,12 +478,12 @@ class _NewPollScreenState extends State<NewPollScreen> {
         'PA',
       );
       pollAnswers.add({
-        'text': _secondController.text,
+        'text': serverSafe(_secondController.text),
         'image': idResource,
       });
     } else {
       pollAnswers.add({
-        'text': _secondController.text,
+        'text': serverSafe(_secondController.text),
         'id_resource': null,
       });
     }
@@ -496,12 +497,12 @@ class _NewPollScreenState extends State<NewPollScreen> {
           'PA',
         );
         pollAnswers.add({
-          'text': _thirdController.text,
+          'text': serverSafe(_thirdController.text),
           'image': idResource,
         });
       } else {
         pollAnswers.add({
-          'text': _thirdController.text,
+          'text': serverSafe(_thirdController.text),
           'id_resource': null,
         });
       }
@@ -701,7 +702,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
       //subtitle: Text(doc['user_name']),
@@ -751,6 +752,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
               TextField(
                 controller: _titleController,
                 autofocus: true,
+                autocorrect: true,
                 maxLines: null,
                 maxLength: 120,
                 decoration: InputDecoration(

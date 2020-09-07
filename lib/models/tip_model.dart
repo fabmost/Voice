@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'content_model.dart';
 import 'resource_model.dart';
 import 'user_model.dart';
+import 'certificate_model.dart';
 import '../mixins/text_mixin.dart';
 
 class TipModel extends ContentModel {
@@ -13,36 +14,39 @@ class TipModel extends ContentModel {
   final double total;
   final bool hasRated;
 
-  TipModel({
-    id,
-    type,
-    user,
-    creator,
-    createdAt,
-    title,
-    likes,
-    regalups,
-    hasLiked,
-    hasRegalup,
-    hasSaved,
-    this.body,
-    this.description,
-    this.resources,
-    this.comments,
-    this.total,
-    this.hasRated
-  }) : super(
-            id: id,
-            type: type,
-            user: user,
-            creator: creator,
-            title: title,
-            createdAt: createdAt,
-            likes: likes,
-            regalups: regalups,
-            hasLiked: hasLiked,
-            hasRegalup: hasRegalup,
-            hasSaved: hasSaved);
+  TipModel(
+      {id,
+      type,
+      user,
+      creator,
+      createdAt,
+      title,
+      likes,
+      regalups,
+      hasLiked,
+      hasRegalup,
+      hasSaved,
+      certificate,
+      this.body,
+      this.description,
+      this.resources,
+      this.comments,
+      this.total,
+      this.hasRated})
+      : super(
+          id: id,
+          type: type,
+          user: user,
+          creator: creator,
+          title: title,
+          createdAt: createdAt,
+          likes: likes,
+          regalups: regalups,
+          hasLiked: hasLiked,
+          hasRegalup: hasRegalup,
+          hasSaved: hasSaved,
+          certificate: certificate,
+        );
 
   static TipModel fromJson(Map content) {
     return TipModel(
@@ -52,7 +56,14 @@ class TipModel extends ContentModel {
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
-      creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
+      creator: content['user_regalup'] == null
+          ? null
+          : content['user_regalup']['user_name'],
+      certificate: content['certificates'] == null
+          ? null
+          : content['certificates']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificates']),
       title: TextMixin.fixString(content['title']),
       description: TextMixin.fixString(content['description']),
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),

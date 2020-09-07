@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:voice_inc/models/user_model.dart';
@@ -13,7 +11,6 @@ import '../widgets/poll_list.dart';
 import '../widgets/challenge_list.dart';
 import '../widgets/tip_list.dart';
 import '../widgets/cause_list.dart';
-import '../widgets/influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
@@ -103,6 +100,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
   }
 
   void _blockContent(context, userId) async {
+    /*
     final myUser = await FirebaseAuth.instance.currentUser();
     final userData =
         await Firestore.instance.collection('users').document(userId).get();
@@ -136,6 +134,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
       );
     });
     await batch.commit();
+    */
     Navigator.of(context).pop();
   }
 
@@ -253,10 +252,10 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
               },
               body: TabBarView(
                 children: [
-                  PollList(profileId, _scrollController),
-                  ChallengeList(profileId, _scrollController),
-                  TipList(profileId, _scrollController, null),
-                  CauseList(profileId, _scrollController),
+                  PollList(user.userName, _scrollController),
+                  ChallengeList(user.userName, _scrollController),
+                  TipList(user.userName, _scrollController, null),
+                  CauseList(user.userName, _scrollController),
                 ],
               ),
             ),

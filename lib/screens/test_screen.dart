@@ -43,10 +43,9 @@ class TestScreen extends StatelessWidget {
               ),
               RaisedButton(
                 onPressed: () {
-                  Provider.of<ContentProvider>(context, listen: false)
-                      .getUnread();
+                  Provider.of<AuthProvider>(context, listen: false).getCatalogs();
                 },
-                child: Text('Get unread'),
+                child: Text('Get catalogs'),
               ),
               RaisedButton(
                 onPressed: () {

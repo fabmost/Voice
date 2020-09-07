@@ -9,8 +9,9 @@ import 'package:intl/intl.dart';
 
 import '../api.dart';
 import '../models/user_model.dart';
+import '../mixins/text_mixin.dart';
 
-class UserProvider with ChangeNotifier {
+class UserProvider with ChangeNotifier, TextMixin {
   final String _myUser;
   final _storage = FlutterSecureStorage();
   UserModel _currentUser;
@@ -142,8 +143,9 @@ class UserProvider with ChangeNotifier {
       _currentUser.youtube = youtube;
     }
     if (bio != null) {
-      parameters['biography'] = bio;
-      _currentUser.biography = bio;
+      String fixedBio = serverSafe(bio);
+      parameters['biography'] = fixedBio;
+      _currentUser.biography = fixedBio;
     }
     if (gender != null) {
       parameters['gender'] = gender;

@@ -3,12 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'description.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'menu_content.dart';
+import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../models/resource_model.dart';
@@ -33,6 +36,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
   final int goal;
   final List resources;
   final String regalupName;
+  final certificate;
 
   ChallengeTile({
     @required this.id,
@@ -50,6 +54,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
     @required this.parameter,
     @required this.goal,
     @required this.resources,
+    @required this.certificate,
     this.regalupName,
   });
 
@@ -246,10 +251,11 @@ class ChallengeTile extends StatelessWidget with ShareContent {
                             ),
                           ),
                           SizedBox(width: 8),
-                          //InfluencerBadge(influencer, 16),
+                          InfluencerBadge(id, certificate, 16),
                         ],
                       ),
-                      subtitle: Text(timeago.format(now.subtract(difference))),
+                      subtitle: Text(timeago.format(now.subtract(difference),
+                          locale: Translations.of(context).currentLanguage)),
                       trailing: MenuContent(
                         id: id,
                         type: 'C',
@@ -259,21 +265,14 @@ class ChallengeTile extends StatelessWidget with ShareContent {
               ),
             ),
             SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            TitleContent(title),
             SizedBox(height: 16),
-            if(goal > 0) _challengeGoal(context),
-            if(goal > 0) SizedBox(height: 16),
-            if (description != null && description.isNotEmpty) Description(description),
-            if (description != null && description.isNotEmpty) SizedBox(height: 16),
+            if (goal > 0) _challengeGoal(context),
+            if (goal > 0) SizedBox(height: 16),
+            if (description != null && description.isNotEmpty)
+              Description(description),
+            if (description != null && description.isNotEmpty)
+              SizedBox(height: 16),
             Container(
               color: color,
               child: Row(

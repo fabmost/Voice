@@ -8,6 +8,7 @@ import '../models/tip_model.dart';
 import '../widgets/poll_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
+import '../widgets/cause_tile.dart';
 import '../providers/content_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
@@ -47,6 +48,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       hasRegalup: content.hasRegalup,
       hasSaved: content.hasSaved,
       answers: content.answers,
+      certificate: content.certificate,
       resources: content.resources,
     );
   }
@@ -57,6 +59,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       likes: content.likes,
@@ -71,16 +74,27 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     );
   }
 
-  Widget _causeWidget(doc) {
-    /*
-    return SearchCause(
-      reference: Firestore.instance.collection('content').document(id),
-      title: doc['title'],
-      creator: doc['creator'],
-      info: doc['info'],
+  Widget _causeWidget(content) {
+    return CauseTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
     );
-    */
-    return Container();
   }
 
   Widget _tipWidget(TipModel content) {
@@ -89,6 +103,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       likes: content.likes,

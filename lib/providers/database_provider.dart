@@ -30,7 +30,7 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Future<List> getCategories() async {
-    final dataList = await DBHelper.getData(CategoriesTable.table_name);
+    final dataList = await DBHelper.getData(CategoriesTable.table_name, CategoriesTable.name);
     if (dataList.isEmpty) {
       return [];
     }

@@ -443,7 +443,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
       //subtitle: Text(doc['user_name']),
@@ -493,6 +493,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               TextField(
                 controller: _titleController,
                 autofocus: true,
+                autocorrect: true,
                 maxLines: null,
                 maxLength: 120,
                 decoration: InputDecoration(

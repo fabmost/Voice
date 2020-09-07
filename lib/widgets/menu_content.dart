@@ -7,6 +7,8 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/flag_screen.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
+import '../mixins/alert_mixin.dart';
 
 class MenuContent extends StatefulWidget {
   final String id;
@@ -19,15 +21,19 @@ class MenuContent extends StatefulWidget {
   _MenuContentState createState() => _MenuContentState();
 }
 
-class _MenuContentState extends State<MenuContent> {
+class _MenuContentState extends State<MenuContent> with AlertMixin{
   bool _isSaved;
 
   void _flag(context) {
-    Navigator.of(context)
-        .popAndPushNamed(FlagScreen.routeName, arguments: widget.id);
+    Navigator.of(context).popAndPushNamed(FlagScreen.routeName,
+        arguments: {'id': widget.id, 'type': widget.type});
   }
 
   void _save(context) async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      anonymousAlert(context);
+      return;
+    }
     final result = await Provider.of<ContentProvider>(context, listen: false)
         .saveContent(widget.id, widget.type);
     setState(() {

@@ -11,12 +11,14 @@ class LikeContent extends StatefulWidget {
   final String type;
   final int likes;
   final bool hasLiked;
+  final Function tipFunction;
 
   LikeContent({
     @required this.id,
     @required this.type,
     @required this.likes,
     @required this.hasLiked,
+    this.tipFunction,
   });
 
   @override
@@ -40,6 +42,9 @@ class _LikeContentState extends State<LikeContent> with AlertMixin {
       _hasLiked = result;
       if (result) {
         _likes++;
+        if(widget.tipFunction != null){
+          widget.tipFunction();
+        }
       } else {
         _likes--;
       }

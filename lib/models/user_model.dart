@@ -1,3 +1,7 @@
+import 'package:voice_inc/mixins/text_mixin.dart';
+
+import 'certificate_model.dart';
+
 class UserModel {
   String userName;
   String icon;
@@ -18,6 +22,7 @@ class UserModel {
   int following;
   bool isFollowing;
   String idAnswer;
+  CertificateModel certificate;
 
   UserModel({
     this.userName,
@@ -38,6 +43,7 @@ class UserModel {
     this.following,
     this.isFollowing,
     this.idAnswer,
+    this.certificate,
   });
 
   static UserModel fromJson(Map content) {
@@ -45,20 +51,25 @@ class UserModel {
       userName: content['user_name'] ?? '',
       icon: content['icon'],
       hash: content['hash'],
-      name: content['name'],
-      lastName: content['last_name'],
+      name: TextMixin.fixString(content['name']),
+      lastName: TextMixin.fixString(content['last_name']),
       cover: content['cover'] ?? '',
       country: content['country_code'],
       tiktok: content['tiktok'],
       facebook: content['facebook'],
       instagram: content['instagram'],
       youtube: content['youtube'],
-      biography: content['biography'],
+      biography: content['biography'] == null
+          ? null
+          : TextMixin.fixString(content['biography']),
       gender: content['gender'],
       birthday: content['birthday'],
       followers: content['followers'],
       following: content['following'],
       isFollowing: content['is_following'],
+      certificate: content['certificates']['icon'] == null
+          ? null
+          : CertificateModel.fromJson(content['certificates']),
     );
   }
 
@@ -69,9 +80,18 @@ class UserModel {
       mList.add(UserModel(
         icon: element['icon'],
         userName: element['user_name'],
-        name: element['name'],
-        lastName: element['last_name'],
+        name: element['name'] == null
+            ? null
+            : TextMixin.fixString(element['name']),
+        lastName: element['last_name'] == null
+            ? null
+            : TextMixin.fixString(element['last_name']),
         isFollowing: element['is_following'],
+        certificate: element['certificates'] == null
+            ? null
+            : element['certificates']['icon'] == null
+                ? null
+                : CertificateModel.fromJson(element['certificates']),
       ));
     });
 
@@ -86,6 +106,11 @@ class UserModel {
         icon: element['icon'],
         userName: element['user_name'],
         idAnswer: element['id_answer'],
+        certificate: element['certificates'] == null
+            ? null
+            : element['certificates']['icon'] == null
+                ? null
+                : CertificateModel.fromJson(element['certificates']),
       ));
     });
 
@@ -99,6 +124,11 @@ class UserModel {
       mList.add(UserModel(
         icon: element['icon'],
         userName: element['user_name'],
+        certificate: element['certificates'] == null
+            ? null
+            : element['certificates']['icon'] == null
+                ? null
+                : CertificateModel.fromJson(element['certificates']),
       ));
     });
 

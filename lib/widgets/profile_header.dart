@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'user_followers.dart';
+import 'influencer_badge.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/user_model.dart';
 import '../screens/poll_gallery_screen.dart';
@@ -61,11 +62,11 @@ class ProfileHeader extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: GestureDetector(
-                    onTap: user.icon == null ? null : () => _openImage(context),
+                    onTap: user.icon == null ? null : user.icon.isEmpty ? null : () => _openImage(context),
                     child: CircleAvatar(
                       radius: 60,
                       backgroundImage:
-                          user.icon == null ? null : NetworkImage(user.icon),
+                          user.icon == null ? null : user.icon.isEmpty ? null : NetworkImage(user.icon),
                     ),
                   ),
                 ),
@@ -86,7 +87,7 @@ class ProfileHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8),
-              //InfluencerBadge(document['influencer'] ?? '', 20),
+              InfluencerBadge(user.userName, user.certificate, 20),
             ],
           ),
           Text(

@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import 'user_model.dart';
+import 'certificate_model.dart';
 
 class CommentModel {
   final String id;
@@ -12,6 +13,7 @@ class CommentModel {
   final int comments;
   final bool hasLike;
   final bool hasDislike;
+  final CertificateModel certificate;
 
   CommentModel({
     this.id,
@@ -23,6 +25,7 @@ class CommentModel {
     this.comments,
     this.hasLike,
     this.hasDislike,
+    this.certificate,
   });
 
   static CommentModel fromJson(Map element) {
@@ -39,6 +42,11 @@ class CommentModel {
       comments: element['comments'] ?? 0,
       hasLike: element['is_likes'] ?? false,
       hasDislike: element['is_dislike'] ?? false,
+      certificate: element['certificates'] == null
+          ? null
+          : element['certificates']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(element['certificates']),
     );
   }
 
@@ -53,6 +61,11 @@ class CommentModel {
           userName: element['user']['user_name'],
           icon: element['user']['icon'],
         ),
+        certificate: element['certificates'] == null
+            ? null
+            : element['certificates']['icon'] == null
+                ? null
+                : CertificateModel.fromJson(element['certificates']),
         body: element['body'],
         likes: element['likes'],
         dislikes: element['dislike'],

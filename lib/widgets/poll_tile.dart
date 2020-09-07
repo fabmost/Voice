@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
@@ -9,6 +11,7 @@ import 'poll_images.dart';
 import 'menu_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
+import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
@@ -34,6 +37,7 @@ class PollTile extends StatelessWidget with ShareContent {
   final List answers;
   final List resources;
   final String regalupName;
+  final certificate;
 
   PollTile({
     @required this.reference,
@@ -53,6 +57,7 @@ class PollTile extends StatelessWidget with ShareContent {
     @required this.hasSaved,
     @required this.answers,
     @required this.resources,
+    @required this.certificate,
     this.regalupName,
   });
 
@@ -153,10 +158,11 @@ class PollTile extends StatelessWidget with ShareContent {
                           ),
                         ),
                         SizedBox(width: 8),
-                        //InfluencerBadge(influencer, 16),
+                        InfluencerBadge(id, certificate, 16),
                       ],
                     ),
-                    subtitle: Text(timeago.format(now.subtract(difference))),
+                    subtitle: Text(timeago.format(now.subtract(difference),
+                        locale: Translations.of(context).currentLanguage)),
                     trailing: MenuContent(
                       id: id,
                       type: 'P',
@@ -167,16 +173,7 @@ class PollTile extends StatelessWidget with ShareContent {
               ),
             ),
             SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            TitleContent(title),
             if (resources.isNotEmpty) SizedBox(height: 16),
             if (resources.isNotEmpty) _handleResources(),
             Padding(
@@ -203,7 +200,8 @@ class PollTile extends StatelessWidget with ShareContent {
                     ? '$votes participante'
                     : '$votes participantes'),
               ),
-            if (description != null && description.isNotEmpty) Description(description),
+            if (description != null && description.isNotEmpty)
+              Description(description),
             if (description != null && description.isNotEmpty)
               SizedBox(height: 16),
             Container(

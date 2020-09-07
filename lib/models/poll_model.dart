@@ -4,6 +4,7 @@ import 'content_model.dart';
 import 'resource_model.dart';
 import 'poll_answer_model.dart';
 import 'user_model.dart';
+import 'certificate_model.dart';
 import '../mixins/text_mixin.dart';
 
 class PollModel extends ContentModel {
@@ -27,6 +28,7 @@ class PollModel extends ContentModel {
     hasLiked,
     hasRegalup,
     hasSaved,
+    certificate,
     this.body,
     this.description,
     this.votes,
@@ -35,17 +37,19 @@ class PollModel extends ContentModel {
     this.resources,
     this.comments,
   }) : super(
-            id: id,
-            type: type,
-            user: user,
-            creator: creator,
-            title: title,
-            createdAt: createdAt,
-            likes: likes,
-            regalups: regalups,
-            hasLiked: hasLiked,
-            hasRegalup: hasRegalup,
-            hasSaved: hasSaved);
+          id: id,
+          type: type,
+          user: user,
+          creator: creator,
+          title: title,
+          createdAt: createdAt,
+          likes: likes,
+          regalups: regalups,
+          hasLiked: hasLiked,
+          hasRegalup: hasRegalup,
+          hasSaved: hasSaved,
+          certificate: certificate,
+        );
 
   static PollModel fromJson(Map content) {
     return PollModel(
@@ -55,7 +59,14 @@ class PollModel extends ContentModel {
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
-      creator: content['user_regalup'] == null ? null :  content['user_regalup']['user_name'],
+      creator: content['user_regalup'] == null
+          ? null
+          : content['user_regalup']['user_name'],
+      certificate: content['certificates'] == null
+          ? null
+          : content['certificates']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificates']),
       title: TextMixin.fixString(content['body']),
       description: TextMixin.fixString(content['description']),
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),

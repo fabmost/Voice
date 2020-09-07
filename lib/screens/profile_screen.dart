@@ -14,7 +14,6 @@ import '../widgets/poll_user_list.dart';
 import '../widgets/challenge_user_list.dart';
 import '../widgets/tip_user_list.dart';
 import '../widgets/cause_user_list.dart';
-import '../widgets/influencer_badge.dart';
 import '../providers/user_provider.dart';
 
 class ProfileScreen extends StatefulWidget {

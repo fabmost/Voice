@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'user_poll_tile.dart';
-import 'repost_poll.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 import '../models/content_model.dart';

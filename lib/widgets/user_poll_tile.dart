@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'poll_images.dart';
 import 'poll_video.dart';
@@ -10,6 +11,7 @@ import 'regalup_content.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
+import '../providers/content_provider.dart';
 import '../screens/comments_screen.dart';
 import '../screens/analytics_screen.dart';
 
@@ -103,7 +105,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
               style: TextStyle(fontSize: 16),
             ),
             onPressed: () {
-              _deleteContent();
+              _deleteContent(ct);
               Navigator.of(ct).pop();
             },
           ),
@@ -112,7 +114,12 @@ class UserPollTile extends StatelessWidget with ShareContent {
     );
   }
 
-  void _deleteContent() async {}
+  void _deleteContent(context) async {
+    final result = await Provider.of<ContentProvider>(context, listen: false).deleteContent(id: id, type: 'P');
+    if(result){
+      Navigator.of(context).pop();
+    }
+  }
 
   void _options(context) {
     showModalBottomSheet(
@@ -169,25 +176,6 @@ class UserPollTile extends StatelessWidget with ShareContent {
             Container(
               color: color,
               child: ListTile(
-                //onTap: myId == userId ? null : () => _toProfile(context),
-                /*
-                  leading: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Theme.of(context).accentColor,
-                    backgroundImage: NetworkImage(userImage),
-                  ),
-                  title: Row(
-                    children: <Widget>[
-                      Text(
-                        userName,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      SizedBox(width: 8),
-                      InfluencerBadge(influencer, 16),
-                    ],
-                  ),
-                  subtitle: Text(timeago.format(now.subtract(difference))),*/
                 title: OutlineButton(
                   onPressed: () => _toAnalytics(context),
                   child: Text('Estadísticas'),

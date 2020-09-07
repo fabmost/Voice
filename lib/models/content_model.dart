@@ -1,4 +1,5 @@
 import 'user_model.dart';
+import 'certificate_model.dart';
 
 class ContentModel {
   final String id;
@@ -12,6 +13,7 @@ class ContentModel {
   final bool hasLiked;
   final bool hasRegalup;
   final bool hasSaved;
+  final CertificateModel certificate;
 
   ContentModel({
     this.id,
@@ -25,5 +27,6 @@ class ContentModel {
     this.hasLiked,
     this.hasRegalup,
     this.hasSaved,
+    this.certificate,
   });
 }

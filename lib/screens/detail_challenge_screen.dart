@@ -123,6 +123,7 @@ class _DetailChallengeScreenState extends State<DetailChallengeScreen> {
                           hasUp: doc.hasLike,
                           downs: doc.dislikes,
                           hasDown: doc.hasDislike,
+                          certificate: doc.certificate,
                         );
                       },
                     ),

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'poll_tile.dart';
 import 'challenge_tile.dart';
+import 'tip_tile.dart';
+import 'cause_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
@@ -35,6 +37,7 @@ class _SavedListState extends State<SavedList> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       votes: content.votes,
@@ -56,6 +59,7 @@ class _SavedListState extends State<SavedList> {
         date: content.createdAt,
         userName: content.user.userName,
         userImage: content.user.icon,
+        certificate: content.certificate,
         title: content.title,
         description: content.description,
         likes: content.likes,
@@ -69,8 +73,48 @@ class _SavedListState extends State<SavedList> {
         resources: content.resources);
   }
 
-  Widget _causeWidget(doc) {
-    return Container();
+  Widget _tipWidget(content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+    );
+  }
+
+  Widget _causeWidget(content) {
+    return CauseTile(
+        id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
+    );
   }
 
   bool onNotification(ScrollNotification notification) {
@@ -173,7 +217,9 @@ class _SavedListState extends State<SavedList> {
                       return _pollWidget(doc);
                     case 'challenge':
                       return _challengeWidget(doc);
-                    case 'cause':
+                    case 'Tips':
+                      return _tipWidget(doc);
+                    case 'causes':
                       return _causeWidget(doc);
                     default:
                       return SizedBox();

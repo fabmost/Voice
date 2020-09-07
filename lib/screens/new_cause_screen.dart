@@ -132,10 +132,8 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
         final mFile = await VideoThumbnail.thumbnailFile(
           video: value,
-          //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
@@ -353,7 +351,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
       //subtitle: Text(doc['user_name']),

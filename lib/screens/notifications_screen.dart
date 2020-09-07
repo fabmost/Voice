@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,7 +25,7 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final ScrollController scrollController = new ScrollController();
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
-  List<NotificationModel> _list = [];
+  //List<NotificationModel> _list = [];
   int _currentPageNumber;
   bool _isLoading = false;
   bool _hasMore = true;
@@ -124,16 +123,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {
       _isLoading = true;
     });
-    List results = await Provider.of<ContentProvider>(context, listen: false)
+    await Provider.of<ContentProvider>(context, listen: false)
         .getNotifications(_currentPageNumber);
     setState(() {
+      /*
       if (results.isEmpty) {
         _hasMore = false;
       } else {
         _list = results;
         _moreData();
       }
+      */
       _isLoading = false;
+      _moreData();
     });
   }
 
@@ -142,14 +144,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     loadMoreStatus = LoadMoreStatus.LOADING;
     Provider.of<ContentProvider>(context, listen: false)
         .getNotifications(_currentPageNumber)
-        .then((newContent) {
-      setState(() {
-        if (newContent.isEmpty) {
+        .then((hasMore) {
+      if (!hasMore) {
+        setState(() {
           _hasMore = false;
-        } else {
-          _list.addAll(newContent);
-        }
-      });
+        });
+      }
       loadMoreStatus = LoadMoreStatus.STABLE;
     });
   }
@@ -161,14 +161,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         onTap: () {
           Provider.of<ContentProvider>(context, listen: false)
               .notificationRead(model.id);
-          /*
-          Firestore.instance
-              .collection('notifications')
-              .document(doc.documentID)
-              .updateData({
-            'read': FieldValue.arrayUnion([userSnap.data.uid])
-          });
-          */
           switch (model.type) {
             case 'poll':
               return _toPoll(model.idContent);
@@ -216,6 +208,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var cart = context.watch<ContentProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -223,7 +216,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : _list.isEmpty
+          : cart.getNotificationsList.isEmpty
               ? Center(
                   child: Text(
                     'No tienes notificaciones',
@@ -238,18 +231,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   onNotification: onNotification,
                   child: ListView.separated(
                     controller: scrollController,
-                    itemCount: _hasMore ? _list.length + 1 : _list.length,
+                    itemCount: _hasMore
+                        ? cart.getNotificationsList.length + 1
+                        : cart.getNotificationsList.length,
                     separatorBuilder: (context, index) => Divider(
                       height: 0,
                     ),
                     itemBuilder: (context, i) {
-                      if (i == _list.length)
+                      if (i == cart.getNotificationsList.length)
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 16),
                           alignment: Alignment.center,
                           child: CircularProgressIndicator(),
                         );
-                      return _notification(_list[i]);
+                      return _notification(cart.getNotificationsList[i]);
                     },
                   ),
                 ),

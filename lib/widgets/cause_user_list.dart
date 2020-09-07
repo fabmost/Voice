@@ -32,6 +32,7 @@ class _CauseUserListState extends State<CauseUserList> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       info: content.info,

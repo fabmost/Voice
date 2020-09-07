@@ -33,6 +33,7 @@ class _PollListState extends State<PollList> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       votes: content.votes,

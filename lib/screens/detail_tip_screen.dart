@@ -123,6 +123,7 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
                           hasUp: doc.hasLike,
                           downs: doc.dislikes,
                           hasDown: doc.hasDislike,
+                          certificate: doc.certificate,
                         );
                       },
                     ),

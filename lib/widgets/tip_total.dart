@@ -31,6 +31,7 @@ class _TipTotalState extends State<TipTotal> {
     Navigator.of(context).pop();
     setState(() {
       _rating = newTotal;
+      _hasRated = true;
     });
   }
 

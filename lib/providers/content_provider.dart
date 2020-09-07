@@ -23,10 +23,12 @@ class ContentProvider with ChangeNotifier, TextMixin {
   List<ContentModel> _homeContent = [];
   List<ContentModel> _causesContent = [];
   List<UserModel> _usersList = [];
+  List<NotificationModel> _notificationsList = [];
 
   List<ContentModel> get getHome => [..._homeContent];
   List<ContentModel> get getCauses => [..._causesContent];
   List<UserModel> get getUsers => [..._usersList];
+  List<NotificationModel> get getNotificationsList => [..._notificationsList];
 
   Future<bool> getBaseTimeline(int page, String type, [tries = 1]) async {
     var url = '${API.baseURL}/timeLine/';
@@ -453,6 +455,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      if (dataMap['data']['id'] == 'null') return null;
       switch (type) {
         case 'P':
           return PollModel.fromJson(dataMap['data']);
@@ -595,6 +598,10 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
       return hasLiked;
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return likeContent(type, id);
+    }
     return null;
   }
 
@@ -684,7 +691,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['success'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      return dataMap['total'];
+      return (dataMap['total'] * 1.0);
     }
     return 0;
   }
@@ -1040,6 +1047,10 @@ class ContentProvider with ChangeNotifier, TextMixin {
       _saveToken(dataMap['session']['token']);
       return UserModel.likesListFromJson(dataMap['likes']);
     }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getLikes(id: id, page: page, type: type);
+    }
     return [];
   }
 
@@ -1139,6 +1150,62 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return null;
   }
 
+  Future<bool> deleteContent({id, type}) async {
+    var url = '${API.baseURL}/deleteContent';
+    final token = await _getToken();
+    Map parameters = {'type': type, 'idt': id};
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['success'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> flagContent({id, type, action}) async {
+    var url = '${API.baseURL}/reportContent';
+    final token = await _getToken();
+    Map parameters = {'type': type, 'id_content': id, 'action': action};
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return true;
+    }
+    return false;
+  }
+
   Future<String> _getToken() {
     return _storage.read(key: API.sessionToken) ?? null;
   }
@@ -1181,7 +1248,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return;
   }
 
-  Future<List<NotificationModel>> getNotifications(page) async {
+  Future<bool> getNotifications(page) async {
     var url = '${API.baseURL}/notification/$page';
     final token = await _getToken();
 
@@ -1198,17 +1265,26 @@ class ContentProvider with ChangeNotifier, TextMixin {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return [];
+      return false;
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      return NotificationModel.listFromJson(dataMap['notification']);
+      if (page == 0) {
+        _notificationsList.clear();
+      }
+      if(dataMap['notification'].isEmpty){
+        return false;
+      }
+      _notificationsList
+          .addAll(NotificationModel.listFromJson(dataMap['notification']));
+      notifyListeners();
+      return true;
     }
     if (dataMap['alert']['action'] == 4) {
       await _renewToken();
       return getNotifications(page);
     }
-    return [];
+    return false;
   }
 
   Future<void> notificationRead(id) async {
@@ -1232,6 +1308,20 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      int index = _notificationsList.indexWhere((element) => element.id == id);
+      if (index != -1) {
+        final model = _notificationsList[index];
+        _notificationsList[index] = NotificationModel(
+          id: model.id,
+          icon: model.icon,
+          idContent: model.idContent,
+          message: model.message,
+          type: model.type,
+          userName: model.userName,
+          isNew: false,
+        );
+        notifyListeners();
+      }
       return;
     }
     return;

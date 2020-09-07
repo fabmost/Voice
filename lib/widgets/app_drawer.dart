@@ -4,11 +4,17 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../translations.dart';
+import '../custom/galup_font_icons.dart';
 import '../providers/auth_provider.dart';
 import '../mixins/share_mixin.dart';
+import '../screens/saved_screen.dart';
 
 class AppDrawer extends StatelessWidget with ShareContent {
   final String termsUrl = 'https://galup.app/terminos-y-condiciones';
+
+  void _toSaved(context) {
+    Navigator.of(context).pushNamed(SavedScreen.routeName);
+  }
 
   void _shareProfile() async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
@@ -33,6 +39,11 @@ class AppDrawer extends StatelessWidget with ShareContent {
       child: Column(
         children: <Widget>[
           SizedBox(height: 52),
+          ListTile(
+            onTap: ()=> _toSaved(context),
+            leading: Icon(GalupFont.saved),
+            title: Text(Translations.of(context).text('title_saved')),
+          ),
           ListTile(
             onTap: _shareProfile,
             title: Text(Translations.of(context).text('button_share_profile')),

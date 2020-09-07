@@ -7,7 +7,6 @@ import '../translations.dart';
 import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
-import '../screens/auth_screen.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom//my_special_text_span_builder.dart';
 
@@ -50,7 +49,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
       //subtitle: Text(doc['user_name']),
@@ -126,6 +125,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
                 spanBuilder: MySpecialTextSpanBuilder(),
                 controller: _controller,
                 textCapitalization: TextCapitalization.sentences,
+                keyboardType: TextInputType.multiline,
                 autocorrect: true,
                 maxLines: null,
                 maxLength: 240,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'challenge_tile.dart';
-import 'repost_poll.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 import '../models/content_model.dart';
@@ -34,6 +33,7 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       likes: content.likes,

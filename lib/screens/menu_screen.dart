@@ -35,6 +35,10 @@ import 'new_tip_screen.dart';
 import 'new_cause_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
+import 'detail_poll_screen.dart';
+import 'detail_challenge_screen.dart';
+import 'detail_tip_screen.dart';
+import 'detail_cause_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -528,8 +532,48 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       final Uri deepLink = dynamicLink?.link;
 
       if (deepLink != null) {
-        Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}',
-            arguments: deepLink.pathSegments[1]);
+        switch (deepLink.pathSegments[0]) {
+          case 'poll':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailPollScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'challenge':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailChallengeScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'tip':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailTipScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'cause':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailCauseScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+        }
       }
     }, onError: (OnLinkErrorException e) async {
       print('onLinkError');

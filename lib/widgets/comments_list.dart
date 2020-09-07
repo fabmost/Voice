@@ -101,41 +101,43 @@ class _CommentsListState extends State<CommentsList> {
   Widget build(BuildContext context) {
     return _isLoading
         ? Center(child: CircularProgressIndicator())
-        : _list.isEmpty
-            ? Center(
-                child: Text(Translations.of(context).text('empty_comments')),
-              )
-            : Column(
-                children: <Widget>[
-                  Expanded(
-                    child: NotificationListener(
-                      onNotification: onNotification,
-                      child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: _list.length,
-                        itemBuilder: (context, i) => CommentTile(
-                          contentId: widget.id,
-                          type: widget.type,
-                          id: _list[i].id,
-                          title: _list[i].body,
-                          comments: _list[i].comments,
-                          date: _list[i].createdAt,
-                          userName: _list[i].user.userName,
-                          userImage: _list[i].user.icon ?? '',
-                          ups: _list[i].likes,
-                          hasUp: _list[i].hasLike,
-                          downs: _list[i].dislikes,
-                          hasDown: _list[i].hasDislike,
+        : Column(
+            children: <Widget>[
+              Expanded(
+                child: _list.isEmpty
+                    ? Center(
+                        child: Text(
+                            Translations.of(context).text('empty_comments')),
+                      )
+                    : NotificationListener(
+                        onNotification: onNotification,
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: _list.length,
+                          itemBuilder: (context, i) => CommentTile(
+                            contentId: widget.id,
+                            type: widget.type,
+                            id: _list[i].id,
+                            title: _list[i].body,
+                            comments: _list[i].comments,
+                            date: _list[i].createdAt,
+                            userName: _list[i].user.userName,
+                            userImage: _list[i].user.icon ?? '',
+                            ups: _list[i].likes,
+                            hasUp: _list[i].hasLike,
+                            downs: _list[i].dislikes,
+                            hasDown: _list[i].hasDislike,
+                            certificate: _list[i].certificate,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  NewComment(
-                    id: widget.id,
-                    type: widget.type,
-                    function: _setComment,
-                  ),
-                ],
-              );
+              ),
+              NewComment(
+                id: widget.id,
+                type: widget.type,
+                function: _setComment,
+              ),
+            ],
+          );
   }
 }

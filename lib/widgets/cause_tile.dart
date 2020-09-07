@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'influencer_badge.dart';
 import 'description.dart';
 import 'menu_content.dart';
 import 'cause_button.dart';
 import 'regalup_content.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
+import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/user_provider.dart';
+import '../screens/view_profile_screen.dart';
 
 class CauseTile extends StatelessWidget with ShareContent {
   final String id;
@@ -31,6 +36,7 @@ class CauseTile extends StatelessWidget with ShareContent {
   final String phone;
   final String web;
   final String bank;
+  final certificate;
 
   final Color color = Color(0xFFF0F0F0);
 
@@ -53,7 +59,15 @@ class CauseTile extends StatelessWidget with ShareContent {
     @required this.phone,
     @required this.web,
     @required this.bank,
+    @required this.certificate,
   });
+
+  void _toProfile(context) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: userName);
+    }
+  }
 
   void _call() async {
     if (await canLaunch('tel:$phone')) {
@@ -116,7 +130,7 @@ class CauseTile extends StatelessWidget with ShareContent {
                 widthFactor: totalPercentage,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: color,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(12),
                       bottomLeft: Radius.circular(12),
@@ -175,6 +189,7 @@ class CauseTile extends StatelessWidget with ShareContent {
     final now = new DateTime.now();
     final difference = now.difference(date);
     return ListTile(
+      onTap: userName == null ? null : () => _toProfile(context),
       leading: CircleAvatar(
         radius: 18,
         backgroundColor: Theme.of(context).primaryColor,
@@ -211,12 +226,13 @@ class CauseTile extends StatelessWidget with ShareContent {
                   ),
                 ),
                 SizedBox(width: 8),
-                //InfluencerBadge(document['influencer'] ?? '', 16),
+                InfluencerBadge(id, certificate, 16),
               ],
             ),
       subtitle: info.isNotEmpty
           ? Text('Por: Galup')
-          : Text(timeago.format(now.subtract(difference))),
+          : Text(timeago.format(now.subtract(difference),
+              locale: Translations.of(context).currentLanguage)),
       trailing: MenuContent(
         id: id,
         isSaved: hasSaved,

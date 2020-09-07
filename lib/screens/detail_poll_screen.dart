@@ -124,6 +124,7 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
                           hasUp: doc.hasLike,
                           downs: doc.dislikes,
                           hasDown: doc.hasDislike,
+                          certificate: doc.certificate,
                         );
                       },
                     ),

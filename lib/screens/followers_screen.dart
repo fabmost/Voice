@@ -116,7 +116,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(user.userName, user.certificate, 16),
         ],
       ),
       subtitle: Text('@${user.userName}'),

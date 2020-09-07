@@ -4,11 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
-import 'auth_screen.dart';
+import 'view_profile_screen.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/cause_model.dart';
 import '../widgets/description.dart';
 import '../widgets/menu_content.dart';
@@ -33,6 +34,14 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   int _likes;
 
   final Color color = Color(0xFFF0F0F0);
+
+  void _toProfile(context) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser !=
+        _causeModel.user.userName) {
+      Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
+          arguments: _causeModel.user.userName);
+    }
+  }
 
   void _call(phone) async {
     if (await canLaunch('tel:$phone')) {
@@ -72,34 +81,30 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
     );
   }
 
-  void _anonymousAlert(context, String text) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(text),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _share() {
     widget.shareCause(_causeModel.id, _causeModel.title);
+  }
+
+  void _noExists() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('Este contenido ya no existe'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        Navigator.of(context).pop();
+      });
+    });
   }
 
   Future<void> _fetchCause() async {
@@ -108,6 +113,10 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
     });
     final result = await Provider.of<ContentProvider>(context, listen: false)
         .getContent('CA', widget.id);
+    if (result == null) {
+      _noExists();
+      return;
+    }
     setState(() {
       _isLoading = false;
       _causeModel = result;
@@ -131,6 +140,8 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
     final now = new DateTime.now();
     final difference = now.difference(_causeModel.createdAt);
     return ListTile(
+      onTap:
+          _causeModel.user.userName == null ? null : () => _toProfile(context),
       leading: CircleAvatar(
         radius: 18,
         backgroundColor: Theme.of(context).primaryColor,
@@ -206,7 +217,7 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
                 widthFactor: totalPercentage,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: color,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(12),
                       bottomLeft: Radius.circular(12),

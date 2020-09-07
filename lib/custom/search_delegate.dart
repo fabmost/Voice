@@ -17,7 +17,6 @@ import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
-
   String currentUser;
 
   Widget _pollWidget(PollModel content) {
@@ -27,6 +26,7 @@ class CustomSearchDelegate extends SearchDelegate {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       votes: content.votes,
@@ -48,6 +48,7 @@ class CustomSearchDelegate extends SearchDelegate {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       likes: content.likes,
@@ -65,6 +66,7 @@ class CustomSearchDelegate extends SearchDelegate {
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
       id: content.id,
+      certificate: content.certificate,
       title: content.title,
       date: content.createdAt,
       likes: content.likes,
@@ -72,6 +74,15 @@ class CustomSearchDelegate extends SearchDelegate {
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
       hasSaved: content.hasSaved,
+      bank: content.account,
+      description: content.description,
+      web: content.web,
+      phone: content.phone,
+      resources: content.resources,
+      info: content.info,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      goal: content.goal,
     );
   }
 
@@ -81,6 +92,7 @@ class CustomSearchDelegate extends SearchDelegate {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       likes: content.likes,
@@ -116,7 +128,7 @@ class CustomSearchDelegate extends SearchDelegate {
   }
 
   Widget _userTile(context, UserModel content) {
-    if(content.userName == currentUser){
+    if (content.userName == currentUser) {
       return Container();
     }
     return ListTile(
@@ -138,15 +150,15 @@ class CustomSearchDelegate extends SearchDelegate {
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
       //subtitle: Text(doc['user_name']),
     );
   }
 
-  void _getCUrrentUser(context){
-    if(currentUser == null){
+  void _getCUrrentUser(context) {
+    if (currentUser == null) {
       currentUser = Provider.of<UserProvider>(context, listen: false).getUser;
     }
   }

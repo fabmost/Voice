@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../models/user_model.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../screens/view_profile_screen.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
@@ -27,8 +29,10 @@ class _LikesListState extends State<LikesList> {
   bool _hasMore = true;
 
   void _toProfile(userId) async {
-    Navigator.of(context)
-        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    if (Provider.of<UserProvider>(context, listen: false).getUser != userId) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
+    }
   }
 
   Widget _userTile(UserModel user) {
@@ -41,7 +45,7 @@ class _LikesListState extends State<LikesList> {
         children: <Widget>[
           Text('${user.userName}'),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(user.userName, user.certificate, 16),
         ],
       ),
     );
@@ -55,24 +59,7 @@ class _LikesListState extends State<LikesList> {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
             _hasMore) {
-          _currentPageNumber++;
-          loadMoreStatus = LoadMoreStatus.LOADING;
-          Provider.of<ContentProvider>(context, listen: false)
-              .getLikes(
-            id: widget.id,
-            type: widget.type,
-            page: _currentPageNumber,
-          )
-              .then((newObjects) {
-            setState(() {
-              if (newObjects.isEmpty) {
-                _hasMore = false;
-              } else {
-                _list.addAll(newObjects);
-              }
-            });
-            loadMoreStatus = LoadMoreStatus.STABLE;
-          });
+          _moreData();
         }
       }
     }
@@ -97,6 +84,30 @@ class _LikesListState extends State<LikesList> {
       }
       _isLoading = false;
     });
+    if (_hasMore) {
+      _moreData();
+    }
+  }
+
+  void _moreData() {
+    _currentPageNumber++;
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    Provider.of<ContentProvider>(context, listen: false)
+        .getLikes(
+      id: widget.id,
+      type: widget.type,
+      page: _currentPageNumber,
+    )
+        .then((newObjects) {
+      setState(() {
+        if (newObjects.isEmpty) {
+          _hasMore = false;
+        } else {
+          _list.addAll(newObjects);
+        }
+      });
+      loadMoreStatus = LoadMoreStatus.STABLE;
+    });
   }
 
   @override
@@ -117,14 +128,22 @@ class _LikesListState extends State<LikesList> {
         ? Center(child: CircularProgressIndicator())
         : _list.isEmpty
             ? Center(
-                child: Text(Translations.of(context).text('empty_comments')),
+                child: Text(Translations.of(context).text('empty_likes')),
               )
             : NotificationListener(
                 onNotification: onNotification,
                 child: ListView.builder(
                   controller: scrollController,
-                  itemCount: _list.length,
-                  itemBuilder: (context, i) => _userTile(_list[i]),
+                  itemCount: _hasMore ? _list.length + 1 : _list.length,
+                  itemBuilder: (context, i) {
+                    if (i == _list.length)
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(),
+                      );
+                    return _userTile(_list[i]);
+                  },
                 ),
               );
   }

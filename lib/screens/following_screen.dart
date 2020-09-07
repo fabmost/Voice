@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'auth_screen.dart';
 import 'view_profile_screen.dart';
 import '../translations.dart';
 import '../providers/user_provider.dart';
@@ -117,7 +116,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
             ),
           ),
           SizedBox(width: 8),
-          //InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(user.userName, user.certificate, 16),
         ],
       ),
       subtitle: Text('@${user.userName}'),

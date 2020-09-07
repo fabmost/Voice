@@ -25,13 +25,13 @@ class _UserCoverState extends State<UserCover> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
-        return new Container(
+        return Container(
           color: Colors.transparent,
-          child: new Wrap(
+          child: Wrap(
             children: <Widget>[
-              new ListTile(
+              ListTile(
                 onTap: () => _openCamera(context),
-                leading: new Icon(
+                leading: Icon(
                   Icons.camera_alt,
                 ),
                 title: Text("Cámara"),
@@ -128,8 +128,8 @@ class _UserCoverState extends State<UserCover> {
           height: containerHeight,
           decoration: BoxDecoration(
             color: Color(0xFFECECEC),
-            image: DecorationImage(
-                image: _url == null ? null : NetworkImage(_url),
+            image:  _url == null ? null : DecorationImage(
+                image: NetworkImage(_url),
                 fit: BoxFit.cover),
           ),
         ),

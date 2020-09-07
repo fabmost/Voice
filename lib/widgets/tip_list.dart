@@ -33,6 +33,7 @@ class _TipListState extends State<TipList> {
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       likes: content.likes,
