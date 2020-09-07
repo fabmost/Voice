@@ -22,7 +22,6 @@ import 'screens/saved_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/view_profile_screen.dart';
 import 'screens/chat_screen.dart';
-import 'screens/detail_comment_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
 import 'screens/detail_tip_screen.dart';
@@ -157,7 +156,6 @@ class App extends StatelessWidget {
             NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),
-            DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
             NewTipScreen.routeName: (ctx) => NewTipScreen(),

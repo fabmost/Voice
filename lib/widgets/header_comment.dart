@@ -7,11 +7,48 @@ import '../models/comment_model.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/search_results_screen.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/detail_poll_screen.dart';
+import '../screens/detail_challenge_screen.dart';
+import '../screens/detail_tip_screen.dart';
 
 class HeaderComment extends StatelessWidget {
   final CommentModel comment;
+  final bool fromNotification;
 
-  HeaderComment(this.comment);
+  HeaderComment(this.comment, this.fromNotification);
+
+  void _goToParent(context) {
+    switch (comment.parentType) {
+      case 'poll':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPollScreen(id: comment.parentId),
+          ),
+        );
+        break;
+      case 'challenge':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailChallengeScreen(
+              id: comment.parentId,
+            ),
+          ),
+        );
+        break;
+      case 'TIP':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailTipScreen(
+              id: comment.parentId,
+            ),
+          ),
+        );
+        break;
+    }
+  }
 
   void _toTaggedProfile(context, id) {
     Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
@@ -29,6 +66,18 @@ class HeaderComment extends StatelessWidget {
     final difference = now.difference(comment.createdAt);
     return Column(
       children: <Widget>[
+        if (fromNotification)
+          FlatButton(
+            onPressed: () => _goToParent(context),
+            textColor: Theme.of(context).primaryColor,
+            child: Text(
+              'Ver publicación',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ListTile(
           leading: CircleAvatar(
             backgroundImage: comment.user.icon == null

@@ -9,35 +9,63 @@ import '../models/comment_model.dart';
 import '../providers/content_provider.dart';
 
 class DetailCommentScreen extends StatefulWidget {
-  static const routeName = '/detail-comment';
   final String id;
-  final String type;
-  final CommentModel comment;
+  final bool fromNotification;
 
-  DetailCommentScreen({this.id, this.type, this.comment});
+  DetailCommentScreen(this.id, [this.fromNotification = false]);
 
   @override
   _DetailCommentScreenState createState() => _DetailCommentScreenState();
 }
 
 class _DetailCommentScreenState extends State<DetailCommentScreen> {
+  CommentModel commentModel;
   List<CommentModel> _commentsList = [];
   bool _isLoading = false;
 
-  void _getData() async {
+  Future<void> _fetchData() async {
     setState(() {
       _isLoading = true;
+      _commentsList.clear();
     });
-    List results =
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .getComment(widget.id);
+    if (result == null) {
+      _noExists();
+      return;
+    }
+    List<CommentModel> newObjects =
         await Provider.of<ContentProvider>(context, listen: false).getReplys(
-      id: widget.comment.id,
-      type: widget.type,
-      idContent: widget.id,
-      page: 0,
-    );
+            id: widget.id,
+            type: result.parentType,
+            page: 0,
+            idContent: result.parentId);
     setState(() {
-      _commentsList = results;
       _isLoading = false;
+      commentModel = result;
+      _commentsList.addAll(newObjects);
+    });
+  }
+
+  void _noExists() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('Este contenido ya no existe'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        Navigator.of(context).pop();
+      });
     });
   }
 
@@ -49,7 +77,7 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
 
   @override
   void initState() {
-    _getData();
+    _fetchData();
     super.initState();
   }
 
@@ -59,55 +87,56 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_comments')),
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: ListView.builder(
-              itemCount: _commentsList.isEmpty ? 2 : _commentsList.length + 1,
-              itemBuilder: (context, i) {
-                if (i == 0) {
-                  return HeaderComment(widget.comment);
-                }
-                if (_commentsList.isEmpty) {
-                  if (_isLoading) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Center(
-                      child:
-                          Text(Translations.of(context).text('empty_comments')),
-                    ),
-                  );
-                }
-                final doc = _commentsList[i - 1];
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: <Widget>[
+                Expanded(
+                  child: ListView.builder(
+                    itemCount:
+                        _commentsList.isEmpty ? 1 : _commentsList.length + 1,
+                    itemBuilder: (context, i) {
+                      if (i == 0) {
+                        return HeaderComment(
+                            commentModel, widget.fromNotification);
+                      }
+                      if (_commentsList.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Center(
+                            child: Text(Translations.of(context)
+                                .text('empty_comments')),
+                          ),
+                        );
+                      }
+                      final doc = _commentsList[i - 1];
 
-                return CommentTile(
-                  contentId: widget.id,
-                  type: widget.type,
-                  id: doc.id,
-                  title: doc.body,
-                  comments: doc.comments,
-                  date: doc.createdAt,
-                  userName: doc.user.userName,
-                  userImage: doc.user.icon ?? '',
-                  ups: doc.likes,
-                  hasUp: doc.hasLike,
-                  downs: doc.dislikes,
-                  hasDown: doc.hasDislike,
-                  certificate: doc.certificate,
-                );
-              },
+                      return CommentTile(
+                        id: doc.id,
+                        contentId: doc.parentId,
+                        type: doc.parentType,
+                        title: doc.body,
+                        comments: doc.comments,
+                        date: doc.createdAt,
+                        userName: doc.user.userName,
+                        userImage: doc.user.icon ?? '',
+                        ups: doc.likes,
+                        hasUp: doc.hasLike,
+                        downs: doc.dislikes,
+                        hasDown: doc.hasDislike,
+                        certificate: doc.certificate,
+                      );
+                    },
+                  ),
+                ),
+                NewComment(
+                  id: commentModel.parentId,
+                  type: commentModel.parentType,
+                  idComment: commentModel.id,
+                  function: _setComment,
+                ),
+              ],
             ),
-          ),
-          NewComment(
-            id: widget.id,
-            type: widget.type,
-            idComment: widget.comment.id,
-            function: _setComment,
-          ),
-        ],
-      ),
     );
   }
 }

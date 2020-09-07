@@ -158,8 +158,17 @@ class _FollowingScreenState extends State<FollowingScreen> {
                         onNotification: onNotification,
                         child: ListView.builder(
                           controller: scrollController,
-                          itemCount: _userList.length,
+                          itemCount: _hasMore
+                              ? _userList.length + 1
+                              : _userList.length,
                           itemBuilder: (ctx, i) {
+                            if (i == _userList.length)
+                              return Container(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                alignment: Alignment.center,
+                                child: CircularProgressIndicator(),
+                              );
                             final doc = _userList[i];
 
                             return _filter == null || _filter == ""

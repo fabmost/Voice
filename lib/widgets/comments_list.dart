@@ -73,6 +73,9 @@ class _CommentsListState extends State<CommentsList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;
@@ -112,24 +115,33 @@ class _CommentsListState extends State<CommentsList> {
                     : NotificationListener(
                         onNotification: onNotification,
                         child: ListView.builder(
-                          controller: scrollController,
-                          itemCount: _list.length,
-                          itemBuilder: (context, i) => CommentTile(
-                            contentId: widget.id,
-                            type: widget.type,
-                            id: _list[i].id,
-                            title: _list[i].body,
-                            comments: _list[i].comments,
-                            date: _list[i].createdAt,
-                            userName: _list[i].user.userName,
-                            userImage: _list[i].user.icon ?? '',
-                            ups: _list[i].likes,
-                            hasUp: _list[i].hasLike,
-                            downs: _list[i].dislikes,
-                            hasDown: _list[i].hasDislike,
-                            certificate: _list[i].certificate,
-                          ),
-                        ),
+                            controller: scrollController,
+                            itemCount:
+                                _hasMore ? _list.length + 1 : _list.length,
+                            itemBuilder: (context, i) {
+                              if (i == _list.length)
+                                return Container(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  alignment: Alignment.center,
+                                  child: CircularProgressIndicator(),
+                                );
+                              return CommentTile(
+                                contentId: widget.id,
+                                type: widget.type,
+                                id: _list[i].id,
+                                title: _list[i].body,
+                                comments: _list[i].comments,
+                                date: _list[i].createdAt,
+                                userName: _list[i].user.userName,
+                                userImage: _list[i].user.icon ?? '',
+                                ups: _list[i].likes,
+                                hasUp: _list[i].hasLike,
+                                downs: _list[i].dislikes,
+                                hasDown: _list[i].hasDislike,
+                                certificate: _list[i].certificate,
+                              );
+                            }),
                       ),
               ),
               NewComment(

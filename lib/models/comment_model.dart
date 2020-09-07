@@ -5,6 +5,8 @@ import 'certificate_model.dart';
 
 class CommentModel {
   final String id;
+  final String parentId;
+  final String parentType;
   final DateTime createdAt;
   final UserModel user;
   final String body;
@@ -26,10 +28,14 @@ class CommentModel {
     this.hasLike,
     this.hasDislike,
     this.certificate,
+    this.parentId,
+    this.parentType,
   });
 
   static CommentModel fromJson(Map element) {
     return CommentModel(
+      parentId: element['parent_id'].toString(),
+      parentType: element['parent_type'],
       id: element['id'],
       createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(element['datetime']),
       user: UserModel(

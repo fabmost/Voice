@@ -83,22 +83,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => DetailCommentScreen(
-          id: id,
-          type: 'type',
-          comment: CommentModel(
-            id: id,
-            body: 'title',
-            comments: 0,
-            createdAt: DateTime.now(),
-            likes: 0,
-            dislikes: 0,
-            hasLike: false,
-            hasDislike: false,
-            user: UserModel(
-              userName: 'userName',
-              icon: null,
-            ),
-          ),
+          id,
+          true,
         ),
       ),
     );

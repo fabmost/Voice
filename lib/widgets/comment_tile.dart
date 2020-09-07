@@ -48,22 +48,7 @@ class CommentTile extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => DetailCommentScreen(
-          id: contentId,
-          type: type,
-          comment: CommentModel(
-            id: id,
-            body: title,
-            comments: comments,
-            createdAt: date,
-            likes: ups,
-            dislikes: downs,
-            hasLike: hasUp,
-            hasDislike: hasDown,
-            user: UserModel(
-              userName: userName,
-              icon: userImage,
-            ),
-          ),
+          id,
         ),
       ),
     );

@@ -474,6 +474,36 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return null;
   }
 
+  Future<CommentModel> getComment(id) async {
+    var url = '${API.baseURL}/comment/$id';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return CommentModel.fromJson(dataMap['comments']);
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getComment(id);
+    }
+    return null;
+  }
+
   Future<List<CommentModel>> getComments({type, id, page}) async {
     var url = '${API.baseURL}/comments/$type/$id/$page';
     final token = await _getToken();
@@ -497,7 +527,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       _saveToken(dataMap['session']['token']);
       return CommentModel.listFromJson(dataMap['comments']);
     }
-    if (dataMap['alert']['action'] == 4) {
+    if (dataMap['action'] == 4) {
       await _renewToken();
       return getComments(
         id: id,
@@ -531,7 +561,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       _saveToken(dataMap['session']['token']);
       return CommentModel.listFromJson(dataMap['comments']);
     }
-    if (dataMap['alert']['action'] == 4) {
+    if (dataMap['action'] == 4) {
       await _renewToken();
       return getComments(
         id: id,
@@ -1272,7 +1302,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       if (page == 0) {
         _notificationsList.clear();
       }
-      if(dataMap['notification'].isEmpty){
+      if (dataMap['notification'].isEmpty) {
         return false;
       }
       _notificationsList
