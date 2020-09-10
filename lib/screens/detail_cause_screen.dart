@@ -282,86 +282,88 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
         onRefresh: () => _fetchCause(),
         child: _isLoading
             ? Center(child: CircularProgressIndicator())
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(color: color, child: _userTile(context)),
-                  SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      _causeModel.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(color: color, child: _userTile(context)),
+                    SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        _causeModel.title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_causeModel.goal != null) _challengeGoal(context),
-                  if (_causeModel.goal != null) const SizedBox(height: 16),
-                  if (_causeModel.description != null &&
-                      _causeModel.description.isNotEmpty)
-                    Description(_causeModel.description),
-                  if (_causeModel.description != null &&
-                      _causeModel.description.isNotEmpty)
                     const SizedBox(height: 16),
-                  CauseButton(
-                    id: _causeModel.id,
-                    hasLike: _causeModel.hasLiked,
-                    setVotes: _setLike,
-                  ),
-                  if (_causeModel.phone != null)
-                    ListTile(
-                      onTap: () => _call(_causeModel.phone),
-                      leading: Icon(
-                        Icons.phone,
-                        color: Colors.black,
-                      ),
-                      title: Text('Contáctame'),
-                      subtitle: Text(_causeModel.phone),
+                    if (_causeModel.goal != null) _challengeGoal(context),
+                    if (_causeModel.goal != null) const SizedBox(height: 16),
+                    if (_causeModel.description != null &&
+                        _causeModel.description.isNotEmpty)
+                      Description(_causeModel.description),
+                    if (_causeModel.description != null &&
+                        _causeModel.description.isNotEmpty)
+                      const SizedBox(height: 16),
+                    CauseButton(
+                      id: _causeModel.id,
+                      hasLike: _causeModel.hasLiked,
+                      setVotes: _setLike,
                     ),
-                  if (_causeModel.web != null)
-                    ListTile(
-                      onTap: () => _launchURL(_causeModel.web),
-                      leading: Icon(
-                        Icons.open_in_browser,
-                        color: Colors.black,
-                      ),
-                      title: Text('Visita'),
-                      subtitle: Text(_causeModel.web),
-                    ),
-                  if (_causeModel.account != null)
-                    ListTile(
-                      leading: Icon(
-                        Icons.credit_card,
-                        color: Colors.black,
-                      ),
-                      title: Text('Donaciones'),
-                      subtitle: Text(_causeModel.account),
-                    ),
-                  SizedBox(height: 16),
-                  Container(
-                    color: color,
-                    child: Row(
-                      children: <Widget>[
-                        RegalupContent(
-                          id: _causeModel.id,
-                          type: 'CA',
-                          regalups: _causeModel.regalups,
-                          hasRegalup: _causeModel.hasRegalup,
+                    if (_causeModel.phone != null)
+                      ListTile(
+                        onTap: () => _call(_causeModel.phone),
+                        leading: Icon(
+                          Icons.phone,
+                          color: Colors.black,
                         ),
-                        IconButton(
-                          icon: Icon(GalupFont.share),
-                          onPressed: _share,
+                        title: Text('Contáctame'),
+                        subtitle: Text(_causeModel.phone),
+                      ),
+                    if (_causeModel.web != null)
+                      ListTile(
+                        onTap: () => _launchURL(_causeModel.web),
+                        leading: Icon(
+                          Icons.open_in_browser,
+                          color: Colors.black,
                         ),
-                        Expanded(child: SizedBox(height: 1)),
-                        Text(_likes == 0 ? '' : '$_likes Votos'),
-                        SizedBox(width: 16),
-                      ],
-                    ),
-                  )
-                ],
+                        title: Text('Visita'),
+                        subtitle: Text(_causeModel.web),
+                      ),
+                    if (_causeModel.account != null)
+                      ListTile(
+                        leading: Icon(
+                          Icons.credit_card,
+                          color: Colors.black,
+                        ),
+                        title: Text('Donaciones'),
+                        subtitle: Text(_causeModel.account),
+                      ),
+                    SizedBox(height: 16),
+                    Container(
+                      color: color,
+                      child: Row(
+                        children: <Widget>[
+                          RegalupContent(
+                            id: _causeModel.id,
+                            type: 'CA',
+                            regalups: _causeModel.regalups,
+                            hasRegalup: _causeModel.hasRegalup,
+                          ),
+                          IconButton(
+                            icon: Icon(GalupFont.share),
+                            onPressed: _share,
+                          ),
+                          Expanded(child: SizedBox(height: 1)),
+                          Text(_likes == 0 ? '' : '$_likes Votos'),
+                          SizedBox(width: 16),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
       ),
     );

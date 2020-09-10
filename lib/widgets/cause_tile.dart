@@ -300,9 +300,9 @@ class CauseTile extends StatelessWidget with ShareContent {
             const SizedBox(height: 16),
             if (goal != null) _challengeGoal(context),
             if (goal != null) SizedBox(height: 16),
-            if (description != null && description.isNotEmpty)
+            if (description != null && description.trim().isNotEmpty)
               Description(description),
-            if (description != null && description.isNotEmpty)
+            if (description != null && description.trim().isNotEmpty)
               SizedBox(height: 16),
             CauseButton(
               id: id,

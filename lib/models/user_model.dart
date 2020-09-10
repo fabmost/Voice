@@ -49,7 +49,9 @@ class UserModel {
   static UserModel fromJson(Map content) {
     return UserModel(
       userName: content['user_name'] ?? '',
-      icon: content['icon'],
+      icon: content['icon'] == null
+          ? null
+          : content['icon'].isEmpty ? null : content['icon'],
       hash: content['hash'],
       name: TextMixin.fixString(content['name']),
       lastName: TextMixin.fixString(content['last_name']),
@@ -78,7 +80,9 @@ class UserModel {
 
     content.forEach((element) {
       mList.add(UserModel(
-        icon: element['icon'],
+        icon: element['icon'] == null
+          ? null
+          : element['icon'].isEmpty ? null : element['icon'],
         userName: element['user_name'],
         name: element['name'] == null
             ? null
@@ -103,7 +107,9 @@ class UserModel {
 
     content.forEach((element) {
       mList.add(UserModel(
-        icon: element['icon'],
+        icon: element['icon'] == null
+          ? null
+          : element['icon'].isEmpty ? null : element['icon'],
         userName: element['user_name'],
         idAnswer: element['id_answer'],
         certificate: element['certificates'] == null
@@ -122,7 +128,9 @@ class UserModel {
 
     content.forEach((element) {
       mList.add(UserModel(
-        icon: element['icon'],
+        icon: element['icon'] == null
+          ? null
+          : element['icon'].isEmpty ? null : element['icon'],
         userName: element['user_name'],
         certificate: element['certificates'] == null
             ? null

@@ -65,6 +65,9 @@ class _ChallengeListState extends State<ChallengeList> {
               if (newObjects.isEmpty) {
                 _hasMore = false;
               } else {
+                if (newObjects.length < 10) {
+                  _hasMore = false;
+                }
                 _list.addAll(newObjects);
               }
             });
@@ -86,6 +89,9 @@ class _ChallengeListState extends State<ChallengeList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if(results.length < 10){
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;

@@ -13,10 +13,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ContentProvider>(
       builder: (context, provider, child) {
-        if (provider.getHome.isEmpty) {
-          provider.getBaseTimeline(0, null);
-          return Center(child: CircularProgressIndicator());
-        }
         return HomeList(
           homeController,
           provider.getHome,

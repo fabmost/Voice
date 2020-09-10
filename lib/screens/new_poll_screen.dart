@@ -128,7 +128,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
         break;
       case 1:
         if (isOption) {
-          if (_option1 != null) showDelete = true;
+          if (_option2 != null) showDelete = true;
         } else {
           if (pollImages.length > 1) showDelete = true;
         }
@@ -466,7 +466,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
     } else {
       pollAnswers.add({
         'text': serverSafe(_firstController.text),
-        'id_resource': null,
+        'image': null,
       });
     }
     if (_option2 != null) {
@@ -484,7 +484,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
     } else {
       pollAnswers.add({
         'text': serverSafe(_secondController.text),
-        'id_resource': null,
+        'image': null,
       });
     }
     if (moreOptions) {
@@ -503,7 +503,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
       } else {
         pollAnswers.add({
           'text': serverSafe(_thirdController.text),
-          'id_resource': null,
+          'image': null,
         });
       }
     }
@@ -549,8 +549,8 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
       if (start != -1) {
         int finish = match.group(0).indexOf(']');
         toRemove = match.group(0).substring(start, finish + 1);
-        toRemove.replaceAll('[', '');
-        toRemove.replaceAll(']', '');
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
       }
       if (toRemove != null && !tags.contains({'user_name': toRemove})) {
         tags.add({'user_name': toRemove});
@@ -880,7 +880,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
                   keyboardType: TextInputType.multiline,
                   autocorrect: true,
                   maxLines: null,
-                  maxLength: 240,
+                  maxLength: 480,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),

@@ -35,6 +35,7 @@ class _HomeListState extends State<HomeList> {
   bool _hasMore = true;
   bool _requestedUsers = false;
   bool _requestedCauses = false;
+  bool _requestMoreUsers = false;
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
@@ -218,11 +219,9 @@ class _HomeListState extends State<HomeList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (widget.scrollController.position.maxScrollExtent >
-              widget.scrollController.offset &&
-          widget.scrollController.position.maxScrollExtent -
-                  widget.scrollController.offset <=
-              50) {
+      var triggerFetchMoreSize =
+          0.7 * widget.scrollController.position.maxScrollExtent;
+      if (widget.scrollController.position.pixels > triggerFetchMoreSize) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
             _hasMore) {
@@ -251,14 +250,16 @@ class _HomeListState extends State<HomeList> {
   }
 
   Widget _usersCarrousel() {
-    if (widget.mUsers.isEmpty && !_requestedUsers) {
-      _requestedUsers = true;
-      Provider.of<ContentProvider>(context, listen: false).getTopUsers();
+    if (widget.mUsers.isEmpty) {
       return Container(
         height: 42,
         alignment: Alignment.center,
         child: CircularProgressIndicator(),
       );
+    }
+    if (!_requestMoreUsers) {
+      Provider.of<ContentProvider>(context, listen: false).getTopUsers(1);
+      _requestMoreUsers = true;
     }
     return Container(
       height: 220,
@@ -304,17 +305,12 @@ class _HomeListState extends State<HomeList> {
   }
 
   Widget _causesCarrousel() {
-    if (widget.mCauses.isEmpty && !_requestedCauses) {
-      _requestedCauses = true;
-      Provider.of<ContentProvider>(context, listen: false).getCausesCarrousel();
+    if (widget.mCauses.isEmpty) {
       return Container(
         height: 42,
         alignment: Alignment.center,
         child: CircularProgressIndicator(),
       );
-    }
-    if (widget.mCauses.isEmpty) {
-      return Container();
     }
     return Container(
       height: 192,
@@ -335,10 +331,21 @@ class _HomeListState extends State<HomeList> {
     );
   }
 
+  void _fetchData() async {
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .getBaseTimeline(currentPageNumber, null);
+    _hasMore = result;
+    loadMoreStatus = LoadMoreStatus.STABLE;
+    await Provider.of<ContentProvider>(context, listen: false)
+        .getCausesCarrousel();
+    await Provider.of<ContentProvider>(context, listen: false).getTopUsers(0);
+  }
+
   @override
   void initState() {
-    //movies = widget.movies.movies;
     currentPageNumber = 0;
+    _fetchData();
     super.initState();
   }
 
@@ -350,6 +357,7 @@ class _HomeListState extends State<HomeList> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.mList.isEmpty) return Center(child: CircularProgressIndicator());
     return NotificationListener(
       onNotification: onNotification,
       child: RefreshIndicator(

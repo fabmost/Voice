@@ -28,7 +28,7 @@ class _CauseUserListState extends State<CauseUserList> {
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
-        id: content.id,
+      id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
@@ -68,6 +68,9 @@ class _CauseUserListState extends State<CauseUserList> {
               if (newObjects.isEmpty) {
                 _hasMore = false;
               } else {
+                if (newObjects.length < 10) {
+                  _hasMore = false;
+                }
                 _list.addAll(newObjects);
               }
             });
@@ -89,6 +92,9 @@ class _CauseUserListState extends State<CauseUserList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;
@@ -122,12 +128,15 @@ class _CauseUserListState extends State<CauseUserList> {
                       size: 32,
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Realiza o regalupea causas para verlas aquí',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF8E8EAB),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 22),
+                      child: Text(
+                        'Realiza o regalupea causas para verlas aquí',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF8E8EAB),
+                        ),
                       ),
                     ),
                   ],

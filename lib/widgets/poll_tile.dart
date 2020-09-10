@@ -200,9 +200,9 @@ class PollTile extends StatelessWidget with ShareContent {
                     ? '$votes participante'
                     : '$votes participantes'),
               ),
-            if (description != null && description.isNotEmpty)
+            if (description != null && description.trim().isNotEmpty)
               Description(description),
-            if (description != null && description.isNotEmpty)
+            if (description != null && description.trim().isNotEmpty)
               SizedBox(height: 16),
             Container(
               color: color,

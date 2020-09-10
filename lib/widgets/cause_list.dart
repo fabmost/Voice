@@ -28,7 +28,7 @@ class _CauseListState extends State<CauseList> {
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
-        id: content.id,
+      id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
@@ -68,6 +68,9 @@ class _CauseListState extends State<CauseList> {
               if (newObjects.isEmpty) {
                 _hasMore = false;
               } else {
+                if (newObjects.length < 10) {
+                  _hasMore = false;
+                }
                 _list.addAll(newObjects);
               }
             });
@@ -89,6 +92,9 @@ class _CauseListState extends State<CauseList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;

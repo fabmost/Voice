@@ -76,7 +76,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
       result = await Provider.of<ContentProvider>(context, listen: false)
           .newReply(
               comment: '${_controller.text} ',
-              type: widget.type,
+              type: 'comment',
               idContent: widget.id,
               id: widget.idComment,
               hashtags: hashes);

@@ -7,6 +7,7 @@ import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'database_provider.dart';
 import '../api.dart';
@@ -47,6 +48,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
     _userName = null;
     _hasAccount = true;
     //await installation();
+    await setFCM('logout');
     notifyListeners();
   }
 
@@ -68,8 +70,9 @@ class AuthProvider with ChangeNotifier, TextMixin {
 
   Future<String> installation() async {
     var url = '${API.baseURL}/installation';
-
-    final hash = UniqueKey().toString();
+    
+    final uuid = Uuid();
+    final hash = uuid.v1();
     final datetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     final body = jsonEncode({
       'hash': hash,
@@ -271,6 +274,9 @@ class AuthProvider with ChangeNotifier, TextMixin {
       await _storage.write(key: API.sessionToken, value: _token);
       await saveUserName(user);
       return {'result': true};
+    }
+    if(dataMap['success'] == 'failed'){
+      return {'result': false, 'message': dataMap['alert']['message']};
     }
     return {'result': false, 'message': dataMap['message']};
   }

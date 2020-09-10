@@ -67,6 +67,9 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
               if (newContent.isEmpty) {
                 _hasMore = false;
               } else {
+                if (newContent.length < 10) {
+                  _hasMore = false;
+                }
                 _list.addAll(newContent);
               }
             });
@@ -88,6 +91,9 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if(results.length < 10){
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;
@@ -117,12 +123,15 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
                       size: 32,
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Realiza o regalupea retos para verlos aquí',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF8E8EAB),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 22),
+                      child: Text(
+                        'Realiza o regalupea retos para verlos aquí',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF8E8EAB),
+                        ),
                       ),
                     ),
                   ],

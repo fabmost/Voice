@@ -294,8 +294,8 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       if (start != -1) {
         int finish = match.group(0).indexOf(']');
         toRemove = match.group(0).substring(start, finish + 1);
-        toRemove.replaceAll('[', '');
-        toRemove.replaceAll(']', '');
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
       }
       if (toRemove != null && !tags.contains({'user_name': toRemove})) {
         tags.add({'user_name': toRemove});
@@ -459,7 +459,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                   focusNode: _descFocus,
                   autocorrect: true,
                   maxLines: null,
-                  maxLength: 240,
+                  maxLength: 480,
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:

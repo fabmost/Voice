@@ -73,7 +73,7 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin{
                       SizedBox(width: 8),
                       Expanded(
                         child: _hasVoted
-                            ? _voted(option.answer, option.isVote, pos)
+                            ? _voted(option.answer, option.isVote, option.count)
                             : _poll(
                                 option.answer,
                                 option.id,

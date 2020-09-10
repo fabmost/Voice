@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:voice_inc/models/poll_answer_model.dart';
 import 'package:voice_inc/models/user_model.dart';
 
 import '../api.dart';
@@ -83,6 +84,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
             _homeContent.add(TipModel.fromJson(content));
             break;
           case 'causes':
+          case 'regalup_ca':
             _homeContent.add(CauseModel.fromJson(content));
             break;
         }
@@ -182,15 +184,19 @@ class ContentProvider with ChangeNotifier, TextMixin {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
+          case 'regalup_p':
             contentList.add(PollModel.fromJson(content));
             break;
           case 'challenge':
+          case 'regalup_c':
             contentList.add(ChallengeModel.fromJson(content));
             break;
           case 'Tips':
+          case 'regalup_ti':
             contentList.add(TipModel.fromJson(content));
             break;
           case 'causes':
+          case 'regalup_ca':
             contentList.add(CauseModel.fromJson(content));
             break;
         }
@@ -302,8 +308,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return [];
   }
 
-  Future<void> getTopUsers() async {
-    var url = '${API.baseURL}/topUsers/0';
+  Future<void> getTopUsers(page) async {
+    var url = '${API.baseURL}/topUsers/$page';
     final token = await _getToken();
 
     await FlutterUserAgent.init();
@@ -326,12 +332,15 @@ class ContentProvider with ChangeNotifier, TextMixin {
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
 
-      _usersList = UserModel.listFromJson(dataMap['users']);
+      if (page == 0)
+        _usersList = UserModel.listFromJson(dataMap['users']);
+      else
+        _usersList.addAll(UserModel.listFromJson(dataMap['users']));
       notifyListeners();
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
-      return getTopUsers();
+      return getTopUsers(page);
     }
     return;
   }
@@ -561,12 +570,13 @@ class ContentProvider with ChangeNotifier, TextMixin {
       _saveToken(dataMap['session']['token']);
       return CommentModel.listFromJson(dataMap['comments']);
     }
-    if (dataMap['action'] == 4) {
+    if (dataMap['alert']['action'] == 4) {
       await _renewToken();
-      return getComments(
+      return getReplys(
         id: id,
         page: page,
         type: type,
+        idContent: idContent,
       );
     }
     return [];
@@ -596,33 +606,131 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
       final index = _homeContent.indexWhere((element) => element.id == id);
       if (index != -1) {
-        ContentModel content = _homeContent[index];
+        ContentModel content;
         switch (type) {
-          case 'poll':
+          case 'P':
+            PollModel oldPoll = _homeContent[index];
             content = PollModel(
-              id: content.id,
-              type: 'poll',
-              user: content.user,
-              title: content.title,
-              createdAt: content.createdAt,
-              votes: (content as PollModel).votes,
-              likes: hasLiked ? content.likes + 1 : content.likes - 1,
-              regalups: content.regalups,
-              comments: (content as PollModel).comments,
-              hasVoted: (content as PollModel).hasVoted,
+              id: oldPoll.id,
+              type: oldPoll.type,
+              user: oldPoll.user,
+              title: oldPoll.title,
+              createdAt: oldPoll.createdAt,
+              votes: oldPoll.votes,
+              likes: hasLiked ? oldPoll.likes + 1 : oldPoll.likes - 1,
+              regalups: oldPoll.regalups,
+              comments: oldPoll.comments,
+              hasVoted: oldPoll.hasVoted,
               hasLiked: hasLiked,
-              hasRegalup: content.hasRegalup,
-              hasSaved: content.hasSaved,
-              answers: (content as PollModel).answers,
-              resources: (content as PollModel).resources,
+              hasRegalup: oldPoll.hasRegalup,
+              hasSaved: oldPoll.hasSaved,
+              answers: oldPoll.answers,
+              resources: oldPoll.resources,
+              body: oldPoll.body,
+              certificate: oldPoll.certificate,
+              creator: oldPoll.creator,
+              description: oldPoll.description,
             );
             break;
-          case 'challenge':
+          case 'C':
+            ChallengeModel oldChallenge = _homeContent[index];
+            content = ChallengeModel(
+              id: oldChallenge.id,
+              type: oldChallenge.type,
+              user: oldChallenge.user,
+              title: oldChallenge.title,
+              createdAt: oldChallenge.createdAt,
+              likes: hasLiked ? oldChallenge.likes + 1 : oldChallenge.likes - 1,
+              regalups: oldChallenge.regalups,
+              comments: oldChallenge.comments,
+              hasLiked: hasLiked,
+              hasRegalup: oldChallenge.hasRegalup,
+              hasSaved: oldChallenge.hasSaved,
+              resources: oldChallenge.resources,
+              certificate: oldChallenge.certificate,
+              creator: oldChallenge.creator,
+              description: oldChallenge.description,
+              goal: oldChallenge.goal,
+              parameter: oldChallenge.parameter,
+            );
             break;
-          case 'causes':
+          case 'TIP':
+            TipModel oldTip = _homeContent[index];
+            content = TipModel(
+              id: oldTip.id,
+              type: oldTip.type,
+              user: oldTip.user,
+              title: oldTip.title,
+              createdAt: oldTip.createdAt,
+              likes: hasLiked ? oldTip.likes + 1 : oldTip.likes - 1,
+              regalups: oldTip.regalups,
+              comments: oldTip.comments,
+              hasLiked: hasLiked,
+              hasRegalup: oldTip.hasRegalup,
+              hasSaved: oldTip.hasSaved,
+              resources: oldTip.resources,
+              certificate: oldTip.certificate,
+              creator: oldTip.creator,
+              description: oldTip.description,
+              body: oldTip.body,
+              hasRated: oldTip.hasRated,
+              total: oldTip.total,
+            );
+            break;
+          case 'CA':
+            CauseModel oldCause = _homeContent[index];
+            content = CauseModel(
+                id: oldCause.id,
+                type: oldCause.type,
+                account: oldCause.account,
+                by: oldCause.by,
+                certificate: oldCause.certificate,
+                createdAt: oldCause.createdAt,
+                creator: oldCause.creator,
+                description: oldCause.description,
+                goal: oldCause.goal,
+                hasLiked: hasLiked,
+                hasRegalup: oldCause.hasRegalup,
+                hasSaved: oldCause.hasSaved,
+                info: oldCause.info,
+                likes: hasLiked ? oldCause.likes + 1 : oldCause.likes - 1,
+                phone: oldCause.phone,
+                regalups: oldCause.regalups,
+                resources: oldCause.resources,
+                title: oldCause.title,
+                user: oldCause.user,
+                web: oldCause.web);
             break;
         }
         _homeContent[index] = content;
+      }
+      if (type == 'CA') {
+        final index2 = _causesContent.indexWhere((element) => element.id == id);
+        CauseModel oldCause = _causesContent[index2];
+        final content = CauseModel(
+            id: oldCause.id,
+            type: oldCause.type,
+            account: oldCause.account,
+            by: oldCause.by,
+            certificate: oldCause.certificate,
+            createdAt: oldCause.createdAt,
+            creator: oldCause.creator,
+            description: oldCause.description,
+            goal: oldCause.goal,
+            hasLiked: hasLiked,
+            hasRegalup: oldCause.hasRegalup,
+            hasSaved: oldCause.hasSaved,
+            info: oldCause.info,
+            likes: hasLiked ? oldCause.likes + 1 : oldCause.likes - 1,
+            phone: oldCause.phone,
+            regalups: oldCause.regalups,
+            resources: oldCause.resources,
+            title: oldCause.title,
+            user: oldCause.user,
+            web: oldCause.web);
+        if (index2 != -1) {
+          _causesContent[index2] = content;
+        }
       }
       notifyListeners();
 
@@ -692,7 +800,50 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      final index = _homeContent.indexWhere((element) => (element.id == id &&
+          (element.type == 'poll' || element.type == 'regalup_p')));
+      if (index != -1) {
+        PollModel oldPoll = _homeContent[index];
+        final answers = oldPoll.answers;
+        final indexAnswer =
+            answers.indexWhere((element) => element.id == answer);
+        if (indexAnswer != -1) {
+          final oldAnswer = answers[indexAnswer];
+          final newAnswer = PollAnswerModel(
+            id: oldAnswer.id,
+            answer: oldAnswer.answer,
+            count: oldAnswer.count + 1,
+            isVote: true,
+            url: oldAnswer.url,
+          );
+          answers[indexAnswer] = newAnswer;
+          final content = PollModel(
+            id: oldPoll.id,
+            type: oldPoll.type,
+            user: oldPoll.user,
+            title: oldPoll.title,
+            createdAt: oldPoll.createdAt,
+            votes: oldPoll.votes,
+            likes: oldPoll.likes,
+            regalups: oldPoll.regalups,
+            comments: oldPoll.comments,
+            hasVoted: true,
+            hasLiked: oldPoll.hasLiked,
+            hasRegalup: oldPoll.hasRegalup,
+            hasSaved: oldPoll.hasSaved,
+            answers: answers,
+            resources: oldPoll.resources,
+            body: oldPoll.body,
+            certificate: oldPoll.certificate,
+            creator: oldPoll.creator,
+            description: oldPoll.description,
+          );
+          _homeContent[index] = content;
+          notifyListeners();
+        }
+      }
+      await _saveToken(dataMap['session']['token']);
+      return;
     }
   }
 
@@ -720,7 +871,34 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return 0;
     }
     if (dataMap['success'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      final index = _homeContent.indexWhere((element) => (element.id == id &&
+          (element.type == 'Tips' || element.type == 'regalup_ti')));
+      if (index != -1) {
+        TipModel oldTip = _homeContent[index];
+        final content = TipModel(
+          id: oldTip.id,
+          type: oldTip.type,
+          user: oldTip.user,
+          title: oldTip.title,
+          createdAt: oldTip.createdAt,
+          likes: oldTip.likes,
+          regalups: oldTip.regalups,
+          comments: oldTip.comments,
+          hasLiked: oldTip.hasLiked,
+          hasRegalup: oldTip.hasRegalup,
+          hasSaved: oldTip.hasSaved,
+          resources: oldTip.resources,
+          body: oldTip.body,
+          certificate: oldTip.certificate,
+          creator: oldTip.creator,
+          description: oldTip.description,
+          hasRated: true,
+          total: (dataMap['total'] * 1.0),
+        );
+        _homeContent[index] = content;
+        notifyListeners();
+      }
+      await _saveToken(dataMap['session']['token']);
       return (dataMap['total'] * 1.0);
     }
     return 0;
@@ -988,31 +1166,105 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
       final index = _homeContent.indexWhere((element) => element.id == id);
       if (index != -1) {
-        ContentModel content = _homeContent[index];
+        ContentModel content;
         switch (type) {
           case 'P':
+            PollModel oldPoll = _homeContent[index];
             content = PollModel(
-              id: content.id,
-              type: 'poll',
-              user: content.user,
-              title: content.title,
-              createdAt: content.createdAt,
-              votes: (content as PollModel).votes,
-              likes: content.likes,
+              id: oldPoll.id,
+              type: oldPoll.type,
+              user: oldPoll.user,
+              title: oldPoll.title,
+              createdAt: oldPoll.createdAt,
+              votes: oldPoll.votes,
+              likes: oldPoll.likes,
               regalups:
-                  hasRegalup ? content.regalups + 1 : content.regalups - 1,
-              comments: (content as PollModel).comments,
-              hasVoted: (content as PollModel).hasVoted,
-              hasLiked: content.hasLiked,
+                  hasRegalup ? oldPoll.regalups + 1 : oldPoll.regalups - 1,
+              comments: oldPoll.comments,
+              hasVoted: oldPoll.hasVoted,
+              hasLiked: oldPoll.hasLiked,
               hasRegalup: hasRegalup,
-              hasSaved: content.hasSaved,
-              answers: (content as PollModel).answers,
-              resources: (content as PollModel).resources,
+              hasSaved: oldPoll.hasSaved,
+              answers: oldPoll.answers,
+              resources: oldPoll.resources,
+              body: oldPoll.body,
+              certificate: oldPoll.certificate,
+              creator: oldPoll.creator,
+              description: oldPoll.description,
             );
             break;
           case 'C':
+            ChallengeModel oldChallenge = _homeContent[index];
+            content = ChallengeModel(
+              id: oldChallenge.id,
+              type: oldChallenge.type,
+              user: oldChallenge.user,
+              title: oldChallenge.title,
+              createdAt: oldChallenge.createdAt,
+              likes: oldChallenge.likes,
+              regalups: hasRegalup
+                  ? oldChallenge.regalups + 1
+                  : oldChallenge.regalups - 1,
+              comments: oldChallenge.comments,
+              hasLiked: oldChallenge.hasLiked,
+              hasRegalup: hasRegalup,
+              hasSaved: oldChallenge.hasSaved,
+              resources: oldChallenge.resources,
+              certificate: oldChallenge.certificate,
+              creator: oldChallenge.creator,
+              description: oldChallenge.description,
+              goal: oldChallenge.goal,
+              parameter: oldChallenge.parameter,
+            );
+            break;
+          case 'TIP':
+            TipModel oldTip = _homeContent[index];
+            content = TipModel(
+              id: oldTip.id,
+              type: oldTip.type,
+              user: oldTip.user,
+              title: oldTip.title,
+              createdAt: oldTip.createdAt,
+              likes: oldTip.likes,
+              regalups: hasRegalup ? oldTip.regalups + 1 : oldTip.regalups - 1,
+              comments: oldTip.comments,
+              hasLiked: oldTip.hasLiked,
+              hasRegalup: hasRegalup,
+              hasSaved: oldTip.hasSaved,
+              resources: oldTip.resources,
+              certificate: oldTip.certificate,
+              creator: oldTip.creator,
+              description: oldTip.description,
+              body: oldTip.body,
+              hasRated: oldTip.hasRated,
+              total: oldTip.total,
+            );
             break;
           case 'CA':
+            CauseModel oldCause = _homeContent[index];
+            content = CauseModel(
+              id: oldCause.id,
+              type: oldCause.type,
+              user: oldCause.user,
+              title: oldCause.title,
+              createdAt: oldCause.createdAt,
+              likes: oldCause.likes,
+              regalups:
+                  hasRegalup ? oldCause.regalups + 1 : oldCause.regalups - 1,
+              hasLiked: oldCause.hasLiked,
+              hasRegalup: hasRegalup,
+              hasSaved: oldCause.hasSaved,
+              resources: oldCause.resources,
+              certificate: oldCause.certificate,
+              creator: oldCause.creator,
+              description: oldCause.description,
+              account: oldCause.account,
+              by: oldCause.by,
+              goal: oldCause.goal,
+              info: oldCause.info,
+              phone: oldCause.phone,
+              web: oldCause.web,
+            );
             break;
         }
         _homeContent[index] = content;

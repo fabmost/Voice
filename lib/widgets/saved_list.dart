@@ -96,7 +96,7 @@ class _SavedListState extends State<SavedList> {
 
   Widget _causeWidget(content) {
     return CauseTile(
-        id: content.id,
+      id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
@@ -157,6 +157,7 @@ class _SavedListState extends State<SavedList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if (results.length < 10) _hasMore = false;
         _list = results;
       }
       _isLoading = false;
@@ -191,12 +192,15 @@ class _SavedListState extends State<SavedList> {
                       size: 32,
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Aún no guardas ningún reto o encuesta',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF8E8EAB),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 22),
+                      child: Text(
+                        'Aún no guardas ningún reto, encuesta, tip o causa',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF8E8EAB),
+                        ),
                       ),
                     ),
                   ],

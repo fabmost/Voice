@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 
 import 'user_model.dart';
 import 'certificate_model.dart';
+import '../mixins/text_mixin.dart';
 
 class CommentModel {
   final String id;
@@ -42,7 +43,7 @@ class CommentModel {
         userName: element['user']['user_name'],
         icon: element['user']['icon'],
       ),
-      body: element['body'],
+      body: TextMixin.fixString(element['body']),
       likes: element['likes'] ?? 0,
       dislikes: element['dislike'] ?? 0,
       comments: element['comments'] ?? 0,
@@ -72,7 +73,7 @@ class CommentModel {
             : element['certificates']['icon'] == null
                 ? null
                 : CertificateModel.fromJson(element['certificates']),
-        body: element['body'],
+        body: TextMixin.fixString(element['body']),
         likes: element['likes'],
         dislikes: element['dislike'],
         comments: element['comments'] ?? 0,

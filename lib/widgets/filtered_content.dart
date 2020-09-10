@@ -24,7 +24,8 @@ class FilteredContent extends StatefulWidget {
   _FilteredContentState createState() => _FilteredContentState();
 }
 
-class _FilteredContentState extends State<FilteredContent> {
+class _FilteredContentState extends State<FilteredContent>
+    with AutomaticKeepAliveClientMixin<FilteredContent> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
   List<ContentModel> _list = [];
@@ -257,6 +258,9 @@ class _FilteredContentState extends State<FilteredContent> {
     });
     loadMoreStatus = LoadMoreStatus.STABLE;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {

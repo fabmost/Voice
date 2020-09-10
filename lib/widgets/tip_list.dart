@@ -67,6 +67,9 @@ class _TipListState extends State<TipList> {
               if (newContent.isEmpty) {
                 _hasMore = false;
               } else {
+                if (newContent.length < 10) {
+                  _hasMore = false;
+                }
                 _list.addAll(newContent);
               }
             });
@@ -88,6 +91,9 @@ class _TipListState extends State<TipList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;

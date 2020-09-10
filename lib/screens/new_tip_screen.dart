@@ -336,8 +336,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
       if (start != -1) {
         int finish = match.group(0).indexOf(']');
         toRemove = match.group(0).substring(start, finish + 1);
-        toRemove.replaceAll('[', '');
-        toRemove.replaceAll(']', '');
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
       }
       if (toRemove != null && !tags.contains({'user_name': toRemove})) {
         tags.add({'user_name': toRemove});

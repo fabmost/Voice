@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +20,15 @@ import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
   String currentUser;
+  StreamController<String> streamController = StreamController();
+
+  CustomSearchDelegate(){
+    /*
+    streamController.stream
+    .transform(debounce(Duration(milliseconds: 400)))
+    .listen((s) => _validateValues());
+    */
+  }
 
   Widget _pollWidget(PollModel content) {
     return PollTile(

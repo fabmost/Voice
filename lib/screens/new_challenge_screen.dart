@@ -387,8 +387,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       if (start != -1) {
         int finish = match.group(0).indexOf(']');
         toRemove = match.group(0).substring(start, finish + 1);
-        toRemove.replaceAll('[', '');
-        toRemove.replaceAll(']', '');
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
       }
       if (toRemove != null && !tags.contains({'user_name': toRemove})) {
         tags.add({'user_name': toRemove});
@@ -596,7 +596,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                   maxLines: null,
                   autocorrect: true,
                   keyboardType: TextInputType.multiline,
-                  maxLength: 240,
+                  maxLength: 480,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),
