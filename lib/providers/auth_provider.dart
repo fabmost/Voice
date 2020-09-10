@@ -24,6 +24,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
   bool get isAuth {
     return _token != null;
   }
+
   bool get hasAccount => _hasAccount;
 
   Future<bool> hasToken() async {
@@ -57,11 +58,11 @@ class AuthProvider with ChangeNotifier, TextMixin {
     final interactions = prefs.getInt('interactions') ?? 0;
     _userName = await _storage.read(key: API.userName) ?? null;
 
-    if(_userName != null){
+    if (_userName != null) {
       return true;
     }
 
-    if(interactions < 5){
+    if (interactions < 5) {
       prefs.setInt('interactions', interactions + 1);
       return true;
     }
@@ -70,7 +71,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
 
   Future<String> installation() async {
     var url = '${API.baseURL}/installation';
-    
+
     final uuid = Uuid();
     final hash = uuid.v1();
     final datetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
@@ -138,7 +139,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
   Future<String> getCatalogs() async {
     var url = '${API.baseURL}/catalogs';
     _token = await _storage.read(key: API.sessionToken) ?? null;
-   
+
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
     final response = await http.get(
@@ -147,8 +148,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         HttpHeaders.userAgentHeader: webViewUserAgent,
-        HttpHeaders.authorizationHeader:
-            'Bearer $_token'
+        HttpHeaders.authorizationHeader: 'Bearer $_token'
       },
     );
 
@@ -239,7 +239,9 @@ class AuthProvider with ChangeNotifier, TextMixin {
 
   Future<Map> signUp({name, last, email, user, password, token}) async {
     var url = '${API.baseURL}/registerProfile/';
-    _token = token != null ? token : await _storage.read(key: API.sessionToken) ?? null;
+    _token = token != null
+        ? token
+        : await _storage.read(key: API.sessionToken) ?? null;
 
     final body = jsonEncode({
       'name': serverSafe(name),
@@ -275,7 +277,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
       await saveUserName(user);
       return {'result': true};
     }
-    if(dataMap['success'] == 'failed'){
+    if (dataMap['success'] == 'failed') {
       return {'result': false, 'message': dataMap['alert']['message']};
     }
     return {'result': false, 'message': dataMap['message']};
@@ -343,6 +345,42 @@ class AuthProvider with ChangeNotifier, TextMixin {
     }
 
     return;
+  }
+
+  Future<bool> recoverPassword(email) async {
+    var url = '${API.baseURL}/forgotPassword';
+
+    final uuid = Uuid();
+    final hash = uuid.v1();
+    final datetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader:
+            'Bearer ${API().getHash(hash, datetime)}'
+      },
+      body: jsonEncode({
+        'email': email,
+        "hash": hash,
+        "datetime": datetime,
+      }),
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+
+    if (dataMap['status'] == 'success') {
+      return dataMap['SendMail'];
+    }
+    return false;
   }
 
   Future<void> renewToken() async {

@@ -28,22 +28,45 @@ class _ChallengeListState extends State<ChallengeList> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
-        id: content.id,
-        date: content.createdAt,
-        userName: content.user.userName,
-        userImage: content.user.icon,
-        certificate: content.certificate,
-        title: content.title,
-        description: content.description,
-        likes: content.likes,
-        comments: content.comments,
-        regalups: content.regalups,
-        hasLiked: content.hasLiked,
-        hasRegalup: content.hasRegalup,
-        hasSaved: content.hasSaved,
-        parameter: content.parameter,
-        goal: content.goal,
-        resources: content.resources);
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
+    );
+  }
+
+  Widget _repostChallengeWidget(ChallengeModel content) {
+    return ChallengeTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
   }
 
   bool onNotification(ScrollNotification notification) {
@@ -89,7 +112,7 @@ class _ChallengeListState extends State<ChallengeList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
-        if(results.length < 10){
+        if (results.length < 10) {
           _hasMore = false;
         }
         _list = results;
@@ -147,7 +170,13 @@ class _ChallengeListState extends State<ChallengeList> {
                         alignment: Alignment.center,
                         child: CircularProgressIndicator(),
                       );
-                    return _challengeWidget(_list[i]);
+                    switch (_list[i].type) {
+                      case 'challenge':
+                        return _challengeWidget(_list[i]);
+                      case 'regalup_c':
+                        return _repostChallengeWidget(_list[i]);
+                    }
+                    return Container();
                   },
                 ),
               );

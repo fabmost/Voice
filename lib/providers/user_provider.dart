@@ -57,7 +57,6 @@ class UserProvider with ChangeNotifier, TextMixin {
   }
 
   Future<UserModel> getProfile(userName) async {
-    
     var url = '${API.baseURL}/profile/${Uri.encodeComponent(userName)}';
     final token = await _getToken();
 
@@ -226,8 +225,12 @@ class UserProvider with ChangeNotifier, TextMixin {
     return null;
   }
 
-  Future<List<UserModel>> getFollowers(user, page) async {
-    var url = '${API.baseURL}/followers/$user/$page';
+  Future<List<UserModel>> getFollowers(user, page, [query]) async {
+    var url;
+    if (query == null)
+      url = '${API.baseURL}/followers/$user/$page';
+    else
+      url = '${API.baseURL}/followers/$user/$page/$query';
     final token = await _getToken();
 
     await FlutterUserAgent.init();
@@ -254,13 +257,18 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
-      return getFollowers(user, page);
+      return getFollowers(user, page, query);
     }
     return [];
   }
 
-  Future<List<UserModel>> getFollowing(user, page) async {
-    var url = '${API.baseURL}/following/$user/$page';
+  Future<List<UserModel>> getFollowing(user, page, [query]) async {
+    var url;
+    if (query == null)
+      url = '${API.baseURL}/following/$user/$page';
+    else
+      url = '${API.baseURL}/following/$user/$page/$query';
+      
     final token = await _getToken();
 
     await FlutterUserAgent.init();
@@ -287,7 +295,7 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
-      return getFollowing(user, page);
+      return getFollowing(user, page, query);
     }
     return [];
   }

@@ -1,8 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
+import '../providers/auth_provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   static const routeName = '/forgot-password';
@@ -30,17 +31,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() {
       _isLoading = true;
     });
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: _email);
-      setState(() {
-        _isLoading = false;
-      });
+    final result = await Provider.of<AuthProvider>(context, listen: false)
+        .recoverPassword(_email);
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result) {
       _sendAlert(
           'Te hemos enviado un correo de verificación para completar el proceso');
-    } on PlatformException catch (_) {
-      setState(() {
-        _isLoading = false;
-      });
+    } else {
       _sendAlert('No tenemos ese correo registrado');
     }
   }

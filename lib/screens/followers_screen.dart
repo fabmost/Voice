@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,19 +24,51 @@ class FollowersScreen extends StatefulWidget {
 class _FollowersScreenState extends State<FollowersScreen> {
   TextEditingController _controller = new TextEditingController();
   List<UserModel> _userList = [];
+  List<UserModel> _searchList = [];
   bool _isLoading = false;
   bool _hasMore = true;
+  bool _isSearching = false;
+  bool _finishedSearching = false;
   int _currentPageNumber = 0;
-  String _filter;
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
   String _currentUser;
+  Timer _debounce;
 
   void _toProfile(userId) async {
     if (_currentUser != userId) {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: userId);
     }
+  }
+
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (_controller.text.length > 2)
+        _searchUsers();
+      else {
+        setState(() {
+          _isSearching = false;
+        });
+        loadMoreStatus = LoadMoreStatus.STABLE;
+      }
+    });
+  }
+
+  void _searchUsers() async {
+    setState(() {
+      _searchList.clear();
+      _isSearching = true;
+      _finishedSearching = false;
+    });
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    final users = await Provider.of<UserProvider>(context, listen: false)
+        .getFollowers(widget.userId, 0, _controller.text);
+    setState(() {
+      _searchList = users;
+      _finishedSearching = true;
+    });
   }
 
   void _getData() async {
@@ -57,9 +91,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (scrollController.position.maxScrollExtent > scrollController.offset &&
-          scrollController.position.maxScrollExtent - scrollController.offset <=
-              50) {
+      var triggerFetchMoreSize =
+          0.7 * scrollController.position.maxScrollExtent;
+      if (scrollController.position.pixels > triggerFetchMoreSize) {
         if (loadMoreStatus != null &&
             loadMoreStatus == LoadMoreStatus.STABLE &&
             _hasMore) {
@@ -87,16 +121,15 @@ class _FollowersScreenState extends State<FollowersScreen> {
   void initState() {
     super.initState();
     _getData();
-    _controller.addListener(() {
-      setState(() {
-        _filter = _controller.text;
-      });
-    });
+    _controller.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
     scrollController.dispose();
+    _controller.removeListener(_onSearchChanged);
+    _controller.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -156,12 +189,29 @@ class _FollowersScreenState extends State<FollowersScreen> {
                     Expanded(
                       child: NotificationListener(
                         onNotification: onNotification,
-                        child: ListView.builder(
+                        child: ListView.separated(
                           controller: scrollController,
-                          itemCount: _hasMore
-                              ? _userList.length + 1
-                              : _userList.length,
+                          separatorBuilder: (context, index) => Divider(),
+                          itemCount: _isSearching
+                              ? _searchList.isEmpty ? 1 : _searchList.length
+                              : _hasMore
+                                  ? _userList.length + 1
+                                  : _userList.length,
                           itemBuilder: (ctx, i) {
+                            if (_isSearching) {
+                              if (i == _searchList.length)
+                                return Container(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  alignment: Alignment.center,
+                                  child: _finishedSearching
+                                      ? Text('Sin resultados')
+                                      : CircularProgressIndicator(),
+                                );
+                              final doc = _searchList[i];
+
+                              return _userTile(doc);
+                            }
                             if (i == _userList.length)
                               return Container(
                                 margin:
@@ -171,18 +221,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                               );
                             final doc = _userList[i];
 
-                            return _filter == null || _filter == ""
-                                ? Column(
-                                    children: <Widget>[
-                                      _userTile(doc),
-                                      Divider()
-                                    ],
-                                  )
-                                : doc.userName
-                                        .toLowerCase()
-                                        .contains(_filter.toLowerCase())
-                                    ? _userTile(doc)
-                                    : Container();
+                            return _userTile(doc);
                           },
                         ),
                       ),

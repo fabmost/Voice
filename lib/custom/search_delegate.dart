@@ -20,7 +20,7 @@ import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
   String currentUser;
-  StreamController<String> streamController = StreamController();
+  Timer _debounce;
 
   CustomSearchDelegate(){
     /*

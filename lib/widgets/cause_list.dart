@@ -49,6 +49,30 @@ class _CauseListState extends State<CauseList> {
     );
   }
 
+  Widget _repostCauseWidget(content) {
+    return CauseTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       if (widget.scrollController.position.maxScrollExtent >
@@ -150,7 +174,13 @@ class _CauseListState extends State<CauseList> {
                         alignment: Alignment.center,
                         child: CircularProgressIndicator(),
                       );
-                    return _causeWidget(_list[i]);
+                    switch (_list[i].type) {
+                      case 'causes':
+                        return _causeWidget(_list[i]);
+                      case 'regalup_ca':
+                        return _repostCauseWidget(_list[i]);
+                    }
+                    return Container();
                   },
                 ),
               );

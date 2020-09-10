@@ -1104,6 +1104,83 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      final index = _homeContent.indexWhere((element) => element.id == id);
+      if (index != -1) {
+        ContentModel content;
+        switch (type) {
+          case 'P':
+            PollModel oldPoll = _homeContent[index];
+            content = PollModel(
+              id: oldPoll.id,
+              type: oldPoll.type,
+              user: oldPoll.user,
+              title: oldPoll.title,
+              createdAt: oldPoll.createdAt,
+              votes: oldPoll.votes,
+              likes: oldPoll.likes,
+              regalups: oldPoll.regalups,
+              comments: oldPoll.comments + 1,
+              hasVoted: oldPoll.hasVoted,
+              hasLiked: oldPoll.hasLiked,
+              hasRegalup: oldPoll.hasRegalup,
+              hasSaved: oldPoll.hasSaved,
+              answers: oldPoll.answers,
+              resources: oldPoll.resources,
+              body: oldPoll.body,
+              certificate: oldPoll.certificate,
+              creator: oldPoll.creator,
+              description: oldPoll.description,
+            );
+            break;
+          case 'C':
+            ChallengeModel oldChallenge = _homeContent[index];
+            content = ChallengeModel(
+              id: oldChallenge.id,
+              type: oldChallenge.type,
+              user: oldChallenge.user,
+              title: oldChallenge.title,
+              createdAt: oldChallenge.createdAt,
+              likes: oldChallenge.likes,
+              regalups: oldChallenge.regalups,
+              comments: oldChallenge.comments + 1,
+              hasLiked: oldChallenge.hasLiked,
+              hasRegalup: oldChallenge.hasRegalup,
+              hasSaved: oldChallenge.hasSaved,
+              resources: oldChallenge.resources,
+              certificate: oldChallenge.certificate,
+              creator: oldChallenge.creator,
+              description: oldChallenge.description,
+              goal: oldChallenge.goal,
+              parameter: oldChallenge.parameter,
+            );
+            break;
+          case 'TIP':
+            TipModel oldTip = _homeContent[index];
+            content = TipModel(
+              id: oldTip.id,
+              type: oldTip.type,
+              user: oldTip.user,
+              title: oldTip.title,
+              createdAt: oldTip.createdAt,
+              likes: oldTip.likes,
+              regalups: oldTip.regalups,
+              comments: oldTip.comments + 1,
+              hasLiked: oldTip.hasLiked,
+              hasRegalup: oldTip.hasRegalup,
+              hasSaved: oldTip.hasSaved,
+              resources: oldTip.resources,
+              certificate: oldTip.certificate,
+              creator: oldTip.creator,
+              description: oldTip.description,
+              body: oldTip.body,
+              hasRated: oldTip.hasRated,
+              total: oldTip.total,
+            );
+            break;
+        }
+        _homeContent[index] = content;
+        notifyListeners();
+      }
       return CommentModel.fromJson(dataMap['comment']);
     }
     return null;
@@ -1362,6 +1439,14 @@ class ContentProvider with ChangeNotifier, TextMixin {
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
       return UserModel.votersListFromJson(dataMap['statistics']);
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getPollStatistics(
+        idPoll: idPoll,
+        page: page,
+        idAnswer: idAnswer,
+      );
     }
     return [];
   }

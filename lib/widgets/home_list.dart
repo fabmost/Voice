@@ -33,8 +33,6 @@ class _HomeListState extends State<HomeList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   int currentPageNumber;
   bool _hasMore = true;
-  bool _requestedUsers = false;
-  bool _requestedCauses = false;
   bool _requestMoreUsers = false;
 
   Widget _pollWidget(PollModel content) {

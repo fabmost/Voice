@@ -48,6 +48,28 @@ class _TipListState extends State<TipUserList> {
     );
   }
 
+  Widget _repostTipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       if (widget.scrollController.position.maxScrollExtent >
@@ -91,7 +113,7 @@ class _TipListState extends State<TipUserList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
-        if(results.length < 10){
+        if (results.length < 10) {
           _hasMore = false;
         }
         _list = results;
@@ -153,7 +175,13 @@ class _TipListState extends State<TipUserList> {
                         alignment: Alignment.center,
                         child: CircularProgressIndicator(),
                       );
-                    return _tipWidget(_list[i]);
+                    switch (_list[i].type) {
+                      case 'Tips':
+                        return _tipWidget(_list[i]);
+                      case 'regalup_ti':
+                        return _repostTipWidget(_list[i]);
+                    }
+                    return Container();
                   },
                 ),
               );
