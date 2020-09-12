@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -54,17 +53,17 @@ class _UserNameScreenState extends State<UserNameScreen> {
   }
 
   void _saveUserName() async {
-    final user = await FirebaseAuth.instance.currentUser();
+    final user = '';// = await FirebaseAuth.instance.currentUser();
     final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
+        await Firestore.instance.collection('users').document(user).get();
 
     WriteBatch batch = Firestore.instance.batch();
     batch.updateData(
-      Firestore.instance.collection('users').document(user.uid),
+      Firestore.instance.collection('users').document(user),
       {'user_name': _userName},
     );
     batch.updateData(
-      Firestore.instance.collection('hash').document(user.uid),
+      Firestore.instance.collection('hash').document(user),
       {'name': _userName},
     );
     if (userData['created'] != null) {
@@ -88,7 +87,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
         batch.updateData(
           Firestore.instance.collection('chats').document(element),
           {
-            'participants.${user.uid}': {'user_name': _userName}
+            'participants.$user': {'user_name': _userName}
           },
         );
       });

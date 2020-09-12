@@ -5,8 +5,6 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'comment_options.dart';
 import 'influencer_badge.dart';
 import '../translations.dart';
-import '../models/comment_model.dart';
-import '../models/user_model.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/detail_comment_screen.dart';
 import '../screens/view_profile_screen.dart';

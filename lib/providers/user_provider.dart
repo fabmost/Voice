@@ -111,56 +111,56 @@ class UserProvider with ChangeNotifier, TextMixin {
 
     if (name != null) {
       parameters['name'] = name;
-      _currentUser.name = name;
+      if (_currentUser != null) _currentUser.name = name;
     }
     if (lastName != null) {
       parameters['last_name'] = lastName;
-      _currentUser.lastName = lastName;
+      if (_currentUser != null) _currentUser.lastName = lastName;
     }
     if (userName != null) {
       parameters['user_name'] = userName;
-      _currentUser.userName = userName;
+      if (_currentUser != null) _currentUser.userName = userName;
     }
     if (country != null) {
       parameters['country_code'] = country;
-      _currentUser.country = country;
+      if (_currentUser != null) _currentUser.country = country;
     }
     if (tiktok != null) {
       parameters['tiktok'] = tiktok;
-      _currentUser.tiktok = tiktok;
+      if (_currentUser != null) _currentUser.tiktok = tiktok;
     }
     if (facebook != null) {
       parameters['facebook'] = facebook;
-      _currentUser.facebook = facebook;
+      if (_currentUser != null) _currentUser.facebook = facebook;
     }
     if (instagram != null) {
       parameters['instagram'] = instagram;
-      _currentUser.instagram = instagram;
+      if (_currentUser != null) _currentUser.instagram = instagram;
     }
     if (youtube != null) {
       parameters['youtube'] = youtube;
-      _currentUser.youtube = youtube;
+      if (_currentUser != null) _currentUser.youtube = youtube;
     }
     if (bio != null) {
       String fixedBio = serverSafe(bio);
       parameters['biography'] = fixedBio;
-      _currentUser.biography = fixedBio;
+      if (_currentUser != null) _currentUser.biography = fixedBio;
     }
     if (gender != null) {
       parameters['gender'] = gender;
-      _currentUser.gender = gender;
+      if (_currentUser != null) _currentUser.gender = gender;
     }
     if (icon != null) {
       parameters['icon'] = icon;
-      _currentUser.icon = icon;
+      if (_currentUser != null) _currentUser.icon = icon;
     }
     if (cover != null) {
       parameters['cover'] = cover;
-      _currentUser.cover = cover;
+      if (_currentUser != null) _currentUser.cover = cover;
     }
     if (birth != null) {
       parameters['birhtday'] = birth;
-      _currentUser.birthday = birth;
+      if (_currentUser != null) _currentUser.birthday = birth;
     }
 
     await FlutterUserAgent.init();
@@ -268,7 +268,7 @@ class UserProvider with ChangeNotifier, TextMixin {
       url = '${API.baseURL}/following/$user/$page';
     else
       url = '${API.baseURL}/following/$user/$page/$query';
-      
+
     final token = await _getToken();
 
     await FlutterUserAgent.init();

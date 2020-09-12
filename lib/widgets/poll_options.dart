@@ -6,6 +6,7 @@ import '../mixins/alert_mixin.dart';
 import '../models/poll_answer_model.dart';
 import '../providers/content_provider.dart';
 import '../providers/auth_provider.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class PollOptions extends StatefulWidget {
   final String id;
@@ -24,13 +25,28 @@ class PollOptions extends StatefulWidget {
   _PollOptionsState createState() => _PollOptionsState();
 }
 
-class _PollOptionsState extends State<PollOptions> with AlertMixin{
+class _PollOptionsState extends State<PollOptions> with AlertMixin {
   bool _hasVoted;
   bool _isLoading = false;
   List<PollAnswerModel> _answers;
+  int _votes;
+
+  void _toGallery(id, image) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: id,
+          galleryItems: [image],
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
 
   void _setVote(idAnswer, position) async {
-    bool canInteract = await Provider.of<AuthProvider>(context, listen: false).canInteract();
+    bool canInteract =
+        await Provider.of<AuthProvider>(context, listen: false).canInteract();
     if (!canInteract) {
       anonymousAlert(context);
       return;
@@ -49,6 +65,7 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin{
       url: selected.url,
     );
     setState(() {
+      _votes++;
       _answers[position] = newAnswer;
       _hasVoted = true;
       _isLoading = false;
@@ -67,8 +84,11 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin{
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      CircleAvatar(
-                        backgroundImage: NetworkImage(option.url),
+                      GestureDetector(
+                        onTap: () => _toGallery(option.id, option.url),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(option.url),
+                        ),
                       ),
                       SizedBox(width: 8),
                       Expanded(
@@ -116,7 +136,7 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin{
   }
 
   Widget _voted(answer, isVote, amount) {
-    var totalPercentage = (amount == 0.0) ? 0.0 : amount / widget.votes;
+    var totalPercentage = (amount == 0.0) ? 0.0 : amount / _votes;
     if (totalPercentage > 1) {
       totalPercentage = 1;
     }
@@ -196,6 +216,7 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin{
   void initState() {
     _hasVoted = widget.hasVoted;
     _answers = widget.answers;
+    _votes = widget.votes;
     super.initState();
   }
 

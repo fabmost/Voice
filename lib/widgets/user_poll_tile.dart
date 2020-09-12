@@ -31,6 +31,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
   final bool hasRegalup;
   final List answers;
   final List resources;
+  final Function removeFunction;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -50,6 +51,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
     @required this.hasRegalup,
     @required this.answers,
     @required this.resources,
+    @required this.removeFunction,
   });
 
   void _toComments(context) {
@@ -117,7 +119,8 @@ class UserPollTile extends StatelessWidget with ShareContent {
   void _deleteContent(context) async {
     final result = await Provider.of<ContentProvider>(context, listen: false).deleteContent(id: id, type: 'P');
     if(result){
-      Navigator.of(context).pop();
+      //Navigator.of(context).pop();
+      removeFunction(id);
     }
   }
 

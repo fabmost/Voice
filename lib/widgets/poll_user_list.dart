@@ -45,6 +45,7 @@ class _PollUserListState extends State<PollUserList> {
       hasRegalup: content.hasRegalup,
       answers: content.answers,
       resources: content.resources,
+      removeFunction: _removeContent,
     );
   }
 
@@ -103,6 +104,12 @@ class _PollUserListState extends State<PollUserList> {
       }
     }
     return true;
+  }
+
+  void _removeContent(id) {
+    setState(() {
+      _list.removeWhere((element) => element.id == id);
+    });
   }
 
   void _getData() async {

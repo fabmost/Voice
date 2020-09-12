@@ -10,6 +10,8 @@ import 'countries_screen.dart';
 import '../api.dart';
 import '../translations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
+import '../models/country_model.dart';
 
 class SessionAuthScreen extends StatefulWidget {
   static const routeName = '/session-signup';
@@ -29,6 +31,8 @@ class _AuthScreenState extends State<SessionAuthScreen> {
   FocusNode _birthFocus = FocusNode();
   FocusNode _genderFocus = FocusNode();
   FocusNode _countryFocus = FocusNode();
+  CountryModel _selectedCountry;
+  Map _serverGender = {'Masculino': 'M', 'Femenino': 'F', 'Otro': 'O'};
 
   String _name, _last, _userName, _email;
 
@@ -84,7 +88,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
       );
       if (selected != null) {
         setState(() {
-          _birthController.text = DateFormat('dd-MM-yyyy').format(selected);
+          _birthController.text = DateFormat('yyyy-MM-dd').format(selected);
         });
       }
     }
@@ -95,7 +99,8 @@ class _AuthScreenState extends State<SessionAuthScreen> {
       FocusScope.of(context).unfocus();
       Navigator.of(context).pushNamed(CountriesScreen.routeName).then((value) {
         if (value != null) {
-          _countryController.text = value;
+          _selectedCountry = value;
+          _countryController.text = _selectedCountry.name;
         }
       });
     }
@@ -162,20 +167,36 @@ class _AuthScreenState extends State<SessionAuthScreen> {
         _isLoading = true;
       });
 
-      String token = await Provider.of<AuthProvider>(context, listen: false).installation();
-      Map result =
-          await Provider.of<AuthProvider>(context, listen: false).signUp(
-        name: _name,
-        last: _last,
-        email: _email,
-        password: API().getSalt(_passwordController.text),
-        user: _userName,
-        token: token
-      );
+      String token = await Provider.of<AuthProvider>(context, listen: false)
+          .installation();
+      Map result = await Provider.of<AuthProvider>(context, listen: false)
+          .signUp(
+              name: _name,
+              last: _last,
+              email: _email,
+              password: API().getSalt(_passwordController.text),
+              user: _userName,
+              token: token);
 
       if (result['result']) {
+        if (_birthController.text.isNotEmpty ||
+            _genderController.text.isNotEmpty ||
+            _countryController.text.isNotEmpty) {
+          final String editBirth =
+              _birthController.text.isNotEmpty ? _birthController.text : null;
+          final String editGender = _genderController.text.isNotEmpty
+              ? _serverGender[_genderController.text]
+              : null;
+          final String editCountry =
+              _selectedCountry == null ? null : _selectedCountry.code;
+          await Provider.of<UserProvider>(context, listen: false).editProfile(
+            birth: editBirth,
+            gender: editGender,
+            country: editCountry,
+          );
+        }
         Navigator.of(context).pop();
-      }else{
+      } else {
         var message = result['message'] ?? 'Ocurrió un error';
         _scaffoldKey.currentState.showSnackBar(
           SnackBar(

@@ -22,7 +22,7 @@ class CustomSearchDelegate extends SearchDelegate {
   String currentUser;
   Timer _debounce;
 
-  CustomSearchDelegate(){
+  CustomSearchDelegate() {
     /*
     streamController.stream
     .transform(debounce(Duration(milliseconds: 400)))
@@ -153,11 +153,15 @@ class CustomSearchDelegate extends SearchDelegate {
       ),
       title: Row(
         children: <Widget>[
-          Text(
-            content.userName,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+          Flexible(
+            child: Text(
+              content.userName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
           SizedBox(width: 8),

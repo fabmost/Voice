@@ -10,8 +10,6 @@ import 'detail_comment_screen.dart';
 import '../translations.dart';
 import '../providers/content_provider.dart';
 import '../models/notification_model.dart';
-import '../models/comment_model.dart';
-import '../models/user_model.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 

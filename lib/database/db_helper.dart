@@ -49,4 +49,13 @@ class DBHelper {
       table,
     );
   }
+
+  static Future<List<Map<String, dynamic>>> getCountry(String code) async {
+    final db = await DBHelper.database();
+    return db.query(
+      CountriesTable.table_name,
+      where: '${CountriesTable.code} = ?',
+      whereArgs: [code],
+    );
+  }
 }

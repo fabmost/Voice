@@ -1,13 +1,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:voice_inc/screens/detail_tip_screen.dart';
 
-import '../api.dart';
 import '../providers/auth_provider.dart';
-import '../providers/user_provider.dart';
-import '../providers/content_provider.dart';
 
 import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';

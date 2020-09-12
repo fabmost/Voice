@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
+import '../models/country_model.dart';
+import '../providers/auth_provider.dart';
+import '../providers/database_provider.dart';
 
 class CountriesScreen extends StatefulWidget {
   static const routeName = '/countries';
@@ -11,7 +15,9 @@ class CountriesScreen extends StatefulWidget {
 
 class _CountriesScreenState extends State<CountriesScreen> {
   TextEditingController _controller = new TextEditingController();
+  List<CountryModel> countries;
   String _filter;
+  bool _isLoading;
   final defaultDiacriticsRemovalap = [
     {
       'base': 'A',
@@ -267,254 +273,31 @@ class _CountriesScreenState extends State<CountriesScreen> {
           '\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763'
     }
   ];
-  final countries = [
-    'Andorra',
-    'Emiratos Árabes Unidos',
-    'Afganistán',
-    'Antigua y Barbuda',
-    'Anguila',
-    'Albania',
-    'Armenia',
-    'Antillas Neerlandesas',
-    'Angola',
-    'Antártida',
-    'Argentina',
-    'Samoa Americana',
-    'Austria',
-    'Australia',
-    'Aruba',
-    'Islas Áland',
-    'Azerbaiyán',
-    'Bosnia y Herzegovina',
-    'Barbados',
-    'Bangladesh',
-    'Bélgica',
-    'Burkina Faso',
-    'Bulgaria',
-    'Bahréin',
-    'Burundi',
-    'Benin',
-    'San Bartolomé',
-    'Bermudas',
-    'Brunéi',
-    'Bolivia',
-    'Brasil',
-    'Bahamas',
-    'Bhután',
-    'Isla Bouvet',
-    'Botsuana',
-    'Belarús',
-    'Belice',
-    'Canadá',
-    'Islas Cocos',
-    'República Centro-Africana',
-    'Congo',
-    'Suiza',
-    'Costa de Marfil',
-    'Islas Cook',
-    'Chile',
-    'Camerún',
-    'China',
-    'Colombia',
-    'Costa Rica',
-    'Cuba',
-    'Cabo Verde',
-    'Islas Christmas',
-    'Chipre',
-    'República Checa',
-    'Alemania',
-    'Yibuti',
-    'Dinamarca',
-    'Domínica',
-    'República Dominicana',
-    'Argel',
-    'Ecuador',
-    'Estonia',
-    'Egipto',
-    'Sahara Occidental',
-    'Eritrea',
-    'España',
-    'Etiopía',
-    'Finlandia',
-    'Fiji',
-    'Islas Malvinas',
-    'Micronesia',
-    'Islas Faroe',
-    'Francia',
-    'Gabón',
-    'Reino Unido',
-    'Granada',
-    'Georgia',
-    'Guayana Francesa',
-    'Guernsey',
-    'Ghana',
-    'Gibraltar',
-    'Groenlandia',
-    'Gambia',
-    'Guinea',
-    'Guadalupe',
-    'Guinea Ecuatorial',
-    'Grecia',
-    'Georgia del Sur e Islas Sandwich del Sur',
-    'Guatemala',
-    'Guam',
-    'Guinea-Bissau',
-    'Guayana',
-    'Hong Kong',
-    'Islas Heard y McDonald',
-    'Honduras',
-    'Croacia',
-    'Haití',
-    'Hungría',
-    'Indonesia',
-    'Irlanda',
-    'Israel',
-    'Isla de Man',
-    'India',
-    'Territorio Británico del Océano Índico',
-    'Irak',
-    'Irán',
-    'Islandia',
-    'Italia',
-    'Jersey',
-    'Jamaica',
-    'Jordania',
-    'Japón',
-    'Kenia',
-    'Kirguistán',
-    'Camboya',
-    'Kiribati',
-    'Comoros',
-    'San Cristóbal y Nieves',
-    'Corea del Norte',
-    'Corea del Sur',
-    'Kuwait',
-    'Islas Caimán',
-    'Kazajstán',
-    'Laos',
-    'Líbano',
-    'Santa Lucía',
-    'Liechtenstein',
-    'Sri Lanka',
-    'Liberia',
-    'Lesotho',
-    'Lituania',
-    'Luxemburgo',
-    'Letonia',
-    'Libia',
-    'Marruecos',
-    'Mónaco',
-    'Moldova',
-    'Montenegro',
-    'Madagascar',
-    'Islas Marshall',
-    'Macedonia',
-    'Mali',
-    'Myanmar',
-    'Mongolia',
-    'Macao',
-    'Martinica',
-    'Mauritania',
-    'Montserrat',
-    'Malta',
-    'Mauricio',
-    'Maldivas',
-    'Malawi',
-    'México',
-    'Malasia',
-    'Mozambique',
-    'Namibia',
-    'Nueva Caledonia',
-    'Níger',
-    'Islas Norkfolk',
-    'Nigeria',
-    'Nicaragua',
-    'Países Bajos',
-    'Noruega',
-    'Nepal',
-    'Nauru',
-    'Niue',
-    'Nueva Zelanda',
-    'Omán',
-    'Panamá',
-    'Perú',
-    'Polinesia Francesa',
-    'Papúa Nueva Guinea',
-    'Filipinas',
-    'Pakistán',
-    'Polonia',
-    'San Pedro y Miquelón',
-    'Islas Pitcairn',
-    'Puerto Rico',
-    'Palestina',
-    'Portugal',
-    'Islas Palaos',
-    'Paraguay',
-    'Qatar',
-    'Reunión',
-    'Rumanía',
-    'Serbia y Montenegro',
-    'Rusia',
-    'Ruanda',
-    'Arabia Saudita',
-    'Islas Solomón',
-    'Seychelles',
-    'Sudán',
-    'Suecia',
-    'Singapur',
-    'Santa Elena',
-    'Eslovenia',
-    'Islas Svalbard y Jan Mayen',
-    'Eslovaquia',
-    'Sierra Leona',
-    'San Marino',
-    'Senegal',
-    'Somalia',
-    'Surinam',
-    'Santo Tomé y Príncipe',
-    'El Salvador',
-    'Siria',
-    'Suazilandia',
-    'Islas Turcas y Caicos',
-    'Chad',
-    'Territorios Australes Franceses',
-    'Togo',
-    'Tailandia',
-    'Tayikistán',
-    'Tokelau',
-    'Timor-Leste',
-    'Turkmenistán',
-    'Túnez',
-    'Tonga',
-    'Turquía',
-    'Trinidad y Tobago',
-    'Tuvalu',
-    'Taiwán',
-    'Ucrania',
-    'Uganda',
-    'Estados Unidos',
-    'Uruguay',
-    'Uzbekistán',
-    'Ciudad del Vaticano',
-    'San Vicente y las Granadinas',
-    'Venezuela',
-    'Islas Vírgenes Británicas',
-    'Islas Vírgenes de los Estados Unidos de América',
-    'Vietnam',
-    'Vanuatu',
-    'Wallis y Futuna',
-    'Samoa',
-    'Yemen',
-    'Mayotte',
-  ];
 
   void _selected(context, value) {
     Navigator.of(context).pop(value);
   }
 
+  void _getCountries() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final mList = await Provider.of<DatabaseProvider>(context, listen: false)
+        .getCountries();
+    if (mList.isEmpty) {
+      await Provider.of<AuthProvider>(context, listen: false).getCatalogs();
+      _getCountries();
+    }
+    setState(() {
+      _isLoading = false;
+      countries = mList;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _getCountries();
     _controller.addListener(() {
       setState(() {
         _filter = _controller.text;
@@ -549,47 +332,52 @@ class _CountriesScreenState extends State<CountriesScreen> {
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_countries')),
       ),
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                  icon: Icon(Icons.search),
-                  hintText: Translations.of(context).text('hint_search')),
-              controller: _controller,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: TextField(
+                    decoration: InputDecoration(
+                        icon: Icon(Icons.search),
+                        hintText: Translations.of(context).text('hint_search')),
+                    controller: _controller,
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: countries.length,
+                    itemBuilder: (ctx, i) {
+                      return _filter == null || _filter == ""
+                          ? Column(
+                              children: <Widget>[
+                                ListTile(
+                                  onTap: () => _selected(context, countries[i]),
+                                  title: Text(countries[i].name),
+                                ),
+                                Divider()
+                              ],
+                            )
+                          : removeDiacritics(countries[i].name.toLowerCase())
+                                  .contains(
+                                      removeDiacritics(_filter.toLowerCase()))
+                              ? Column(
+                                  children: <Widget>[
+                                    ListTile(
+                                      onTap: () =>
+                                          _selected(context, countries[i]),
+                                      title: Text(countries[i].name),
+                                    ),
+                                    Divider(),
+                                  ],
+                                )
+                              : Container();
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: countries.length,
-              itemBuilder: (ctx, i) {
-                return _filter == null || _filter == ""
-                    ? Column(
-                        children: <Widget>[
-                          ListTile(
-                            onTap: () => _selected(context, countries[i]),
-                            title: Text(countries[i]),
-                          ),
-                          Divider()
-                        ],
-                      )
-                    : removeDiacritics(countries[i].toLowerCase()).contains(removeDiacritics(_filter.toLowerCase()))
-                        ? Column(
-                            children: <Widget>[
-                              ListTile(
-                                onTap: () => _selected(context, countries[i]),
-                                title: Text(countries[i]),
-                              ),
-                              Divider(),
-                            ],
-                          )
-                        : Container();
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

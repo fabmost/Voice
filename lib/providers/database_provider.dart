@@ -4,6 +4,7 @@ import '../database/db_helper.dart';
 import '../database/countries_table.dart';
 import '../database/categories_table.dart';
 import '../models/category_model.dart';
+import '../models/country_model.dart';
 
 class DatabaseProvider extends ChangeNotifier {
   Future<void> saveCountry({name, code, flag, phone}) async {
@@ -30,7 +31,8 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Future<List> getCategories() async {
-    final dataList = await DBHelper.getData(CategoriesTable.table_name, CategoriesTable.name);
+    final dataList = await DBHelper.getData(
+        CategoriesTable.table_name, CategoriesTable.name);
     if (dataList.isEmpty) {
       return [];
     }
@@ -40,5 +42,29 @@ class DatabaseProvider extends ChangeNotifier {
               name: item[CategoriesTable.name],
             ))
         .toList();
+  }
+
+  Future<List> getCountries() async {
+    final dataList =
+        await DBHelper.getData(CountriesTable.table_name, CountriesTable.name);
+    if (dataList.isEmpty) {
+      return [];
+    }
+    return dataList
+        .map((item) => CountryModel(
+              id: item[CountriesTable.id],
+              name: item[CountriesTable.name],
+              code: item[CountriesTable.code],
+            ))
+        .toList();
+  }
+
+  Future<String> getCountryName(String code) async {
+    final dataList =
+        await DBHelper.getCountry(code);
+    if (dataList.isEmpty) {
+      return '';
+    }
+    return dataList.first[CountriesTable.name];
   }
 }

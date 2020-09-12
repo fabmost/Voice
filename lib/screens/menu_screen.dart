@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:badges/badges.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -248,9 +246,6 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           _hasNotifications = true;
         });
       }
-      Platform.isAndroid
-          ? showNotification(msg['notification'])
-          : showNotification(msg['aps']['alert']);
       return;
     }, onLaunch: (msg) {
       //showAlert(msg);
@@ -274,10 +269,8 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       return;
     });
     fm.subscribeToTopic('cause');
-    FirebaseAuth.instance.currentUser().then((value) {
-      fm.getToken().then((token) {
-        Provider.of<AuthProvider>(context, listen: false).setFCM(token);
-      });
+    fm.getToken().then((token) {
+      Provider.of<AuthProvider>(context, listen: false).setFCM(token);
     });
     _checkUnread();
     _checkVersion();
@@ -299,11 +292,9 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void _checkUnread() async {
     Map result =
         await Provider.of<ContentProvider>(context, listen: false).getUnread();
-    if (result['notifications'] || result['chats']) {
-      setState(() {
-        _hasNotifications = result['notifications'];
-      });
-    }
+    setState(() {
+      _hasNotifications = result['notifications'];
+    });
   }
 
   void _checkVersion() async {
@@ -341,24 +332,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     );
   }
 
-  void showNotification(message) async {
-    /*
-  var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-    Platform.isAndroid ? 'com.dfa.flutterchatdemo' : 'com.duytq.flutterchatdemo',
-    'Flutter chat demo',
-    'your channel description',
-    playSound: true,
-    enableVibration: true,
-    importance: Importance.Max,
-    priority: Priority.High,
-  );
-  var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-  var platformChannelSpecifics =
-  new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-  await flutterLocalNotificationsPlugin.show(
-      0, message['title'].toString(), message['body'].toString(), platformChannelSpecifics,
-      payload: json.encode(message));
-      */
+  void _toNotifications() {
+    Navigator.of(context)
+        .pushNamed(NotificationsScreen.routeName)
+        .then((value) => _checkUnread());
   }
 
   Future<bool> _preventPopIfOpen() async {
@@ -387,6 +364,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             ),
           ),
           _hasNotifications,
+          _toNotifications,
           true,
         );
       case 1:
@@ -411,12 +389,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             ),
           ),
           _hasNotifications,
+          () => _toNotifications,
           true,
         );
       case 2:
         return CustomAppBar(
           Text(Translations.of(context).text('title_messages')),
           _hasNotifications,
+          () => _toNotifications,
         );
       default:
         return NoAppBar();

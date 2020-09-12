@@ -1,13 +1,9 @@
-import 'dart:io';
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:voice_inc/providers/database_provider.dart';
 
 import 'user_name_screen.dart';
 import 'countries_screen.dart';
@@ -15,6 +11,7 @@ import 'verify_type_screen.dart';
 import '../translations.dart';
 import '../providers/user_provider.dart';
 import '../models/user_model.dart';
+import '../models/country_model.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';
@@ -24,6 +21,10 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final GlobalKey keyFace = GlobalKey();
+  final GlobalKey keyTik = GlobalKey();
+  final GlobalKey keyInsta = GlobalKey();
+  final GlobalKey keyYt = GlobalKey();
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
@@ -47,93 +48,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   FocusNode _instagramFocus = FocusNode();
 
   String userId;
-  String _currentUrl;
-  File _imageFile;
   bool _loadingView = false;
   bool _isLoading = false;
-  bool _changedImage = false;
   int _isValidated;
   UserModel userData;
+  CountryModel _selectedCountry;
+
+  Map _serverGender = {'Masculino': 'M', 'Femenino': 'F', 'Otro': 'O'};
+  Map _appGender = {'M': 'Masculino', 'F': 'Femenino', 'O': 'Otro'};
 
   void _toValidate(context) {
     Navigator.of(context).pushNamed(VerifyTypeScreen.routeName);
-  }
-
-  void _imageOptions() {
-    //FocusScope.of(context).requestFocus(FocusNode());
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return new Container(
-          color: Colors.transparent,
-          child: new Wrap(
-            children: <Widget>[
-              new ListTile(
-                onTap: _openCamera,
-                leading: new Icon(
-                  Icons.camera_alt,
-                ),
-                title: Text("Cámara"),
-              ),
-              new ListTile(
-                onTap: _openGallery,
-                leading: new Icon(
-                  Icons.image,
-                ),
-                title: Text("Galería"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _openCamera() {
-    Navigator.of(context).pop();
-    _takePicture();
-  }
-
-  void _openGallery() {
-    Navigator.of(context).pop();
-    _getPicture();
-  }
-
-  Future<void> _takePicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.camera,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      /*
-      final appDir = await provider.getApplicationDocumentsDirectory();
-      final fileName = path.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
-      */
-      _cropImage(imageFile.path);
-    }
-  }
-
-  Future<void> _getPicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path);
-    }
-  }
-
-  void _cropImage(pathFile) async {
-    File cropped = await ImageCropper.cropImage(
-      sourcePath: pathFile,
-      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-    );
-    if (cropped != null) {
-      setState(() {
-        _imageFile = cropped;
-      });
-    }
   }
 
   void _userSelected() {
@@ -204,7 +129,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
       if (selected != null) {
         setState(() {
-          _birthController.text = DateFormat('dd-MM-yyyy').format(selected);
+          _birthController.text = DateFormat('yyyy-MM-dd').format(selected);
         });
       }
     }
@@ -215,7 +140,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       FocusScope.of(context).unfocus();
       Navigator.of(context).pushNamed(CountriesScreen.routeName).then((value) {
         if (value != null) {
-          _countryController.text = value;
+          _selectedCountry = value;
+          _countryController.text = _selectedCountry.name;
         }
       });
     }
@@ -265,24 +191,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isLoading = true;
       });
       try {
-        if (_imageFile != null) {
-          final ref = FirebaseStorage.instance
-              .ref()
-              .child('user_images')
-              .child(userId + '.jpg');
-
-          await ref.putFile(_imageFile).onComplete;
-
-          _currentUrl = await ref.getDownloadURL();
-
-          _changedImage = true;
-        }
-
         final String editName =
             userData.name != _nameController.text ? _nameController.text : null;
         final String editLastName = userData.lastName != _lastController.text
             ? _lastController.text
             : null;
+        final String editBirth = userData.birthday != _birthController.text
+            ? _birthController.text
+            : null;
+        final String editGender =
+            userData.gender != _serverGender[_genderController.text]
+                ? _serverGender[_genderController.text]
+                : null;
+        final String editCountry = _selectedCountry == null
+            ? null
+            : userData.country != _selectedCountry.code
+                ? _selectedCountry.code
+                : null;
         final String editBio = userData.biography != _bioController.text
             ? _bioController.text
             : null;
@@ -306,6 +231,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           tiktok: editTiktok,
           facebook: editFacebook,
           instagram: editInstagram,
+          birth: editBirth,
+          gender: editGender,
+          country: editCountry,
         );
 
         if (result['result']) {
@@ -322,64 +250,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _isLoading = false;
           });
         }
-
-/*
-        WriteBatch batch = Firestore.instance.batch();
-        batch.updateData(
-            Firestore.instance.collection('users').document(userId), {
-          'image': _currentUrl,
-          'name': _nameController.text,
-          'last_name': _lastController.text,
-          'gender': _genderController.text,
-          'country': _countryController.text,
-          'birthday': _birthController.text,
-          'bio': _bioController.text,
-          'tiktok': _tiktokController.text,
-          'facebook': _facebookController.text,
-          'instagram': _instagramController.text,
-          'youtube': _youtubeController.text,
-        });
-        batch.updateData(
-            Firestore.instance.collection('hash').document(userId), {
-          'user_name': '${_nameController.text} ${_lastController.text}',
-          'user_image': _currentUrl,
-          'influencer': userData['influencer'] ?? ''
-        });
-
-        if (_changedImage) {
-          if (userData['created'] != null) {
-            (userData['created'] as List).forEach((element) {
-              batch.updateData(
-                Firestore.instance.collection('content').document(element),
-                {'user_image': _currentUrl},
-              );
-            });
-          }
-          if (userData['comments'] != null) {
-            (userData['comments'] as List).forEach((element) {
-              batch.updateData(
-                Firestore.instance.collection('comments').document(element),
-                {'userImage': _currentUrl},
-              );
-            });
-          }
-          if (userData['chats'] != null) {
-            (userData['chats'] as List).forEach((element) {
-              batch.updateData(
-                Firestore.instance.collection('chats').document(element),
-                {
-                  'participants.$userId': {
-                    'user_image': _currentUrl,
-                    'user_name': userData['user_name']
-                  }
-                },
-              );
-            });
-          }
-        }
-
-        await batch.commit();
-        */
       } on PlatformException catch (err) {
         var message = 'An error ocurred';
         if (err.message != null) {
@@ -410,18 +280,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
     final user =
         await Provider.of<UserProvider>(context, listen: false).userProfile();
-
+    
+    final serverCounrty = user.country ?? '';
+    if (serverCounrty.isNotEmpty) {
+      _countryController.text =
+          await Provider.of<DatabaseProvider>(context, listen: false)
+              .getCountryName(serverCounrty);
+    } else {
+      _countryController.text = user.country ?? '';
+    }
     setState(() {
       _loadingView = false;
       userId = user.userName;
       userData = user;
-      _isValidated = 0;
+      _isValidated = 2;
       _userController.text = user.userName;
       _nameController.text = user.name;
       _lastController.text = user.lastName;
       _birthController.text = user.birthday ?? '';
-      _genderController.text = user.gender ?? '';
-      _countryController.text = user.country ?? '';
+      final serverGender = user.gender ?? '';
+      if (serverGender.isNotEmpty) {
+        _genderController.text = _appGender[user.gender];
+      } else {
+        _genderController.text = serverGender;
+      }
 
       if (user.biography != null) {
         _bioController.text = user.biography;
@@ -438,8 +320,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (user.youtube != null) {
         _youtubeController.text = user.youtube;
       }
-      _currentUrl = user.icon;
     });
+  }
+
+  Widget _infoButton(key, tooltip) {
+    return Tooltip(
+      key: key,
+      message: tooltip,
+      child: GestureDetector(
+        onTap: () {
+          final dynamic tooltip = key.currentState;
+          tooltip.ensureTooltipVisible();
+        },
+        child: Icon(
+          Icons.info_outline,
+        ),
+      ),
+    );
   }
 
   @override
@@ -473,30 +370,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          CircleAvatar(
-                            radius: 52,
-                            backgroundImage: _imageFile == null
-                                ? _currentUrl == null
-                                    ? null
-                                    : NetworkImage(_currentUrl)
-                                : FileImage(_imageFile),
-                          ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: Container(
-                              height: 42,
-                              child: RaisedButton(
-                                onPressed: _imageOptions,
-                                textColor: Colors.white,
-                                child: Text(Translations.of(context)
-                                    .text('button_change_image')),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
                       TextFormField(
                         controller: _nameController,
                         maxLength: 32,
@@ -601,6 +474,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: InputDecoration(
                           labelText: 'Tiktok',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          suffixIcon: _infoButton(keyTik,
+                              'Introduce tu username, ejemplo @miusuario'),
                         ),
                       ),
                       TextFormField(
@@ -613,6 +488,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: InputDecoration(
                           labelText: 'Facebook',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          suffixIcon: _infoButton(keyFace,
+                              'Introduce tu username, ejemplo @miusuario'),
                         ),
                       ),
                       TextFormField(
@@ -625,6 +502,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: InputDecoration(
                           labelText: 'Instagram',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          suffixIcon: _infoButton(keyInsta,
+                              'Introduce tu username, ejemplo @miusuario'),
                         ),
                       ),
                       TextFormField(
@@ -636,6 +515,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: InputDecoration(
                           labelText: 'Youtube (canal)',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          suffixIcon: _infoButton(keyYt,
+                              'Introduce el nombre de tu canal sin espacios'),
                         ),
                       ),
                       if ((_isValidated ?? 0) != 2) SizedBox(height: 16),

@@ -12,6 +12,8 @@ import 'countries_screen.dart';
 import '../api.dart';
 import '../translations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
+import '../models/country_model.dart';
 
 class AuthScreen extends StatefulWidget {
   static const routeName = '/signup';
@@ -31,6 +33,8 @@ class _AuthScreenState extends State<AuthScreen> {
   FocusNode _birthFocus = FocusNode();
   FocusNode _genderFocus = FocusNode();
   FocusNode _countryFocus = FocusNode();
+  CountryModel _selectedCountry;
+  Map _serverGender = {'Masculino': 'M', 'Femenino': 'F', 'Otro': 'O'};
 
   String _name, _last, _userName, _email;
 
@@ -86,7 +90,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
       if (selected != null) {
         setState(() {
-          _birthController.text = DateFormat('dd-MM-yyyy').format(selected);
+          _birthController.text = DateFormat('yyyy-MM-dd').format(selected);
         });
       }
     }
@@ -97,7 +101,8 @@ class _AuthScreenState extends State<AuthScreen> {
       FocusScope.of(context).unfocus();
       Navigator.of(context).pushNamed(CountriesScreen.routeName).then((value) {
         if (value != null) {
-          _countryController.text = value;
+          _selectedCountry = value;
+          _countryController.text = _selectedCountry.name;
         }
       });
     }
@@ -133,31 +138,6 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-/*
-  void _validateUserName() async {
-    setState(() {
-      _isLoading = true;
-    });
-    final result = await Firestore.instance
-        .collection('users')
-        .where('user_name', isEqualTo: _userName)
-        .getDocuments();
-    if (result.documents.isNotEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          content: Text('Ese username ya existe'),
-          backgroundColor: Theme.of(context).errorColor,
-        ),
-      );
-    } else {
-      _submitForm();
-    }
-  }
-  */
-
   void _submitForm() async {
     try {
       setState(() {
@@ -173,19 +153,23 @@ class _AuthScreenState extends State<AuthScreen> {
         user: _userName,
       );
 
-/*
-        {
-          'name': _name,
-          'last_name': _last,
-          'user_name': _userName,
-          'gender': _genderController.text,
-          'email': _email,
-          'country': _countryController.text,
-          'birthday': _birthController.text,
-          'salt': salt,
-        },
-        */
       if (result['result']) {
+        if (_birthController.text.isNotEmpty ||
+            _genderController.text.isNotEmpty ||
+            _countryController.text.isNotEmpty) {
+          final String editBirth =
+              _birthController.text.isNotEmpty ? _birthController.text : null;
+          final String editGender = _genderController.text.isNotEmpty
+              ? _serverGender[_genderController.text]
+              : null;
+          final String editCountry =
+              _selectedCountry == null ? null : _selectedCountry.code;
+          await Provider.of<UserProvider>(context, listen: false).editProfile(
+            birth: editBirth,
+            gender: editGender,
+            country: editCountry,
+          );
+        }
         Navigator.of(context).pushNamedAndRemoveUntil(
             MenuScreen.routeName, (Route<dynamic> route) => false);
       } else {

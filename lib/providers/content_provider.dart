@@ -823,7 +823,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
             user: oldPoll.user,
             title: oldPoll.title,
             createdAt: oldPoll.createdAt,
-            votes: oldPoll.votes,
+            votes: oldPoll.votes + 1,
             likes: oldPoll.likes,
             regalups: oldPoll.regalups,
             comments: oldPoll.comments,
@@ -1538,7 +1538,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     if (dataMap == null) {
       return false;
     }
-    if (dataMap['success'] == 'success') {
+    if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
       return true;
     }

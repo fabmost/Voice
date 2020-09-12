@@ -65,7 +65,7 @@ class UserModel {
           ? null
           : TextMixin.fixString(content['biography']),
       gender: content['gender'],
-      birthday: content['birthday'],
+      birthday: content['birhtday'],
       followers: content['followers'],
       following: content['following'],
       isFollowing: content['is_following'],
