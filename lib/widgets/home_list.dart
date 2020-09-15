@@ -125,7 +125,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _repostPollWidget(PollModel content) {
     return PollTile(
-      reference: 'home',
+      reference: 'reposthome',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

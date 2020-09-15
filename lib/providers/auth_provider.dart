@@ -40,6 +40,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
   }
 
   Future<void> signOut() async {
+    await setFCM('logout');
     final prefs = await SharedPreferences.getInstance();
     _storage.delete(key: API.sessionToken);
     _storage.delete(key: API.userHash);
@@ -48,8 +49,6 @@ class AuthProvider with ChangeNotifier, TextMixin {
     _token = null;
     _userName = null;
     _hasAccount = true;
-    //await installation();
-    await setFCM('logout');
     notifyListeners();
   }
 

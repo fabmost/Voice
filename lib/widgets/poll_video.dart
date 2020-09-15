@@ -1,7 +1,8 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -21,17 +22,20 @@ class PollVideo extends StatefulWidget {
 class _PollVideoState extends State<PollVideo> {
   VideoPlayerController _controller;
   ChewieController _chewieController;
-  Uint8List _thumbnailTemp;
+  File _thumbnailTemp;
   bool _isPlaying = false;
+  bool _isLoading = false;
 
   void _getThumbnail() async {
-    //int width = MediaQuery.of(context).size.width.floor();
-    final mFile = await VideoThumbnail.thumbnailData(
-      video: widget.videoUrl,
-      quality: 50,
-    );
+    final dir = await getExternalStorageDirectory();
+    final mFile = await VideoThumbnail.thumbnailFile(
+        video: widget.videoUrl,
+        thumbnailPath: dir.path,
+        imageFormat: ImageFormat.JPEG,
+        quality: 50,
+        timeMs: 1000);
     setState(() {
-      _thumbnailTemp = mFile;
+      _thumbnailTemp = File(mFile);
     });
   }
 
@@ -49,11 +53,16 @@ class _PollVideoState extends State<PollVideo> {
   }
 
   void _startVideo() {
+    setState(() {
+      _isLoading = true;
+      _isPlaying = true;
+    });
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
         if (widget._playVideo != null) widget._playVideo(_controller);
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         setState(() {
+          _isLoading = false;
           _isPlaying = true;
           _controller.play();
           _chewieController = ChewieController(
@@ -93,7 +102,7 @@ class _PollVideoState extends State<PollVideo> {
                       aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(_controller))
                   : _thumbnailTemp != null
-                      ? Image.memory(_thumbnailTemp)
+                      ? Image.file(_thumbnailTemp)
                       : Center(child: CircularProgressIndicator()),
               if (!_isPlaying)
                 CircleAvatar(
@@ -104,6 +113,10 @@ class _PollVideoState extends State<PollVideo> {
                     color: Colors.black,
                     size: 32,
                   ),
+                ),
+              if (_isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
                 ),
               if (_chewieController != null &&
                   _controller != null &&

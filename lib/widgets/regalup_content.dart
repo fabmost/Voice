@@ -33,16 +33,16 @@ class _RegalupContentState extends State<RegalupContent> with AlertMixin {
       anonymousAlert(context);
       return;
     }
-    bool result = await Provider.of<ContentProvider>(context, listen: false)
-        .newRegalup(widget.type, widget.id);
     setState(() {
-      _hasRegalup = result;
-      if (result) {
+      _hasRegalup = !_hasRegalup;
+      if (_hasRegalup) {
         _regalups++;
       } else {
         _regalups--;
       }
     });
+    await Provider.of<ContentProvider>(context, listen: false)
+        .newRegalup(widget.type, widget.id);
   }
 
   @override

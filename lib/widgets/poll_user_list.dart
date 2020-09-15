@@ -131,6 +131,26 @@ class _PollUserListState extends State<PollUserList> {
     });
   }
 
+  Future<void> _resetData() async {
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    _currentPageNumber = 0;
+    
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
+        _list = results;
+      }
+    });
+    loadMoreStatus = LoadMoreStatus.STABLE;
+    return;
+  }
+
   @override
   void initState() {
     _currentPageNumber = 0;
@@ -176,23 +196,26 @@ class _PollUserListState extends State<PollUserList> {
               )
             : NotificationListener(
                 onNotification: onNotification,
-                child: ListView.builder(
-                  itemCount: _hasMore ? _list.length + 1 : _list.length,
-                  itemBuilder: (context, i) {
-                    if (i == _list.length)
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 16),
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(),
-                      );
-                    switch (_list[i].type) {
-                      case 'poll':
-                        return _pollWidget(_list[i]);
-                      case 'regalup_p':
-                        return _repostPollWidget(_list[i]);
-                    }
-                    return Container();
-                  },
+                child: RefreshIndicator(
+                  onRefresh: _resetData,
+                  child: ListView.builder(
+                    itemCount: _hasMore ? _list.length + 1 : _list.length,
+                    itemBuilder: (context, i) {
+                      if (i == _list.length)
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(),
+                        );
+                      switch (_list[i].type) {
+                        case 'poll':
+                          return _pollWidget(_list[i]);
+                        case 'regalup_p':
+                          return _repostPollWidget(_list[i]);
+                      }
+                      return Container();
+                    },
+                  ),
                 ),
               );
   }

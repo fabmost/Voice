@@ -119,8 +119,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
       */
       _isLoading = false;
-      _moreData();
     });
+    _moreData();
   }
 
   void _moreData() {

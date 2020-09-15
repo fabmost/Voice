@@ -49,6 +49,30 @@ class _PollListState extends State<PollList> {
     );
   }
 
+  Widget _repostPollWidget(PollModel content) {
+    return PollTile(
+      reference: 'user',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      certificate: content.certificate,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       if (widget.scrollController.position.maxScrollExtent >
@@ -92,13 +116,33 @@ class _PollListState extends State<PollList> {
       if (results.isEmpty) {
         _hasMore = false;
       } else {
-        if(results.length < 10){
+        if (results.length < 10) {
           _hasMore = false;
         }
         _list = results;
       }
       _isLoading = false;
     });
+  }
+
+  Future<void> _resetData() async {
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    _currentPageNumber = 0;
+
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
+        _list = results;
+      }
+    });
+    loadMoreStatus = LoadMoreStatus.STABLE;
+    return;
   }
 
   @override
@@ -141,17 +185,26 @@ class _PollListState extends State<PollList> {
               )
             : NotificationListener(
                 onNotification: onNotification,
-                child: ListView.builder(
-                  itemCount: _hasMore ? _list.length + 1 : _list.length,
-                  itemBuilder: (context, i) {
-                    if (i == _list.length)
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 16),
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(),
-                      );
-                    return _pollWidget(_list[i]);
-                  },
+                child: RefreshIndicator(
+                  onRefresh: _resetData,
+                  child: ListView.builder(
+                    itemCount: _hasMore ? _list.length + 1 : _list.length,
+                    itemBuilder: (context, i) {
+                      if (i == _list.length)
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(),
+                        );
+                      switch (_list[i].type) {
+                        case 'poll':
+                          return _pollWidget(_list[i]);
+                        case 'regalup_p':
+                          return _repostPollWidget(_list[i]);
+                      }
+                      return Container();
+                    },
+                  ),
                 ),
               );
   }

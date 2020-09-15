@@ -52,6 +52,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       },
       body: body,
     );
+    
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
       return false;
@@ -59,7 +60,6 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
     if (page == 0) {
       _homeContent.clear();
-      notifyListeners();
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
@@ -92,7 +92,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       notifyListeners();
       return true;
     }
-    if (dataMap['action'] == 4 && tries > 3) {
+    if (dataMap['action'] == 4 && tries < 3) {
       await _renewToken();
       return getBaseTimeline(page, type, tries + 1);
     }

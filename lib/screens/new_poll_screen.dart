@@ -522,7 +522,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
     }
 
     List<Map> hashes = [];
-    RegExp exp = new RegExp(r"\B#\w\w+");
+    RegExp exp = new RegExp(r"\B#\S\S+");
     exp.allMatches(_titleController.text).forEach((match) {
       if (!hashes.contains(match.group(0))) {
         hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
@@ -530,12 +530,14 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
     });
     exp.allMatches(_descriptionController.text).forEach((match) {
       if (!hashes.contains(match.group(0))) {
-        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
+        String hashString = match.group(0).toLowerCase();
+        String serverString = removeDiacritics(hashString);
+        hashes.add({'text': serverString});
       }
     });
 
     List<Map> tags = [];
-    RegExp exps = new RegExp(r"\B@\[\w\w+\]\w\w+");
+    RegExp exps = new RegExp(r"\B@\[\S\S+\]\S\S+");
     /*
     exps.allMatches(_titleController.text).forEach((match) {
       if (!tags.contains({'user_name': match.group(0)})) {

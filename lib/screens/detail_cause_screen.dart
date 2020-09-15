@@ -299,8 +299,10 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (_causeModel.goal != null) _challengeGoal(context),
-                    if (_causeModel.goal != null) const SizedBox(height: 16),
+                    if (_causeModel.goal != null && _causeModel.goal > 0)
+                      _challengeGoal(context),
+                    if (_causeModel.goal != null && _causeModel.goal > 0)
+                      const SizedBox(height: 16),
                     if (_causeModel.description != null &&
                         _causeModel.description.isNotEmpty)
                       Description(_causeModel.description),

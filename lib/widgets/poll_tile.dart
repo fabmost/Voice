@@ -161,8 +161,10 @@ class PollTile extends StatelessWidget with ShareContent {
                         InfluencerBadge(id, certificate, 16),
                       ],
                     ),
-                    subtitle: Text(timeago.format(now.subtract(difference),
-                        locale: Translations.of(context).currentLanguage)),
+                    subtitle: Text(
+                      timeago.format(now.subtract(difference),
+                          locale: Translations.of(context).currentLanguage),
+                    ),
                     trailing: MenuContent(
                       id: id,
                       type: 'P',

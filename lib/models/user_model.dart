@@ -52,7 +52,7 @@ class UserModel {
       icon: content['icon'] == null
           ? null
           : content['icon'].isEmpty ? null : content['icon'],
-      hash: content['hash'],
+      hash: content['user_hash'],
       name: TextMixin.fixString(content['name']),
       lastName: TextMixin.fixString(content['last_name']),
       cover: content['cover'] ?? '',

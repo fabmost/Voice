@@ -120,7 +120,7 @@ class CauseTile extends StatelessWidget with ShareContent {
         if (resources.isNotEmpty && resources[0].type == 'V')
           PollVideo(resources[0].url, null),
         if (resources.isNotEmpty && resources[0].type == 'I')
-          PollImages([resources[0].url], null),
+          PollImages([resources[0].url], ''),
         Container(
           height: 42,
           margin: EdgeInsets.all(16),
@@ -298,8 +298,8 @@ class CauseTile extends StatelessWidget with ShareContent {
               ),
             ),
             const SizedBox(height: 16),
-            if (goal != null) _challengeGoal(context),
-            if (goal != null) SizedBox(height: 16),
+            if (goal != null && goal > 0) _challengeGoal(context),
+            if (goal != null && goal > 0) SizedBox(height: 16),
             if (description != null && description.trim().isNotEmpty)
               Description(description),
             if (description != null && description.trim().isNotEmpty)

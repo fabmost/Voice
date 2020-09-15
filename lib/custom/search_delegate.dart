@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,7 +22,13 @@ import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
   String currentUser;
-  Timer _debounce;
+  final debouncer = Debouncer<String>(Duration(milliseconds: 500));
+
+  Future<Map> queryChanged(context, String query) async {
+    debouncer.value = query;
+    return Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(await debouncer.nextValue);
+  }
 
   CustomSearchDelegate() {
     /*
@@ -215,7 +223,7 @@ class CustomSearchDelegate extends SearchDelegate {
     _getCUrrentUser(context);
     return FutureBuilder(
       future:
-          Provider.of<ContentProvider>(context, listen: false).search(query, 0),
+          Provider.of<ContentProvider>(context, listen: false).search(removeDiacritics(query), 0),
       builder: (ct, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
@@ -251,13 +259,12 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     _getCUrrentUser(context);
+
     if (query.length < 3) {
       return Container();
     }
-
     return FutureBuilder(
-      future: Provider.of<UserProvider>(context, listen: false)
-          .getAutocomplete(query),
+      future: queryChanged(context, removeDiacritics(query)),
       builder: (ct, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());

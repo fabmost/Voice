@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -150,8 +151,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     setState(() {
       _isLoading = true;
     });
+    String query = widget.query.replaceAll('#', '').trim();
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .search(widget.query, _currentPageNumber);
+        .search(removeDiacritics(query), _currentPageNumber);
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;

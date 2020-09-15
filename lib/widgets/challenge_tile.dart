@@ -120,7 +120,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
     return Column(
       children: <Widget>[
         if (resource.type == 'V') PollVideo(resource.url, null),
-        if (resource.type == 'I') PollImages([resource.url], null),
+        if (resource.type == 'I') PollImages([resource.url], ''),
         Container(
           height: 42,
           margin: EdgeInsets.all(16),

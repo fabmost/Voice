@@ -36,11 +36,9 @@ class _LikeContentState extends State<LikeContent> with AlertMixin {
       anonymousAlert(context);
       return;
     }
-    bool result = await Provider.of<ContentProvider>(context, listen: false)
-        .likeContent(widget.type, widget.id);
     setState(() {
-      _hasLiked = result;
-      if (result) {
+      _hasLiked = !_hasLiked;
+      if (_hasLiked) {
         _likes++;
         if(widget.tipFunction != null){
           widget.tipFunction();
@@ -49,6 +47,9 @@ class _LikeContentState extends State<LikeContent> with AlertMixin {
         _likes--;
       }
     });
+    await Provider.of<ContentProvider>(context, listen: false)
+        .likeContent(widget.type, widget.id);
+    
   }
 
   @override

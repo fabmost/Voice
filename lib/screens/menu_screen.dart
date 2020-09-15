@@ -389,14 +389,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             ),
           ),
           _hasNotifications,
-          () => _toNotifications,
+          _toNotifications,
           true,
         );
       case 2:
         return CustomAppBar(
           Text(Translations.of(context).text('title_messages')),
           _hasNotifications,
-          () => _toNotifications,
+          _toNotifications,
         );
       default:
         return NoAppBar();

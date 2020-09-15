@@ -67,7 +67,7 @@ class PollImages extends StatelessWidget {
               ? InkWell(
                   onTap: () => _toGallery(context, 0),
                   child: Hero(
-                      tag: '$images[0]$reference',
+                      tag: '${images[0]}$reference',
                       child: _image(widthSingle, images[0], 0)),
                 )
               : _image(
@@ -83,7 +83,7 @@ class PollImages extends StatelessWidget {
               ? InkWell(
                   onTap: () => _toGallery(context, 0),
                   child: Hero(
-                    tag: '$images[0]$reference',
+                    tag: '${images[0]}$reference',
                     child: _image(
                       width,
                       images[0],
@@ -101,7 +101,7 @@ class PollImages extends StatelessWidget {
               ? InkWell(
                   onTap: () => _toGallery(context, 1),
                   child: Hero(
-                    tag: '$images[1]$reference',
+                    tag: '${images[1]}$reference',
                     child: _image(
                       width,
                       images[1],
@@ -124,7 +124,7 @@ class PollImages extends StatelessWidget {
               ? InkWell(
                   onTap: () => _toGallery(context, 0),
                   child: Hero(
-                    tag: '$images[0]$reference',
+                    tag: '${images[0]}$reference',
                     child: _image(
                       width,
                       images[0],
@@ -142,7 +142,7 @@ class PollImages extends StatelessWidget {
               ? InkWell(
                   onTap: () => _toGallery(context, 1),
                   child: Hero(
-                    tag: '$images[1]$reference',
+                    tag: '${images[1]}$reference',
                     child: _image(
                       width,
                       images[1],
@@ -160,7 +160,7 @@ class PollImages extends StatelessWidget {
               ? InkWell(
                   onTap: () => _toGallery(context, 2),
                   child: Hero(
-                    tag: '$images[2]$reference',
+                    tag: '${images[2]}$reference',
                     child: _image(
                       width,
                       images[2],

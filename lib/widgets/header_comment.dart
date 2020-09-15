@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'comment_header_options.dart';
+import '../translations.dart';
 import '../models/comment_model.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../screens/search_results_screen.dart';
@@ -95,7 +96,8 @@ class HeaderComment extends StatelessWidget {
                 ),
               ),
               Text(
-                timeago.format(now.subtract(difference)),
+                timeago.format(now.subtract(difference),
+                    locale: Translations.of(context).currentLanguage),
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 14,
