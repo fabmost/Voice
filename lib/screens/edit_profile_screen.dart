@@ -280,7 +280,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
     final user =
         await Provider.of<UserProvider>(context, listen: false).userProfile();
-    
+
     final serverCounrty = user.country ?? '';
     if (serverCounrty.isNotEmpty) {
       _countryController.text =
@@ -472,11 +472,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
-                          suffixIcon: _infoButton(keyTik, 'Introduce tu username, ejemplo @miusuario'),
-                          labelText: 'Tiktok',
-                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           suffixIcon: _infoButton(keyTik,
                               'Introduce tu username, ejemplo @miusuario'),
+                          labelText: 'Tiktok',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       TextFormField(
@@ -487,7 +486,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
-                          suffixIcon: _infoButton(keyFace, 'Introduce tu username, ejemplo @miusuario'),
                           labelText: 'Facebook',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           suffixIcon: _infoButton(keyFace,
@@ -502,7 +500,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
-                          suffixIcon: _infoButton(keyInsta, 'Introduce tu username, ejemplo @miusuario'),
                           labelText: 'Instagram',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           suffixIcon: _infoButton(keyInsta,
@@ -516,7 +513,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               RegExp("[@_.a-zA-Z0-9]")),
                         ],
                         decoration: InputDecoration(
-                          suffixIcon: _infoButton(keyYt, 'Introduce el nombre de tu canal sin espacios'),
                           labelText: 'Youtube (canal)',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           suffixIcon: _infoButton(keyYt,
