@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -19,12 +18,10 @@ import 'screens/login_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/countries_screen.dart';
 import 'screens/edit_profile_screen.dart';
+import 'screens/saved_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/view_profile_screen.dart';
-import 'screens/saved_screen.dart';
 import 'screens/chat_screen.dart';
-import 'screens/comments_screen.dart';
-import 'screens/detail_comment_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
 import 'screens/detail_tip_screen.dart';
@@ -34,7 +31,6 @@ import 'screens/user_name_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/session_login_screen.dart';
 import 'screens/session_auth_screen.dart';
-import 'screens/search_results_screen.dart';
 
 import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
@@ -47,7 +43,14 @@ import 'screens/verify_type_screen.dart';
 import 'screens/verify_category_screen.dart';
 import 'screens/verify_id_screen.dart';
 
+import 'screens/test_screen.dart';
+
+import 'providers/auth_provider.dart';
+import 'providers/database_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/config_provider.dart';
 import 'providers/preferences_provider.dart';
+import 'providers/content_provider.dart';
 
 void main() {
   // Pass all uncaught errors from the framework to Crashlytics.
@@ -95,9 +98,17 @@ class App extends StatelessWidget {
   Widget build(context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (ctx) => AuthProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
+          create: (ctx) => UserProvider(null),
+          update: (ctx, auth, previous) => UserProvider(auth.getUsername),
+        ),
+        ChangeNotifierProvider(create: (ctx) => DatabaseProvider()),
+        ChangeNotifierProvider(create: (ctx) => ConfigurationProvider()),
         ChangeNotifierProvider(create: (ctx) => Preferences()),
+        ChangeNotifierProvider(create: (ctx) => ContentProvider()),
       ],
-      child: Consumer<Preferences>(
+      child: Consumer<AuthProvider>(
         builder: (ctx, provider, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Galup',
@@ -121,27 +132,19 @@ class App extends StatelessWidget {
             const Locale('en', ''),
             const Locale('es', ''),
           ],
-          home: StreamBuilder(
-            stream: FirebaseAuth.instance.onAuthStateChanged,
-            builder: (ctx, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SplashScreen();
-              }
-              if (snapshot.hasData) {
-                return MenuScreen();
-              }
-              return provider.hasAccount
-                  ? SessionLoginScreen()
-                  : FutureBuilder(
-                      future: provider.getAccount(),
-                      builder: (ctx, snapshot) =>
-                          snapshot.connectionState == ConnectionState.waiting
-                              ? SplashScreen()
+          home: provider.isAuth
+              ? MenuScreen()
+              : FutureBuilder(
+                  future: provider.hasToken(),
+                  builder: (ctx, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? SplashScreen()
+                          : provider.hasAccount
+                              ? SessionLoginScreen()
                               : PreferencesScreen(),
-                    );
-            },
-          ),
+                ),
           routes: {
+            TestScreen.routeName: (ctx) => TestScreen(),
             MenuScreen.routeName: (ctx) => MenuScreen(),
             OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
             AuthScreen.routeName: (ctx) => AuthScreen(),
@@ -149,12 +152,10 @@ class App extends StatelessWidget {
             ForgotPasswordScreen.routeName: (ctx) => ForgotPasswordScreen(),
             CountriesScreen.routeName: (ctx) => CountriesScreen(),
             EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
+            SavedScreen.routeName: (ctx) => SavedScreen(),
             NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
-            SavedScreen.routeName: (ctx) => SavedScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),
-            CommentsScreen.routeName: (ctx) => CommentsScreen(),
-            DetailCommentScreen.routeName: (ctx) => DetailCommentScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
             NewTipScreen.routeName: (ctx) => NewTipScreen(),
@@ -174,7 +175,6 @@ class App extends StatelessWidget {
             CategoryScreen.routeName: (ctx) => CategoryScreen(),
             SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
             GalleryScreen.routeName: (ctx) => GalleryScreen(),
-            SearchResultsScreen.routeName: (ctx) => SearchResultsScreen(),
           },
         ),
       ),

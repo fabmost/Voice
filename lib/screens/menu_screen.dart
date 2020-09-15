@@ -1,9 +1,6 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:badges/badges.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -11,15 +8,22 @@ import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:voice_inc/translations.dart';
+import 'package:voice_inc/providers/content_provider.dart';
+
+import '../translations.dart';
 
 import '../custom/galup_font_icons.dart';
+import '../custom/search_delegate.dart';
+import '../widgets/appbar.dart';
+import '../widgets/no_appbar.dart';
 import '../providers/preferences_provider.dart';
+import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 
+import 'home_screen.dart';
 import 'upgrade_screen.dart';
 import 'auth_screen.dart';
 import 'onboarding_screen.dart';
-import 'polls_screen.dart';
 import 'search_screen.dart';
 import 'messages_screen.dart';
 import 'profile_screen.dart';
@@ -29,6 +33,10 @@ import 'new_tip_screen.dart';
 import 'new_cause_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
+import 'detail_poll_screen.dart';
+import 'detail_challenge_screen.dart';
+import 'detail_tip_screen.dart';
+import 'detail_cause_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -42,15 +50,16 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   bool _triggeredOnboarding = false;
   bool _isOpen = false;
   bool _showBadge = false;
+  bool _hasNotifications = false;
   Duration _duration = Duration(milliseconds: 300);
   AnimationController _iconAnimationCtrl;
   Animation<double> _iconAnimationTween;
   int _selectedPageIndex = 0;
   List<Widget> _pages = [
-    PollsScreen(
-      key: PageStorageKey('Page1'),
-      homeController: _homeController,
-      stopVideo: _playVideo,
+    HomeScreen(
+      //key: PageStorageKey('Page1'),
+      _homeController,
+      //stopVideo: _playVideo,
     ),
     SearchScreen(
       key: PageStorageKey('Page2'),
@@ -75,7 +84,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
   void _selectPage(int index) {
     setState(() {
-      if(_controller != null){
+      if (_controller != null) {
         _controller.pause();
       }
       if (_selectedPageIndex == index && index == 0) {
@@ -86,6 +95,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         );
       }
       _selectedPageIndex = index;
+
       if (index == 2) {
         _showBadge = false;
       }
@@ -120,8 +130,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _newPoll() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
       return;
     }
@@ -129,8 +138,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _newChallenge() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
       return;
     }
@@ -138,8 +146,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _newTip() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
       return;
     }
@@ -147,8 +154,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   void _newCause() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
       return;
     }
@@ -235,10 +241,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         setState(() {
           _showBadge = true;
         });
+      } else {
+        setState(() {
+          _hasNotifications = true;
+        });
       }
-      Platform.isAndroid
-          ? showNotification(msg['notification'])
-          : showNotification(msg['aps']['alert']);
       return;
     }, onLaunch: (msg) {
       //showAlert(msg);
@@ -262,16 +269,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       return;
     });
     fm.subscribeToTopic('cause');
-    FirebaseAuth.instance.currentUser().then((value) {
-      fm.getToken().then((token) {
-        print('token: $token');
-        Firestore.instance
-            .collection('users')
-            .document(value.uid)
-            .updateData({'pushToken': token});
-      });
+    fm.getToken().then((token) {
+      Provider.of<AuthProvider>(context, listen: false).setFCM(token);
     });
-
+    _checkUnread();
     _checkVersion();
   }
 
@@ -279,6 +280,21 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void dispose() {
     super.dispose();
     if (_controller != null) _controller.dispose();
+  }
+
+  void _startSearch(ct) {
+    showSearch(
+      context: ct,
+      delegate: CustomSearchDelegate(),
+    );
+  }
+
+  void _checkUnread() async {
+    Map result =
+        await Provider.of<ContentProvider>(context, listen: false).getUnread();
+    setState(() {
+      _hasNotifications = result['notifications'];
+    });
   }
 
   void _checkVersion() async {
@@ -316,24 +332,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     );
   }
 
-  void showNotification(message) async {
-    /*
-  var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-    Platform.isAndroid ? 'com.dfa.flutterchatdemo' : 'com.duytq.flutterchatdemo',
-    'Flutter chat demo',
-    'your channel description',
-    playSound: true,
-    enableVibration: true,
-    importance: Importance.Max,
-    priority: Priority.High,
-  );
-  var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-  var platformChannelSpecifics =
-  new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-  await flutterLocalNotificationsPlugin.show(
-      0, message['title'].toString(), message['body'].toString(), platformChannelSpecifics,
-      payload: json.encode(message));
-      */
+  void _toNotifications() {
+    Navigator.of(context)
+        .pushNamed(NotificationsScreen.routeName)
+        .then((value) => _checkUnread());
   }
 
   Future<bool> _preventPopIfOpen() async {
@@ -342,6 +344,63 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       return false;
     }
     return true;
+  }
+
+  Widget _appBar() {
+    switch (_selectedPageIndex) {
+      case 0:
+        return CustomAppBar(
+          GestureDetector(
+            onTap: () {
+              _homeController.animateTo(
+                0.0,
+                curve: Curves.easeOut,
+                duration: const Duration(milliseconds: 300),
+              );
+            },
+            child: Image.asset(
+              'assets/logo.png',
+              width: 42,
+            ),
+          ),
+          _hasNotifications,
+          _toNotifications,
+          true,
+        );
+      case 1:
+        return CustomAppBar(
+          GestureDetector(
+            onTap: () => _startSearch(context),
+            child: Container(
+              height: 42,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Color(0xFF8E8EAB),
+              ),
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  Translations.of(context).text('hint_search'),
+                  style: TextStyle(fontSize: 16, color: Colors.black26),
+                ),
+              ),
+            ),
+          ),
+          _hasNotifications,
+          _toNotifications,
+          true,
+        );
+      case 2:
+        return CustomAppBar(
+          Text(Translations.of(context).text('title_messages')),
+          _hasNotifications,
+          _toNotifications,
+        );
+      default:
+        return NoAppBar();
+    }
   }
 
   Widget _buildBlurWidget() {
@@ -453,8 +512,48 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       final Uri deepLink = dynamicLink?.link;
 
       if (deepLink != null) {
-        Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}',
-            arguments: deepLink.pathSegments[1]);
+        switch (deepLink.pathSegments[0]) {
+          case 'poll':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailPollScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'challenge':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailChallengeScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'tip':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailTipScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'cause':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailCauseScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+        }
       }
     }, onError: (OnLinkErrorException e) async {
       print('onLinkError');
@@ -466,6 +565,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     _checkIfOnboarding();
     return Scaffold(
+      appBar: _appBar(),
       body: WillPopScope(
         child: Stack(
           children: <Widget>[

@@ -1,133 +1,189 @@
-import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import '../widgets/search_poll.dart';
-import '../widgets/search_challenge.dart';
-import '../widgets/search_tip.dart';
-import '../widgets/search_cause.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:diacritic/diacritic.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/user_model.dart';
+import '../models/content_model.dart';
+import '../models/poll_model.dart';
+import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
+import '../models/cause_model.dart';
+import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
+import '../widgets/poll_tile.dart';
+import '../widgets/challenge_tile.dart';
+import '../widgets/tip_tile.dart';
+import '../widgets/cause_tile.dart';
 import '../widgets/influencer_badge.dart';
 import '../screens/view_profile_screen.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
-  Algolia algolia;
-  List<AlgoliaObjectSnapshot> items;
-  String userId;
+  String currentUser;
+  final debouncer = Debouncer<String>(Duration(milliseconds: 500));
+
+  Future<Map> queryChanged(context, String query) async {
+    debouncer.value = query;
+    return Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(await debouncer.nextValue);
+  }
 
   CustomSearchDelegate() {
-    FirebaseAuth.instance.currentUser().then((value) {
-      userId = value.uid;
-    });
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
+    /*
+    streamController.stream
+    .transform(debounce(Duration(milliseconds: 400)))
+    .listen((s) => _validateValues());
+    */
+  }
+
+  Widget _pollWidget(PollModel content) {
+    return PollTile(
+      reference: 'home',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
     );
   }
 
-  Widget _pollWidget(id, doc) {
-    final time = Timestamp(
-        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
-    return SearchPoll(
-      reference: Firestore.instance.collection('content').document(id),
-      userId: doc['user_id'],
-      description: doc['description'] ?? '',
-      creatorName: doc['user_name'],
-      creatorImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      options: doc['options'],
-      images: doc['images'] ?? [],
-      influencer: doc['influencer'] ?? '',
-      date: time.toDate(),
+  Widget _challengeWidget(ChallengeModel content) {
+    return ChallengeTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
     );
   }
 
-  Widget _challengeWidget(id, doc) {
-    final time = Timestamp(
-        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
-    return SearchChallenge(
-      reference: Firestore.instance.collection('content').document(id),
-      userId: doc['user_id'],
-      creatorName: doc['user_name'],
-      creatorImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      description: doc['description'] ?? '',
-      metric: doc['metric_type'],
-      influencer: doc['influencer'] ?? '',
-      date: time.toDate(),
+  Widget _causeWidget(CauseModel content) {
+    return CauseTile(
+      id: content.id,
+      certificate: content.certificate,
+      title: content.title,
+      date: content.createdAt,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      bank: content.account,
+      description: content.description,
+      web: content.web,
+      phone: content.phone,
+      resources: content.resources,
+      info: content.info,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      goal: content.goal,
     );
   }
 
-  Widget _tipWidget(id, doc) {
-    final time = Timestamp(
-        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
-    return SearchTip(
-      reference: Firestore.instance.collection('content').document(id),
-      userId: doc['user_id'],
-      creatorName: doc['user_name'],
-      creatorImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      description: doc['description'] ?? '',
-      influencer: doc['influencer'] ?? '',
-      date: time.toDate(),
-    );
-  }
-
-  Widget _causeWidget(id, doc) {
-    return SearchCause(
-      reference: Firestore.instance.collection('content').document(id),
-      title: doc['title'],
-      creator: doc['creator'],
-      info: doc['info'],
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
     );
   }
 
   Widget _tagTile(context, doc) {
     return ListTile(
       onTap: () {
-        query = doc['name'];
+        query = doc['text'];
         showResults(context);
       },
       leading: CircleAvatar(
         child: Text('#'),
       ),
       title: Text(
-        doc['name'],
+        doc['text'],
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 16,
         ),
       ),
-      subtitle: Text('${doc['interactions']} objetos'),
+      subtitle: Text('${doc['count']} objetos'),
     );
   }
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, UserModel content) {
+    if (content.userName == currentUser) {
+      return Container();
+    }
     return ListTile(
       onTap: () {
-        if (userId != id) {
-          Navigator.of(context)
-              .pushNamed(ViewProfileScreen.routeName, arguments: id);
-        }
+        Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
+            arguments: content.userName);
       },
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
-          Text(
-            doc['name'],
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+          Flexible(
+            child: Text(
+              content.userName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
+      //subtitle: Text(doc['user_name']),
     );
+  }
+
+  void _getCUrrentUser(context) {
+    if (currentUser == null) {
+      currentUser = Provider.of<UserProvider>(context, listen: false).getUser;
+    }
   }
 
   @override
@@ -164,35 +220,33 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    AlgoliaQuery searchQuery = algolia.instance.index('content');
-    searchQuery = searchQuery.search(query);
-
+    _getCUrrentUser(context);
     return FutureBuilder(
-      future: searchQuery.getObjects(),
+      future:
+          Provider.of<ContentProvider>(context, listen: false).search(removeDiacritics(query), 0),
       builder: (ct, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         }
-        if (snapshot.data.hits.length == 0) {
+        if (snapshot.data.length == 0) {
           return Center(
             child: Text('Sin resultados'),
           );
         }
-        var results = snapshot.data.hits;
-        items = snapshot.data.hits;
+        var results = snapshot.data;
         return ListView.builder(
           itemCount: results.length,
           itemBuilder: (context, index) {
-            AlgoliaObjectSnapshot result = results[index];
-            switch (result.data['type']) {
+            ContentModel result = results[index];
+            switch (result.type) {
               case 'poll':
-                return _pollWidget(result.objectID, result.data);
+                return _pollWidget(result);
               case 'challenge':
-                return _challengeWidget(result.objectID, result.data);
-              case 'tip':
-                return _tipWidget(result.objectID, result.data);
-              case 'cause':
-                return _causeWidget(result.objectID, result.data);
+                return _challengeWidget(result);
+              case 'causes':
+                return _causeWidget(result);
+              case 'Tips':
+                return _tipWidget(result);
               default:
                 return SizedBox();
             }
@@ -204,37 +258,44 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    _getCUrrentUser(context);
+
     if (query.length < 3) {
       return Container();
     }
-
-    AlgoliaQuery searchQuery = algolia.instance.index('suggestions');
-    searchQuery = searchQuery.search(query);
-
     return FutureBuilder(
-      future: searchQuery.getObjects(),
+      future: queryChanged(context, removeDiacritics(query)),
       builder: (ct, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         }
-        if (snapshot.data.hits.length == 0) {
+        Map results = snapshot.data;
+        List users = results['users'];
+        List tags = results['hashtags'];
+        if (users.isEmpty && tags.isEmpty) {
           return Center(
             child: Text('Sin resultados'),
           );
         }
-        var results = snapshot.data.hits;
-        items = snapshot.data.hits;
-        return ListView.separated(
-          separatorBuilder: (context, index) => Divider(),
-          itemCount: results.length,
-          itemBuilder: (context, index) {
-            AlgoliaObjectSnapshot result = results[index];
-            if (result.data['interactions'] != null) {
-              return _tagTile(context, result.data);
-            } else {
-              return _userTile(context, result.objectID, result.data);
-            }
-          },
+        return CustomScrollView(
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  return _tagTile(context, tags[i]);
+                },
+                childCount: tags.length,
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  return _userTile(context, users[i]);
+                },
+                childCount: users.length,
+              ),
+            ),
+          ],
         );
       },
     );

@@ -7,13 +7,15 @@ import 'tag_span.dart';
 import 'link_span.dart';
 
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
-  MySpecialTextSpanBuilder({this.showAtBackground = false, this.canClick = false});
+  MySpecialTextSpanBuilder(
+      {this.showAtBackground = false, this.canClick = false});
 
   /// whether show background for @somebody
   final bool showAtBackground;
   final bool canClick;
 
-  RegExp regex = new RegExp(r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
   @override
   TextSpan build(String data,
@@ -40,7 +42,7 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
         start: index - (AtText.flag.length - 1),
         showAtBackground: showAtBackground,
       );
-    }else if (isStart(flag, TagText.flag)) {
+    } else if (isStart(flag, TagText.flag)) {
       return TagText(
         textStyle,
         canClick ? onTap : null,

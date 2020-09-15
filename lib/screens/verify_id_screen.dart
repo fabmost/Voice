@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -102,13 +100,15 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
     setState(() {
       _isLoading = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
+    final user = '';// = await FirebaseAuth.instance.currentUser();
     final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
+        await Firestore.instance.collection('users').document(user).get();
+    /*
     final ref = FirebaseStorage.instance
         .ref()
         .child('verification')
-        .child(user.uid+ '.jpg');
+        .child(user+ '.jpg');
+        */
     Map condensed = userData.data;
     condensed.remove('followers');
     condensed.remove('following');
@@ -118,9 +118,9 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
     condensed.remove('chats');
     condensed.remove('categories');
 
-    await ref.putFile(_imageFile).onComplete;
+    //await ref.putFile(_imageFile).onComplete;
 
-    final url = await ref.getDownloadURL();
+    final url = '';//await ref.getDownloadURL();
     WriteBatch batch = Firestore.instance.batch();
 
     batch.updateData(userData.reference, {'is_validated': 1});

@@ -1,21 +1,22 @@
 import 'dart:io';
 
-import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:provider/provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../models/category_model.dart';
+import '../mixins/text_mixin.dart';
+import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../custom/suggestion_textfield.dart';
@@ -28,10 +29,11 @@ class NewPollScreen extends StatefulWidget {
   _NewPollScreenState createState() => _NewPollScreenState();
 }
 
-class _NewPollScreenState extends State<NewPollScreen> {
+class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
   bool _isLoading = false;
   bool _isSearching = false;
   bool _isVideo = false;
+  FocusNode _descFocus = FocusNode();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _firstController = TextEditingController();
   TextEditingController _secondController = TextEditingController();
@@ -41,12 +43,10 @@ class _NewPollScreenState extends State<NewPollScreen> {
   final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
-  Algolia algolia;
-  AlgoliaQuery searchQuery;
   bool moreOptions = false;
   File _option1, _option2, _option3;
   List<File> pollImages = [];
-  String category;
+  CategoryModel category;
   File _videoFile;
   File _videoThumb;
 
@@ -128,7 +128,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
         break;
       case 1:
         if (isOption) {
-          if (_option1 != null) showDelete = true;
+          if (_option2 != null) showDelete = true;
         } else {
           if (pollImages.length > 1) showDelete = true;
         }
@@ -245,11 +245,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
       maxWidth: 600,
     );
     if (imageFile != null) {
-      /*
-      final appDir = await provider.getApplicationDocumentsDirectory();
-      final fileName = path.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
-      */
       if (isOption)
         _cropImage(file, imageFile.path);
       else
@@ -293,14 +288,13 @@ class _NewPollScreenState extends State<NewPollScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-          value,
+          final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
-          _videoThumb = mFile;
+          _videoThumb = File(mFile);
           _videoFile = File(value);
           _isVideo = true;
         });
@@ -350,53 +344,6 @@ class _NewPollScreenState extends State<NewPollScreen> {
       }
     });
   }
-
-/*
-  void _selectDuration() {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return SimpleDialog(
-          title: Text('Selecciona una duración'),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: Text(
-                'Infinito',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected(0),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                '1 mes',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected(1),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                '3 meses',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected(2),
-            ),
-            SimpleDialogOption(
-              child: Text(
-                '6 meses',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () => _optionSelected(3),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _optionSelected(position) {
-    Navigator.of(context).pop();
-  }
-  */
 
   void _validate() {
     if (_titleController.text.isNotEmpty &&
@@ -461,168 +408,175 @@ class _NewPollScreenState extends State<NewPollScreen> {
     Navigator.of(context).pop();
   }
 
+  void _showError() async {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Ocurrió un error al guardar tu encuesta',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _savePoll() async {
+    FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
     });
-    FocusScope.of(context).unfocus();
-    final user = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-    WriteBatch batch = Firestore.instance.batch();
-    String pollId =
-        Firestore.instance.collection('content').document().documentID;
-    batch.updateData(
-      Firestore.instance.collection('users').document(user.uid),
-      {
-        'created': FieldValue.arrayUnion([pollId])
-      },
-    );
-    var pollOptions = [];
-    var results = [];
-    var resultData = {'votes': 0, "countries": {}, "gender": {}, "age": {}};
+    var pollAnswers = [];
     if (_option1 != null) {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('option1.jpg');
+      String idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        _option1.path,
+        'I',
+        'PA',
+      );
 
-      await ref.putFile(_option1).onComplete;
-
-      final url = await ref.getDownloadURL();
-      pollOptions.add({
-        'text': _firstController.text,
-        'image': url,
+      pollAnswers.add({
+        'text': serverSafe(_firstController.text),
+        'image': idResource,
       });
     } else {
-      pollOptions.add({'text': _firstController.text});
+      pollAnswers.add({
+        'text': serverSafe(_firstController.text),
+        'image': null,
+      });
     }
-    results.add(resultData);
     if (_option2 != null) {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('option2.jpg');
-
-      await ref.putFile(_option2).onComplete;
-
-      final url = await ref.getDownloadURL();
-      pollOptions.add({
-        'text': _secondController.text,
-        'image': url,
+      String idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        _option2.path,
+        'I',
+        'PA',
+      );
+      pollAnswers.add({
+        'text': serverSafe(_secondController.text),
+        'image': idResource,
       });
     } else {
-      pollOptions.add({'text': _secondController.text});
+      pollAnswers.add({
+        'text': serverSafe(_secondController.text),
+        'image': null,
+      });
     }
-    results.add(resultData);
     if (moreOptions) {
       if (_option3 != null) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('polls')
-            .child(pollId)
-            .child('option3.jpg');
-
-        await ref.putFile(_option3).onComplete;
-
-        final url = await ref.getDownloadURL();
-        pollOptions.add({
-          'text': _thirdController.text,
-          'image': url,
+        String idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _option3.path,
+          'I',
+          'PA',
+        );
+        pollAnswers.add({
+          'text': serverSafe(_thirdController.text),
+          'image': idResource,
         });
       } else {
-        pollOptions.add({'text': _thirdController.text});
+        pollAnswers.add({
+          'text': serverSafe(_thirdController.text),
+          'image': null,
+        });
       }
-      results.add(resultData);
     }
-    List<String> images = [];
+
+    List<Map> images = [];
     for (int i = 0; i < pollImages.length; i++) {
       final element = pollImages[i];
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('$i.jpg');
-
-      await ref.putFile(element).onComplete;
-
-      final url = await ref.getDownloadURL();
-      images.add(url);
-    }
-    String videoUrl;
-    String videoThumb;
-    if (_isVideo && _videoFile != null && _videoThumb != null) {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('thumb.jpg');
-
-      await ref.putFile(_videoThumb).onComplete;
-
-      videoThumb = await ref.getDownloadURL();
-
-      final ref2 = FirebaseStorage.instance
-          .ref()
-          .child('polls')
-          .child(pollId)
-          .child('video.mp4');
-
-      await ref2.putFile(_videoFile).onComplete;
-
-      videoUrl = await ref2.getDownloadURL();
+      String idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        element.path,
+        'I',
+        'P',
+      );
+      images.add({"id": idResource});
     }
 
-    List<String> hashes = [];
-    RegExp exp = new RegExp(r"\B#\w\w+");
+    List<Map> hashes = [];
+    RegExp exp = new RegExp(r"\B#\S\S+");
     exp.allMatches(_titleController.text).forEach((match) {
       if (!hashes.contains(match.group(0))) {
-        hashes.add(match.group(0));
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
       }
     });
     exp.allMatches(_descriptionController.text).forEach((match) {
       if (!hashes.contains(match.group(0))) {
-        hashes.add(match.group(0));
+        String hashString = match.group(0).toLowerCase();
+        String serverString = removeDiacritics(hashString);
+        hashes.add({'text': serverString});
       }
     });
 
-    batch.setData(Firestore.instance.collection('content').document(pollId), {
-      'type': 'poll',
-      'title': _titleController.text,
-      'user_name': userData['user_name'],
-      'user_id': user.uid,
-      'user_image': userData['image'],
-      "influencer": userData['influencer'],
-      'createdAt': Timestamp.now(),
-      'options': pollOptions,
-      'results': results,
-      'comments': 0,
-      'endDate': Timestamp.now(),
-      'category': category,
-      'description': _descriptionController.text,
-      'tags': hashes,
-      'interactions': 0,
-      'images': images,
-      'video': videoUrl,
-      'video_thumb': videoThumb,
+    List<Map> tags = [];
+    RegExp exps = new RegExp(r"\B@\[\S\S+\]\S\S+");
+    /*
+    exps.allMatches(_titleController.text).forEach((match) {
+      if (!tags.contains({'user_name': match.group(0)})) {
+        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      }
     });
-    hashes.forEach((element) {
-      batch.setData(
-        Firestore.instance.collection('hash').document(element),
-        {
-          'name': element,
-          'interactions': FieldValue.increment(1),
-        },
-        merge: true,
-      );
+    */
+    exps.allMatches(_descriptionController.text).forEach((match) {
+      String toRemove;
+      int start = match.group(0).indexOf('[');
+      if (start != -1) {
+        int finish = match.group(0).indexOf(']');
+        toRemove = match.group(0).substring(start, finish + 1);
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
+      }
+      if (toRemove != null && !tags.contains({'user_name': toRemove})) {
+        tags.add({'user_name': toRemove});
+      }
     });
-    await batch.commit();
+
+    bool result =
+        await Provider.of<ContentProvider>(context, listen: false).newPoll(
+      name: _titleController.text,
+      description: '${_descriptionController.text} ',
+      category: category.id,
+      resources: images,
+      answers: pollAnswers,
+      hashtag: hashes,
+      taged: tags,
+    );
+
     setState(() {
       _isLoading = false;
     });
-    _showAlert();
+    if (result)
+      _showAlert();
+    else
+      _showError();
   }
 
   Widget _title(text) {
@@ -734,25 +688,26 @@ class _NewPollScreenState extends State<NewPollScreen> {
     );
   }
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, content) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
           Text(
-            doc['name'],
+            content.userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
+      //subtitle: Text(doc['user_name']),
     );
   }
 
@@ -761,23 +716,16 @@ class _NewPollScreenState extends State<NewPollScreen> {
       _isSearching = false;
       return null;
     }
-    searchQuery = algolia.instance.index('suggestions');
     int index = query.lastIndexOf('@');
-    String realQuery = query.substring(index);
-    searchQuery = searchQuery.search(realQuery);
-    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
-    return results.hits;
+    String realQuery = query.substring(index + 1);
+    Map results = await Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(realQuery);
+    return results['users'];
   }
 
   @override
   void initState() {
     super.initState();
-
-    // Start listening to changes.
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
   }
 
   @override
@@ -803,49 +751,18 @@ class _NewPollScreenState extends State<NewPollScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SuggestionField(
-                textFieldConfiguration: TextFieldConfiguration(
-                  controller: _titleController,
-                  spanBuilder: _mySpecialTextSpanBuilder,
-                  autofocus: true,
-                  autocorrect: true,
-                  maxLines: null,
-                  maxLength: 120,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    border: InputBorder.none,
-                    hintText: Translations.of(context).text('hint_poll_title'),
-                  ),
-                  style: TextStyle(fontSize: 22),
+              TextField(
+                controller: _titleController,
+                autofocus: true,
+                autocorrect: true,
+                maxLines: null,
+                maxLength: 120,
+                decoration: InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  hintText: Translations.of(context).text('hint_poll_title'),
                 ),
-                suggestionsCallback: (pattern) {
-                  //TextSelection selection = _descriptionController.selection;
-                  //String toCheck = pattern.substring(0, selection.end);
-                  if (_isSearching) {
-                    return _getSuggestions(pattern);
-                  }
-                  if (pattern.endsWith('@')) {
-                    _isSearching = true;
-                  }
-                  return null;
-                },
-                itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
-                },
-                onSuggestionSelected: (suggestion) {
-                  _isSearching = false;
-                  int index = _titleController.text.lastIndexOf('@');
-                  String subs = _titleController.text.substring(0, index);
-                  _titleController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
-                  _titleController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: _titleController.text.length));
-                },
-                autoFlipDirection: true,
+                style: TextStyle(fontSize: 22),
               ),
               SizedBox(height: 16),
               _title(Translations.of(context).text('label_media_poll')),
@@ -952,25 +869,26 @@ class _NewPollScreenState extends State<NewPollScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Text('${category ?? 'Selecciona una categoría'}'),
+                  child: (category == null)
+                      ? Text('Selecciona una categoría')
+                      : Text('${category.name}'),
                 ),
               ),
               SuggestionField(
                 textFieldConfiguration: TextFieldConfiguration(
                   spanBuilder: _mySpecialTextSpanBuilder,
                   controller: _descriptionController,
-                  maxLines: null,
-                  autocorrect: true,
-                  maxLength: 240,
+                  focusNode: _descFocus,
                   keyboardType: TextInputType.multiline,
+                  autocorrect: true,
+                  maxLines: null,
+                  maxLength: 480,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),
                   ),
                 ),
                 suggestionsCallback: (pattern) {
-                  //TextSelection selection = _descriptionController.selection;
-                  //String toCheck = pattern.substring(0, selection.end);
                   if (_isSearching) {
                     return _getSuggestions(pattern);
                   }
@@ -980,11 +898,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   return null;
                 },
                 itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
+                  return _userTile(context, itemData);
                 },
                 onSuggestionSelected: (suggestion) {
                   _isSearching = false;
@@ -992,7 +906,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
                   _descriptionController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                      '$subs@[${suggestion.userName}]${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();
@@ -1000,7 +914,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                 },
                 autoFlipDirection: true,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : Container(
@@ -1013,7 +927,7 @@ class _NewPollScreenState extends State<NewPollScreen> {
                         onPressed: () => _validate(),
                       ),
                     ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
             ],
           ),
         ),

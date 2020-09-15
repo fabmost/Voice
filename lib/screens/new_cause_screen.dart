@@ -1,16 +1,13 @@
 import 'dart:io';
 
-import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:provider/provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -19,6 +16,8 @@ import '../translations.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
+import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
 
 class NewCauseScreen extends StatefulWidget {
   static const routeName = '/new-cause';
@@ -41,8 +40,6 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
-  Algolia algolia;
-  AlgoliaQuery searchQuery;
 
   //String category;
 
@@ -135,15 +132,13 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-          value,
-          //imageFormat: ImageFormat.JPEG,
+        final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
-          _imageFile = mFile;
+          _imageFile = File(mFile);
           _videoFile = File(value);
         });
       }
@@ -220,95 +215,113 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
     Navigator.of(context).pop();
   }
 
+  void _showError() async {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Ocurrió un error al guardar tu causa',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _saveChallenge() async {
     FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-
-    WriteBatch batch = Firestore.instance.batch();
-    String challengeId =
-        Firestore.instance.collection('content').document().documentID;
-
-    StorageReference ref;
+    String idResource;
     if (_isVideo) {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('causes')
-          .child('$challengeId.mp4');
-
-      await ref.putFile(_videoFile).onComplete;
+      idResource = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadResource(
+        _videoFile.path,
+        'V',
+        'CA',
+      );
     } else {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('causes')
-          .child(challengeId + '.jpg');
-
-      await ref.putFile(_imageFile).onComplete;
+      idResource = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadResource(
+        _imageFile.path,
+        'I',
+        'CA',
+      );
     }
 
-    final url = await ref.getDownloadURL();
-    batch.updateData(
-      Firestore.instance.collection('users').document(user.uid),
-      {
-        'created': FieldValue.arrayUnion([challengeId])
-      },
-    );
-
-    List<String> hashes = [];
-    RegExp exp = new RegExp(r"\B#\w\w+");
+    List<Map> hashes = [];
+    RegExp exp = new RegExp(r"\B#\S\S+");
     exp.allMatches(_titleController.text).forEach((match) {
-      if (!hashes.contains(match.group(0))) {
-        hashes.add(match.group(0));
+      if (!hashes.contains({'text': match.group(0)})) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
       }
     });
     exp.allMatches(_descriptionController.text).forEach((match) {
-      if (!hashes.contains(match.group(0))) {
-        hashes.add(match.group(0));
+      if (!hashes.contains({'text': match.group(0)})) {
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
       }
     });
 
-    batch.setData(
-        Firestore.instance.collection('content').document(challengeId), {
-      'type': 'cause',
-      'title': _titleController.text,
-      'description': _descriptionController.text,
-      'phone': _phoneController.text,
-      'web': _webController.text,
-      'bank': _bankController.text,
-      'user_name': userData['user_name'],
-      'user_id': user.uid,
-      'user_image': userData['image'],
-      "influencer": userData['influencer'],
-      'createdAt': Timestamp.now(),
-      'images': [url],
-      'is_video': _isVideo,
-      'goal': goal,
-      'comments': 0,
-      'endDate': Timestamp.now(),
-      'tags': hashes,
-      'interactions': 0,
-      'creator': userData['user_name'],
-      'info': '',
+    List<Map> tags = [];
+    RegExp exps = new RegExp(r"\B@\[\S\S+\]\S\S+");
+    exps.allMatches(_descriptionController.text).forEach((match) {
+      String toRemove;
+      int start = match.group(0).indexOf('[');
+      if (start != -1) {
+        int finish = match.group(0).indexOf(']');
+        toRemove = match.group(0).substring(start, finish + 1);
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
+      }
+      if (toRemove != null && !tags.contains({'user_name': toRemove})) {
+        tags.add({'user_name': toRemove});
+      }
     });
-    hashes.forEach((element) {
-      batch.setData(
-        Firestore.instance.collection('hash').document(element),
-        {
-          'name': element,
-          'interactions': FieldValue.increment(1),
-        },
-        merge: true,
-      );
-    });
-    await batch.commit();
+
+    bool result =
+        await Provider.of<ContentProvider>(context, listen: false).newCause(
+      name: _titleController.text,
+      description: '${_descriptionController.text} ',
+      resource: {'id': idResource},
+      goal: goal,
+      hashtag: hashes,
+      taged: tags,
+      phone: _phoneController.text.isEmpty ? null : _phoneController.text,
+      web: _webController.text.isEmpty ? null : _webController.text,
+      bank: _bankController.text.isEmpty ? null : _bankController.text,
+    );
+
     setState(() {
       _isLoading = false;
     });
-    _showAlert();
+    if (result)
+      _showAlert();
+    else
+      _showError();
   }
 
   Widget _title(text) {
@@ -322,25 +335,26 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
     );
   }
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, content) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
           Text(
-            doc['name'],
+            content.userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
+      //subtitle: Text(doc['user_name']),
     );
   }
 
@@ -349,23 +363,16 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       _isSearching = false;
       return null;
     }
-    searchQuery = algolia.instance.index('suggestions');
     int index = query.lastIndexOf('@');
-    String realQuery = query.substring(index);
-    searchQuery = searchQuery.search(realQuery);
-    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
-    return results.hits;
+    String realQuery = query.substring(index + 1);
+    Map results = await Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(realQuery);
+    return results['users'];
   }
 
   @override
   void initState() {
     super.initState();
-
-    // Start listening to changes.
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
   }
 
   @override
@@ -391,49 +398,18 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SuggestionField(
-                textFieldConfiguration: TextFieldConfiguration(
-                  controller: _titleController,
-                  spanBuilder: MySpecialTextSpanBuilder(),
-                  autofocus: true,
-                  autocorrect: true,
-                  maxLines: null,
-                  maxLength: 120,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    border: InputBorder.none,
-                    hintText: Translations.of(context).text('hint_cause_title'),
-                  ),
-                  style: TextStyle(fontSize: 22),
+              TextField(
+                controller: _titleController,
+                autofocus: true,
+                autocorrect: true,
+                maxLines: null,
+                maxLength: 120,
+                decoration: InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  hintText: Translations.of(context).text('hint_cause_title'),
                 ),
-                suggestionsCallback: (pattern) {
-                  //TextSelection selection = _descriptionController.selection;
-                  //String toCheck = pattern.substring(0, selection.end);
-                  if (_isSearching) {
-                    return _getSuggestions(pattern);
-                  }
-                  if (pattern.endsWith('@')) {
-                    _isSearching = true;
-                  }
-                  return null;
-                },
-                itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
-                },
-                onSuggestionSelected: (suggestion) {
-                  _isSearching = false;
-                  int index = _titleController.text.lastIndexOf('@');
-                  String subs = _titleController.text.substring(0, index);
-                  _titleController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
-                  _titleController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: _titleController.text.length));
-                },
-                autoFlipDirection: true,
+                style: TextStyle(fontSize: 22),
               ),
               SizedBox(height: 16),
               _title(Translations.of(context).text('label_media_challenge')),
@@ -483,7 +459,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                   focusNode: _descFocus,
                   autocorrect: true,
                   maxLines: null,
-                  maxLength: 240,
+                  maxLength: 480,
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     labelText:
@@ -502,11 +478,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                   return null;
                 },
                 itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
+                  return _userTile(context, itemData);
                 },
                 onSuggestionSelected: (suggestion) {
                   _isSearching = false;
@@ -514,7 +486,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
                   _descriptionController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                      '$subs@[${suggestion.userName}]${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();

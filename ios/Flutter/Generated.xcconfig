@@ -6,8 +6,13 @@ FLUTTER_BUILD_DIR=build
 SYMROOT=${SOURCE_ROOT}/../build/ios
 OTHER_LDFLAGS=$(inherited) -framework Flutter
 FLUTTER_FRAMEWORK_DIR=/Volumes/Storage/Documents/workspaceFlutter/flutter/bin/cache/artifacts/engine/ios
+<<<<<<< HEAD
 FLUTTER_BUILD_NAME=1.4.4
 FLUTTER_BUILD_NUMBER=47
+=======
+FLUTTER_BUILD_NAME=1.5.8
+FLUTTER_BUILD_NUMBER=60
+>>>>>>> dev
 DART_DEFINES=flutter.inspector.structuredErrors%3Dtrue
 DART_OBFUSCATION=false
 TRACK_WIDGET_CREATION=true

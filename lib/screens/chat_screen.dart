@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/chat_messages.dart';
 import '../widgets/new_message.dart';
+import '../providers/auth_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   static const routeName = '/chat';
@@ -24,16 +25,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _searchChat(other) async {
     hasSearched = true;
-    final user = await FirebaseAuth.instance.currentUser();
+    final user =
+        await Provider.of<AuthProvider>(context, listen: false).getHash();
     final result = await Firestore.instance
         .collection('chats')
-        .where('participant_ids', arrayContains: user.uid)
+        .where('participant_ids', arrayContains: user)
         .getDocuments();
     if (result.documents.isNotEmpty) {
-      final res = result.documents.firstWhere((element) => element['participant_ids'].contains(other));
-      setState(() {
-        chatId = res.documentID;
-      });
+      final res = result.documents.firstWhere(
+        (element) => element['participant_ids'].contains(other),
+        orElse: () => null,
+      );
+      if (res != null) {
+        setState(() {
+          chatId = res.documentID;
+        });
+      }
     }
   }
 
@@ -54,13 +61,15 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Text('Chat'),
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: chatId == null ? Container() : ChatMessages(chatId),
-          ),
-          NewMessage(chatId, other, _setChatId),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: chatId == null ? Container() : ChatMessages(chatId),
+            ),
+            NewMessage(chatId, other, _setChatId),
+          ],
+        ),
       ),
     );
   }

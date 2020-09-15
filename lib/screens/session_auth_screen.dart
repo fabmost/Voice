@@ -1,16 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'menu_screen.dart';
 import 'countries_screen.dart';
 import '../api.dart';
 import '../translations.dart';
+import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
+import '../models/country_model.dart';
 
 class SessionAuthScreen extends StatefulWidget {
   static const routeName = '/session-signup';
@@ -21,7 +22,6 @@ class SessionAuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<SessionAuthScreen> {
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
-  final _auth = FirebaseAuth.instance;
   var _isLoading = false;
   bool _isChecked = false;
   TextEditingController _birthController = TextEditingController();
@@ -31,6 +31,8 @@ class _AuthScreenState extends State<SessionAuthScreen> {
   FocusNode _birthFocus = FocusNode();
   FocusNode _genderFocus = FocusNode();
   FocusNode _countryFocus = FocusNode();
+  CountryModel _selectedCountry;
+  Map _serverGender = {'Masculino': 'M', 'Femenino': 'F', 'Otro': 'O'};
 
   String _name, _last, _userName, _email;
 
@@ -86,7 +88,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
       );
       if (selected != null) {
         setState(() {
-          _birthController.text = DateFormat('dd-MM-yyyy').format(selected);
+          _birthController.text = DateFormat('yyyy-MM-dd').format(selected);
         });
       }
     }
@@ -97,7 +99,8 @@ class _AuthScreenState extends State<SessionAuthScreen> {
       FocusScope.of(context).unfocus();
       Navigator.of(context).pushNamed(CountriesScreen.routeName).then((value) {
         if (value != null) {
-          _countryController.text = value;
+          _selectedCountry = value;
+          _countryController.text = _selectedCountry.name;
         }
       });
     }
@@ -114,7 +117,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
 
     if (isValid && _isChecked) {
       _formKey.currentState.save();
-      _validateUserName();
+      _submitForm();
     } else if (!_isChecked) {
       showDialog(
         context: context,
@@ -133,6 +136,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
     }
   }
 
+/*
   void _validateUserName() async {
     setState(() {
       _isLoading = true;
@@ -155,6 +159,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
       _submitForm();
     }
   }
+  */
 
   void _submitForm() async {
     try {
@@ -162,42 +167,47 @@ class _AuthScreenState extends State<SessionAuthScreen> {
         _isLoading = true;
       });
 
-      AuthResult authResult = await _auth.createUserWithEmailAndPassword(
-        email: _email,
-        password: _passwordController.text,
-      );
-     
-      WriteBatch batch = Firestore.instance.batch();
+      String token = await Provider.of<AuthProvider>(context, listen: false)
+          .installation();
+      Map result = await Provider.of<AuthProvider>(context, listen: false)
+          .signUp(
+              name: _name,
+              last: _last,
+              email: _email,
+              password: API().getSalt(_passwordController.text),
+              user: _userName,
+              token: token);
 
-      String salt = API().getSalt(_passwordController.text);
-
-      batch.setData(
-        Firestore.instance.collection('users').document(authResult.user.uid),
-        {
-          'name': _name,
-          'last_name': _last,
-          'user_name': _userName,
-          'gender': _genderController.text,
-          'email': _email,
-          'country': _countryController.text,
-          'birthday': _birthController.text,
-          'salt': salt,
-        },
-        merge: true,
-      );
-      batch.setData(
-        Firestore.instance.collection('hash').document(authResult.user.uid),
-        {
-          'name': _userName,
-          'user_name': '$_name $_last',
-        },
-        merge: true,
-      );
-
-      await batch.commit();
-
-      Navigator.of(context).pushNamedAndRemoveUntil(
-          MenuScreen.routeName, (Route<dynamic> route) => false);
+      if (result['result']) {
+        if (_birthController.text.isNotEmpty ||
+            _genderController.text.isNotEmpty ||
+            _countryController.text.isNotEmpty) {
+          final String editBirth =
+              _birthController.text.isNotEmpty ? _birthController.text : null;
+          final String editGender = _genderController.text.isNotEmpty
+              ? _serverGender[_genderController.text]
+              : null;
+          final String editCountry =
+              _selectedCountry == null ? null : _selectedCountry.code;
+          await Provider.of<UserProvider>(context, listen: false).editProfile(
+            birth: editBirth,
+            gender: editGender,
+            country: editCountry,
+          );
+        }
+        Navigator.of(context).pop();
+      } else {
+        var message = result['message'] ?? 'Ocurrió un error';
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Theme.of(context).errorColor,
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } on PlatformException catch (err) {
       var message = 'An error ocurred';
       if (err.message != null) {

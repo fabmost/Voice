@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -9,10 +8,9 @@ class PollGalleryScreen extends StatefulWidget {
   final List galleryItems;
   final PageController pageController;
   final int initialIndex;
-  final DocumentReference reference;
+  final String reference;
 
-  PollGalleryScreen(
-      {this.reference, this.galleryItems, this.initialIndex})
+  PollGalleryScreen({this.reference, this.galleryItems, this.initialIndex})
       : pageController = PageController(initialPage: initialIndex);
 
   @override
@@ -49,13 +47,13 @@ class _PhotoGalleryScreenState extends State<PollGalleryScreen> {
           PhotoViewGallery.builder(
             scrollPhysics: const BouncingScrollPhysics(),
             builder: (ctx, i) {
+              final tag = '${widget.galleryItems[i]}${widget.reference}';
               return PhotoViewGalleryPageOptions(
                 imageProvider: NetworkImage(widget.galleryItems[i]),
                 initialScale: PhotoViewComputedScale.contained,
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 1.2,
-                heroAttributes:
-                    PhotoViewHeroAttributes(tag: widget.galleryItems[i]),
+                heroAttributes: PhotoViewHeroAttributes(tag: tag),
               );
             },
             itemCount: widget.galleryItems.length,

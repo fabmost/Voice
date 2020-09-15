@@ -20,15 +20,20 @@ class AtText extends SpecialText {
 
   @override
   InlineSpan finishText() {
-    TextStyle textStyle =
-        this.textStyle?.copyWith(color: Color(0xFF722282), fontWeight: FontWeight.bold);
+    TextStyle textStyle = this
+        .textStyle
+        ?.copyWith(color: Color(0xFF722282), fontWeight: FontWeight.bold);
 
     final String atText = toString();
+    String toRemove;
     int start = atText.indexOf('[');
-    int finish = atText.indexOf(']');
-    String toRemove = atText.substring(start, finish + 1);
+    if (start != -1) {
+      int finish = atText.indexOf(']');
+      toRemove = atText.substring(start, finish + 1);
+    }
 
-    final String shownText = atText.replaceAll(toRemove, '');
+    final String shownText =
+        toRemove != null ? atText.replaceAll(toRemove, '') : atText;
 
     return showAtBackground
         ? BackgroundTextSpan(

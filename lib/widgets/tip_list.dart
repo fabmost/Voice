@@ -1,94 +1,165 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'tip.dart';
+import 'tip_tile.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/content_provider.dart';
+import '../models/content_model.dart';
+import '../models/tip_model.dart';
 
-class TipList extends StatelessWidget {
+enum LoadMoreStatus { LOADING, STABLE }
+
+class TipList extends StatefulWidget {
   final String userId;
+  final ScrollController scrollController;
+  final Function setVideo;
 
-  TipList(this.userId);
+  TipList(this.userId, this.scrollController, this.setVideo);
 
-  Widget _tipWidget(doc, userId) {
-    int likes = 0;
-    bool hasLiked = false;
-    if (doc['likes'] != null) {
-      likes = doc['likes'].length;
-      hasLiked = (doc['likes'] as List).contains(userId);
-    }
-    int reposts = 0;
-    bool hasReposted = false;
-    if (doc['reposts'] != null) {
-      reposts = doc['reposts'].length;
-      hasReposted = (doc['reposts'] as List).contains(userId);
-    }
-    bool hasSaved = false;
-    if (doc['saved'] != null) {
-      hasSaved = (doc['saved'] as List).contains(userId);
-    }
-    bool hasRated = false;
-    double rate = 0;
-    if (doc['rates'] != null) {
-      int amount = doc['rates'].length;
-      double rateSum = 0;
-      (doc['rates'] as List).forEach((element) {
-        Map map = (element as Map);
-        if(map.containsKey(userId)){
-          hasRated = true;
+  @override
+  _TipListState createState() => _TipListState();
+}
+
+class _TipListState extends State<TipList> {
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  List<ContentModel> _list = [];
+  int _currentPageNumber;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
+      hasRated: content.hasRated,
+    );
+  }
+
+  Widget _repostTipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+      regalupName: content.creator,
+    );
+  }
+
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (widget.scrollController.position.maxScrollExtent >
+              widget.scrollController.offset &&
+          widget.scrollController.position.maxScrollExtent -
+                  widget.scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<ContentProvider>(context, listen: false)
+              .getUserTimeline(widget.userId, _currentPageNumber, 'TIP')
+              .then((newContent) {
+            setState(() {
+              if (newContent.isEmpty) {
+                _hasMore = false;
+              } else {
+                if (newContent.length < 10) {
+                  _hasMore = false;
+                }
+                _list.addAll(newContent);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
         }
-        rateSum += map.values.first;
-      });
-      if(amount > 0 && rateSum > 0){
-        rate = rateSum / amount;
       }
     }
-    return Tip(
-      reference: doc.reference,
-      myId: userId,
-      userId: doc['user_id'],
-      userName: doc['user_name'],
-      userImage: doc['user_image'] ?? '',
-      rating: rate,
-      hasRated: hasRated,
-      title: doc['title'],
-      description: doc['description'] ?? '',
-      isVideo: doc['is_video'] ?? false,
-      images: doc['images'],
-      comments: doc['comments'],
-      likes: likes,
-      hasLiked: hasLiked,
-      reposts: reposts,
-      hasReposted: hasReposted,
-      hasSaved: hasSaved,
-      date: doc['createdAt'].toDate(),
-      influencer: doc['influencer'] ?? '',
-      videoFunction: null,
-    );
+    return true;
+  }
+
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .getUserTimeline(widget.userId, _currentPageNumber, 'TIP');
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
+        _list = results;
+      }
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _resetData() async {
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    _currentPageNumber = 0;
+
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .getUserTimeline(widget.userId, _currentPageNumber, 'TIP');
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
+        _list = results;
+      }
+    });
+    loadMoreStatus = LoadMoreStatus.STABLE;
+    return;
+  }
+
+  @override
+  void initState() {
+    _currentPageNumber = 0;
+    _getData();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: FirebaseAuth.instance.currentUser(),
-      builder: (ctx, userSnap) {
-        if (userSnap.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        return StreamBuilder(
-          stream: Firestore.instance
-              .collection('content')
-              .where('user_id', isEqualTo: userId)
-              .where('type', isEqualTo: 'tip')
-              .orderBy('createdAt', descending: true)
-              .snapshots(),
-          builder: (ctx, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final documents = snapshot.data.documents;
-            if (documents.isEmpty) {
-              return Center(
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : _list.isEmpty
+            ? Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -109,18 +180,30 @@ class TipList extends StatelessWidget {
                     ),
                   ],
                 ),
+              )
+            : NotificationListener(
+                onNotification: onNotification,
+                child: RefreshIndicator(
+                  onRefresh: _resetData,
+                  child: ListView.builder(
+                    itemCount: _hasMore ? _list.length + 1 : _list.length,
+                    itemBuilder: (context, i) {
+                      if (i == _list.length)
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(),
+                        );
+                      switch (_list[i].type) {
+                        case 'Tips':
+                          return _tipWidget(_list[i]);
+                        case 'regalup_ti':
+                          return _repostTipWidget(_list[i]);
+                      }
+                      return Container();
+                    },
+                  ),
+                ),
               );
-            }
-            return ListView.builder(
-              itemCount: documents.length,
-              itemBuilder: (context, i) {
-                final doc = documents[i];
-                return _tipWidget(doc, userSnap.data.uid);
-              },
-            );
-          },
-        );
-      },
-    );
   }
 }

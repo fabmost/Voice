@@ -1,117 +1,215 @@
-import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../widgets/search_poll.dart';
-import '../widgets/search_challenge.dart';
-import '../widgets/search_tip.dart';
-import '../widgets/search_cause.dart';
+import '../models/content_model.dart';
+import '../models/poll_model.dart';
+import '../models/challenge_model.dart';
+import '../models/tip_model.dart';
+import '../widgets/poll_tile.dart';
+import '../widgets/challenge_tile.dart';
+import '../widgets/tip_tile.dart';
+import '../widgets/cause_tile.dart';
+import '../providers/content_provider.dart';
 
-class SearchResultsScreen extends StatelessWidget {
-  static const routeName = '/search-results';
+enum LoadMoreStatus { LOADING, STABLE }
 
-  Widget _pollWidget(id, doc) {
-    final time = Timestamp(
-        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
-    return SearchPoll(
-        reference: Firestore.instance.collection('content').document(id),
-        userId: doc['user_id'],
-        creatorName: doc['user_name'],
-        creatorImage: doc['user_image'] ?? '',
-        title: doc['title'],
-        description: doc['description'] ?? '',
-        options: doc['options'],
-        images: doc['images'] ?? [],
-        influencer: doc['influencer'] ?? '',
-        date: time.toDate());
-  }
+class SearchResultsScreen extends StatefulWidget {
+  final String query;
 
-  Widget _challengeWidget(id, doc) {
-    final time = Timestamp(
-        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
-    return SearchChallenge(
-      reference: Firestore.instance.collection('content').document(id),
-      userId: doc['user_id'],
-      creatorName: doc['user_name'],
-      creatorImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      description: doc['description'] ?? '',
-      metric: doc['metric_type'],
-      influencer: doc['influencer'] ?? '',
-      date: time.toDate(),
+  SearchResultsScreen(this.query);
+
+  @override
+  _SearchResultsScreenState createState() => _SearchResultsScreenState();
+}
+
+class _SearchResultsScreenState extends State<SearchResultsScreen> {
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  final ScrollController scrollController = new ScrollController();
+  List<ContentModel> _list = [];
+  int _currentPageNumber = 0;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  Widget _pollWidget(PollModel content) {
+    return PollTile(
+      reference: 'home',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      certificate: content.certificate,
+      resources: content.resources,
     );
   }
 
-  Widget _tipWidget(id, doc) {
-    final time = Timestamp(
-        doc['createdAt']['_seconds'], doc['createdAt']['_nanoseconds']);
-    return SearchTip(
-      reference: Firestore.instance.collection('content').document(id),
-      userId: doc['user_id'],
-      creatorName: doc['user_name'],
-      creatorImage: doc['user_image'] ?? '',
-      title: doc['title'],
-      description: doc['description'] ?? '',
-      influencer: doc['influencer'] ?? '',
-      date: time.toDate(),
+  Widget _challengeWidget(ChallengeModel content) {
+    return ChallengeTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      parameter: content.parameter,
+      goal: content.goal,
+      resources: content.resources,
     );
   }
 
-  Widget _causeWidget(id, doc) {
-    return SearchCause(
-      reference: Firestore.instance.collection('content').document(id),
-      title: doc['title'],
-      creator: doc['creator'],
-      info: doc['info'],
+  Widget _causeWidget(content) {
+    return CauseTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      info: content.info,
+      goal: content.goal,
+      phone: content.phone,
+      web: content.web,
+      bank: content.account,
+      likes: content.likes,
+      regalups: content.regalups,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      resources: content.resources,
     );
+  }
+
+  Widget _tipWidget(TipModel content) {
+    return TipTile(
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      rate: content.total,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      hasRated: content.hasRated,
+      resources: content.resources,
+    );
+  }
+
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (scrollController.position.maxScrollExtent > scrollController.offset &&
+          scrollController.position.maxScrollExtent - scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<ContentProvider>(context, listen: false)
+              .search(widget.query, _currentPageNumber)
+              .then((newObjects) {
+            setState(() {
+              if (newObjects.isEmpty) {
+                _hasMore = false;
+              } else {
+                _list.addAll(newObjects);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
+    }
+    return true;
+  }
+
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    String query = widget.query.replaceAll('#', '').trim();
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .search(removeDiacritics(query), _currentPageNumber);
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        _list = results;
+      }
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    _getData();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    String query = ModalRoute.of(context).settings.arguments;
-    Algolia algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
-    AlgoliaQuery searchQuery = algolia.instance.index('content');
-    searchQuery = searchQuery.search(query);
     return Scaffold(
       appBar: AppBar(
-        title: Text(query),
+        title: Text(widget.query),
       ),
-      body: FutureBuilder(
-        future: searchQuery.getObjects(),
-        builder: (ct, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.data.hits.length == 0) {
-            return Center(
-              child: Text('Sin resultados'),
-            );
-          }
-          var results = snapshot.data.hits;
-          //items = snapshot.data.hits;
-          return ListView.builder(
-            itemCount: results.length,
-            itemBuilder: (context, index) {
-              AlgoliaObjectSnapshot result = results[index];
-              switch (result.data['type']) {
-                case 'poll':
-                  return _pollWidget(result.objectID, result.data);
-                case 'challenge':
-                  return _challengeWidget(result.objectID, result.data);
-                case 'tip':
-                  return _tipWidget(result.objectID, result.data);
-                case 'cause':
-                  return _causeWidget(result.objectID, result.data);
-                default:
-                  return SizedBox();
-              }
-            },
-          );
-        },
-      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _list.isEmpty
+              ? Center(
+                  child: Text('Sin resultados'),
+                )
+              : NotificationListener(
+                  onNotification: onNotification,
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: _list.length,
+                    itemBuilder: (context, i) {
+                      final doc = _list[i];
+                      switch (doc.type) {
+                        case 'poll':
+                          return _pollWidget(doc);
+                        case 'challenge':
+                          return _challengeWidget(doc);
+                        case 'cause':
+                          return _causeWidget(doc);
+                        case 'tip':
+                          return _tipWidget(doc);
+                        default:
+                          return SizedBox();
+                      }
+                    },
+                  ),
+                ),
     );
   }
 }

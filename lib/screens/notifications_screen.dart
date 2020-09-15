@@ -1,6 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
@@ -9,25 +8,68 @@ import 'detail_cause_screen.dart';
 import 'view_profile_screen.dart';
 import 'detail_comment_screen.dart';
 import '../translations.dart';
+import '../providers/content_provider.dart';
+import '../models/notification_model.dart';
 
-class NotificationsScreen extends StatelessWidget {
+enum LoadMoreStatus { LOADING, STABLE }
+
+class NotificationsScreen extends StatefulWidget {
   static const routeName = '/notifications';
 
-  void _toPoll(context, id) {
-    Navigator.of(context).pushNamed(DetailPollScreen.routeName, arguments: id);
+  @override
+  _NotificationsScreenState createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  final ScrollController scrollController = new ScrollController();
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  //List<NotificationModel> _list = [];
+  int _currentPageNumber;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  void _toPoll(id) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailPollScreen(
+          id: id,
+        ),
+      ),
+    );
   }
 
-  void _toChallenge(context, id) {
-    Navigator.of(context)
-        .pushNamed(DetailChallengeScreen.routeName, arguments: id);
+  void _toChallenge(id) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailChallengeScreen(
+          id: id,
+        ),
+      ),
+    );
   }
 
-  void _toTip(context, id) {
-    Navigator.of(context).pushNamed(DetailTipScreen.routeName, arguments: id);
+  void _toTip(id) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailTipScreen(
+          id: id,
+        ),
+      ),
+    );
   }
 
-  void _toCause(context, id) {
-    Navigator.of(context).pushNamed(DetailCauseScreen.routeName, arguments: id);
+  void _toCause(id) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailCauseScreen(
+          id: id,
+        ),
+      ),
+    );
   }
 
   void _toProfile(context, id) {
@@ -35,100 +77,161 @@ class NotificationsScreen extends StatelessWidget {
   }
 
   void _toComment(context, id) {
-    Navigator.of(context).pushNamed(DetailCommentScreen.routeName, arguments: {
-      'reference': Firestore.instance.collection('comments').document(id),
-      'fromNotification': true,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailCommentScreen(
+          id,
+          true,
+        ),
+      ),
+    );
+  }
+
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (scrollController.position.maxScrollExtent > scrollController.offset &&
+          scrollController.position.maxScrollExtent - scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _moreData();
+        }
+      }
+    }
+    return true;
+  }
+
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
     });
+    await Provider.of<ContentProvider>(context, listen: false)
+        .getNotifications(_currentPageNumber);
+    setState(() {
+      /*
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        _list = results;
+        _moreData();
+      }
+      */
+      _isLoading = false;
+    });
+    _moreData();
+  }
+
+  void _moreData() {
+    _currentPageNumber++;
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    Provider.of<ContentProvider>(context, listen: false)
+        .getNotifications(_currentPageNumber)
+        .then((hasMore) {
+      if (!hasMore) {
+        setState(() {
+          _hasMore = false;
+        });
+      }
+      loadMoreStatus = LoadMoreStatus.STABLE;
+    });
+  }
+
+  Widget _notification(NotificationModel model) {
+    return Container(
+      color: model.isNew ? Color(0x22000000) : Colors.white,
+      child: ListTile(
+        onTap: () {
+          Provider.of<ContentProvider>(context, listen: false)
+              .notificationRead(model.id);
+          switch (model.type) {
+            case 'poll':
+              return _toPoll(model.idContent);
+            case 'challenge':
+              return _toChallenge(model.idContent);
+            case 'tip':
+              return _toTip(model.idContent);
+            case 'cause':
+              return _toCause(model.idContent);
+            case 'profile':
+              return _toProfile(context, model.idContent);
+            case 'comment':
+              return _toComment(context, model.idContent);
+            default:
+              return null;
+          }
+        },
+        leading: model.icon != null
+            ? CircleAvatar(
+                radius: 21,
+                backgroundColor: Theme.of(context).accentColor,
+                backgroundImage: NetworkImage(model.icon),
+              )
+            : Icon(
+                Icons.notifications,
+                color: Colors.black,
+              ),
+        title: Text(model.message),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    _currentPageNumber = 0;
+    _getData();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    var cart = context.watch<ContentProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_notifications')),
       ),
-      body: FutureBuilder(
-        future: FirebaseAuth.instance.currentUser(),
-        builder: (ctx, userSnap) {
-          if (userSnap.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          return StreamBuilder(
-            stream: Firestore.instance
-                .collection('notifications')
-                .where('users', arrayContains: userSnap.data.uid)
-                .orderBy('createdAt', descending: true)
-                .snapshots(),
-            builder: (ctx, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              final documents = snapshot.data.documents;
-              if (documents.isEmpty) {
-                return Center(
-                  child: Text('No tienes notificaciones'),
-                );
-              }
-
-              return ListView.separated(
-                separatorBuilder: (context, index) => Divider(height: 1),
-                itemCount: documents.length,
-                itemBuilder: (ctx, i) {
-                  final doc = documents[i];
-
-                  final icon = doc['icon'];
-                  final type = doc['type'];
-                  bool hasRead = false;
-                  if (doc['read'] != null) {
-                    hasRead = (doc['read'] as List).contains(userSnap.data.uid);
-                  }
-                  return Container(
-                    color: hasRead ? Colors.white : Color(0x22000000),
-                    child: ListTile(
-                      onTap: () {
-                        Firestore.instance
-                            .collection('notifications')
-                            .document(doc.documentID)
-                            .updateData({
-                          'read': FieldValue.arrayUnion([userSnap.data.uid])
-                        });
-                        switch (type) {
-                          case 'poll':
-                            return _toPoll(context, doc['content_id']);
-                          case 'challenge':
-                            return _toChallenge(context, doc['content_id']);
-                          case 'tip':
-                            return _toTip(context, doc['content_id']);
-                          case 'cause':
-                            return _toCause(context, doc['content_id']);
-                          case 'profile':
-                            return _toProfile(context, doc['content_id']);
-                          case 'comment':
-                            return _toComment(context, doc['content_id']);
-                          default:
-                            return null;
-                        }
-                      },
-                      leading: icon != null
-                          ? CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Theme.of(context).accentColor,
-                              backgroundImage: NetworkImage(icon),
-                            )
-                          : Icon(
-                              Icons.notifications,
-                              color: Colors.black,
-                            ),
-                      title: Text(doc['title']),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : cart.getNotificationsList.isEmpty
+              ? Center(
+                  child: Text(
+                    'No tienes notificaciones',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF8E8EAB),
                     ),
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
+                  ),
+                )
+              : NotificationListener(
+                  onNotification: onNotification,
+                  child: ListView.separated(
+                    controller: scrollController,
+                    itemCount: _hasMore
+                        ? cart.getNotificationsList.length + 1
+                        : cart.getNotificationsList.length,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 0,
+                    ),
+                    itemBuilder: (context, i) {
+                      if (i == cart.getNotificationsList.length)
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(),
+                        );
+                      return _notification(cart.getNotificationsList[i]);
+                    },
+                  ),
+                ),
     );
   }
 }

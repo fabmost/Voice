@@ -22,12 +22,6 @@
 @import firebase_analytics;
 #endif
 
-#if __has_include(<firebase_auth/FLTFirebaseAuthPlugin.h>)
-#import <firebase_auth/FLTFirebaseAuthPlugin.h>
-#else
-@import firebase_auth;
-#endif
-
 #if __has_include(<firebase_core/FLTFirebaseCorePlugin.h>)
 #import <firebase_core/FLTFirebaseCorePlugin.h>
 #else
@@ -58,12 +52,6 @@
 @import firebase_remote_config;
 #endif
 
-#if __has_include(<firebase_storage/FLTFirebaseStoragePlugin.h>)
-#import <firebase_storage/FLTFirebaseStoragePlugin.h>
-#else
-@import firebase_storage;
-#endif
-
 #if __has_include(<flutter_ffmpeg/FlutterFFmpegPlugin.h>)
 #import <flutter_ffmpeg/FlutterFFmpegPlugin.h>
 #else
@@ -74,6 +62,18 @@
 #import <flutter_keyboard_visibility/FlutterKeyboardVisibilityPlugin.h>
 #else
 @import flutter_keyboard_visibility;
+#endif
+
+#if __has_include(<flutter_secure_storage/FlutterSecureStoragePlugin.h>)
+#import <flutter_secure_storage/FlutterSecureStoragePlugin.h>
+#else
+@import flutter_secure_storage;
+#endif
+
+#if __has_include(<flutter_user_agent/FlutterUserAgentPlugin.h>)
+#import <flutter_user_agent/FlutterUserAgentPlugin.h>
+#else
+@import flutter_user_agent;
 #endif
 
 #if __has_include(<flutter_video_compress/FlutterVideoCompressPlugin.h>)
@@ -124,6 +124,12 @@
 @import shared_preferences;
 #endif
 
+#if __has_include(<sqflite/SqflitePlugin.h>)
+#import <sqflite/SqflitePlugin.h>
+#else
+@import sqflite;
+#endif
+
 #if __has_include(<url_launcher/FLTURLLauncherPlugin.h>)
 #import <url_launcher/FLTURLLauncherPlugin.h>
 #else
@@ -154,15 +160,15 @@
   [FLTCloudFirestorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTCloudFirestorePlugin"]];
   [FilePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FilePickerPlugin"]];
   [FLTFirebaseAnalyticsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseAnalyticsPlugin"]];
-  [FLTFirebaseAuthPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseAuthPlugin"]];
   [FLTFirebaseCorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCorePlugin"]];
   [FirebaseCrashlyticsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FirebaseCrashlyticsPlugin"]];
   [FLTFirebaseDynamicLinksPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseDynamicLinksPlugin"]];
   [FLTFirebaseMessagingPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseMessagingPlugin"]];
   [FirebaseRemoteConfigPlugin registerWithRegistrar:[registry registrarForPlugin:@"FirebaseRemoteConfigPlugin"]];
-  [FLTFirebaseStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseStoragePlugin"]];
   [FlutterFFmpegPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterFFmpegPlugin"]];
   [FlutterKeyboardVisibilityPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterKeyboardVisibilityPlugin"]];
+  [FlutterSecureStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterSecureStoragePlugin"]];
+  [FlutterUserAgentPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterUserAgentPlugin"]];
   [FlutterVideoCompressPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterVideoCompressPlugin"]];
   [FLTImageCropperPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImageCropperPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
@@ -171,6 +177,7 @@
   [ImageScannerPlugin registerWithRegistrar:[registry registrarForPlugin:@"ImageScannerPlugin"]];
   [FLTSharePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTSharePlugin"]];
   [FLTSharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTSharedPreferencesPlugin"]];
+  [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
   [FLTURLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTURLLauncherPlugin"]];
   [FLTVideoPlayerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTVideoPlayerPlugin"]];
   [VideoThumbnailPlugin registerWithRegistrar:[registry registrarForPlugin:@"VideoThumbnailPlugin"]];

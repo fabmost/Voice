@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'message_bubble.dart';
+import '../providers/auth_provider.dart';
 
 class ChatMessages extends StatelessWidget {
   final String chatId;
@@ -12,7 +13,7 @@ class ChatMessages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: FirebaseAuth.instance.currentUser(),
+      future: Provider.of<AuthProvider>(context, listen: false).getHash(),
       builder: (ct, userSnap) {
         if (userSnap.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -38,7 +39,7 @@ class ChatMessages extends StatelessWidget {
                 documents[i]['userId'],
                 documents[i]['username'],
                 documents[i]['userimage'] ?? '',
-                documents[i]['userId'] == userSnap.data.uid,
+                documents[i]['userId'] == userSnap.data,
                 key: ValueKey(documents[i].documentID),
               ),
             );

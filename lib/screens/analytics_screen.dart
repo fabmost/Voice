@@ -1,56 +1,61 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'view_profile_screen.dart';
+import '../providers/content_provider.dart';
 import '../widgets/vote_card.dart';
+import '../models/poll_answer_model.dart';
+import '../models/user_model.dart';
+
+enum LoadMoreStatus { LOADING, STABLE }
 
 class AnalyticsScreen extends StatefulWidget {
-  static const routeName = '/analytics';
+  final String pollId;
+  final String title;
+  final List<PollAnswerModel> answers;
 
-  final pollId;
-
-  AnalyticsScreen(this.pollId);
+  AnalyticsScreen({this.pollId, this.title, this.answers});
 
   @override
   _AnalyticsScreenState createState() => _AnalyticsScreenState();
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  ScrollController _scrollController = ScrollController();
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   bool _isLoading = false;
   int _selection = -1;
-  String _title;
-  List _options;
-  //List _votes;
-  List _results;
-  List _voters;
+  int _page;
+  List<UserModel> _voters = [];
+  Map _answersString = {};
+  bool _hasMore = true;
 
   void _toProfile(userId) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.uid != userId) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userId);
-    }
+    Navigator.of(context)
+        .pushNamed(ViewProfileScreen.routeName, arguments: userId);
   }
 
   void _getAllData() async {
-    DocumentSnapshot pollDoc = await Firestore.instance
-        .collection('content')
-        .document(widget.pollId)
-        .get();
-
-    QuerySnapshot usersSnap = await Firestore.instance
-        .collection('users')
-        .where('voted', arrayContains: widget.pollId)
-        .getDocuments();
-
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    _voters.clear();
+    _page = 0;
     setState(() {
+      _isLoading = true;
+      _hasMore = true;
+    });
+    final results = await Provider.of<ContentProvider>(context, listen: false)
+        .getPollStatistics(
+      idPoll: widget.pollId,
+      page: _page,
+      idAnswer: _selection == -1 ? null : widget.answers[_selection].id,
+    );
+    setState(() {
+      if(results.isEmpty || results.length < 10){
+        _hasMore = false;
+      }
       _isLoading = false;
-      _title = pollDoc.data['title'];
-      _options = pollDoc.data['options'];
-      //_votes = pollDoc.data['results'];
-      _results = pollDoc.data['voters'] ?? [];
-      _voters = usersSnap.documents ?? [];
+      _voters = results;
+      loadMoreStatus = LoadMoreStatus.STABLE;
     });
   }
 
@@ -62,14 +67,52 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         _selection = position;
       }
     });
+    _getAllData();
+  }
+
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (_scrollController.position.maxScrollExtent >
+              _scrollController.offset &&
+          _scrollController.position.maxScrollExtent -
+                  _scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _page++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<ContentProvider>(context, listen: false)
+              .getPollStatistics(
+            idPoll: widget.pollId,
+            page: _page,
+            idAnswer: _selection == -1 ? null : widget.answers[_selection].id,
+          )
+              .then((newObjects) {
+            setState(() {
+              if (newObjects.isEmpty) {
+                _hasMore = false;
+              } else {
+                if (newObjects.length < 10) {
+                  _hasMore = false;
+                }
+                _voters.addAll(newObjects);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
+    }
+    return true;
   }
 
   @override
   void initState() {
-    _getAllData();
-    setState(() {
-      _isLoading = true;
+    widget.answers.forEach((element) {
+      _answersString[element.id] = element.answer;
     });
+    _getAllData();
     super.initState();
   }
 
@@ -80,106 +123,70 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       appBar: AppBar(
         title: Text('Estadísticos'),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    _title,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+      body: NotificationListener(
+        onNotification: onNotification,
+        child: ListView.builder(
+          controller: _scrollController,
+          itemCount: _isLoading || _hasMore ? _voters.length + 4 : _voters.length + 3,
+          itemBuilder: (context, i) {
+            if (i == 0)
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  widget.title,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-                Container(
-                  height: 80,
-                  child: ListView.separated(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    separatorBuilder: (context, index) => SizedBox(width: 8),
-                    itemCount: _options.length,
-                    itemBuilder: (context, i) {
-                      Map option = _options[i];
-                      int amount = 0;
-                      _results.forEach((element) {
-                        int vote =
-                            int.parse((element as Map).values.first.toString());
-                        if (vote == i) {
-                          amount++;
-                        }
-                      });
-                      return VoteCard(
-                        option['text'],
-                        amount,
-                        _selection == i,
-                        () => _selectOption(i),
-                      );
-                    },
+              );
+            if (i == 1)
+              return Container(
+                height: 80,
+                child: ListView.separated(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  separatorBuilder: (context, index) => SizedBox(width: 8),
+                  itemCount: widget.answers.length,
+                  itemBuilder: (context, i) {
+                    PollAnswerModel option = widget.answers[i];
+                    return VoteCard(
+                      option.answer,
+                      option.count,
+                      _selection == i,
+                      () => _selectOption(i),
+                    );
+                  },
+                ),
+              );
+            if (i == 2)
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Votantes',
+                  style: TextStyle(
+                    color: Theme.of(context).accentColor,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Votantes',
-                    style: TextStyle(
-                      color: Theme.of(context).accentColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _voters.length,
-                    itemBuilder: (context, i) {
-                      final user = _voters[i];
-                      final userId = user.documentID;
-
-                      int votePos;
-                      String vote;
-
-                      final item = _results.firstWhere(
-                        (element) => (element as Map).containsKey(userId),
-                        orElse: () => null,
-                      );
-                      if (item != null) {
-                        votePos = item[userId];
-                        vote = _options[votePos]['text'];
-                      }
-
-                      if (user.data['user_name'] == null) {
-                        if (_selection == -1 || votePos == _selection) {
-                          return ListTile(
-                            title: Text('Anónimo'),
-                            subtitle: Text('Votó - $vote'),
-                          );
-                        }
-                        return Container();
-                      }
-
-                      final userName = user.data['user_name'];
-                      final userImage = user.data['image'] ?? '';
-
-                      if (_selection == -1 || votePos == _selection) {
-                        return ListTile(
-                          onTap: () => _toProfile(userId),
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(userImage),
-                          ),
-                          title: Text(userName),
-                          subtitle: Text('Votó - $vote'),
-                        );
-                      }
-                      return Container();
-                    },
-                  ),
-                )
-              ],
-            ),
+              );
+            if (_isLoading || i == _voters.length + 3) {
+              return Center(child: CircularProgressIndicator());
+            }
+            UserModel user = _voters[i - 3];
+            return ListTile(
+              onTap: () => _toProfile(user.userName),
+              leading: CircleAvatar(
+                backgroundImage:
+                    user.icon == null ? null : NetworkImage(user.icon),
+              ),
+              title: Text(user.userName),
+              subtitle: Text('Votó - ${_answersString[user.idAnswer]}'),
+            );
+          },
+        ),
+      ),
     );
   }
 }

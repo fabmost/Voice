@@ -388,7 +388,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+<<<<<<< HEAD
 				CURRENT_PROJECT_VERSION = 46;
+=======
+				CURRENT_PROJECT_VERSION = 61;
+>>>>>>> dev
 				DEVELOPMENT_TEAM = 48ABA5R49D;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -405,7 +409,11 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
+<<<<<<< HEAD
 				MARKETING_VERSION = 1.4.5;
+=======
+				MARKETING_VERSION = 1.6.0;
+>>>>>>> dev
 				PRODUCT_BUNDLE_IDENTIFIER = com.galup.app;
 				PRODUCT_NAME = Galup;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -529,7 +537,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+<<<<<<< HEAD
 				CURRENT_PROJECT_VERSION = 46;
+=======
+				CURRENT_PROJECT_VERSION = 61;
+>>>>>>> dev
 				DEVELOPMENT_TEAM = 48ABA5R49D;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -546,7 +558,11 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
+<<<<<<< HEAD
 				MARKETING_VERSION = 1.4.5;
+=======
+				MARKETING_VERSION = 1.6.0;
+>>>>>>> dev
 				PRODUCT_BUNDLE_IDENTIFIER = com.galup.app;
 				PRODUCT_NAME = Galup;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -564,7 +580,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+<<<<<<< HEAD
 				CURRENT_PROJECT_VERSION = 46;
+=======
+				CURRENT_PROJECT_VERSION = 61;
+>>>>>>> dev
 				DEVELOPMENT_TEAM = 48ABA5R49D;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -581,7 +601,11 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
+<<<<<<< HEAD
 				MARKETING_VERSION = 1.4.5;
+=======
+				MARKETING_VERSION = 1.6.0;
+>>>>>>> dev
 				PRODUCT_BUNDLE_IDENTIFIER = com.galup.app;
 				PRODUCT_NAME = Galup;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";

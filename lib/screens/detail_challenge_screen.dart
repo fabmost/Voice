@@ -1,51 +1,105 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../widgets/header_challenge.dart';
 import '../widgets/new_comment.dart';
-import '../widgets/comment.dart';
+import '../widgets/comment_tile.dart';
+import '../models/challenge_model.dart';
+import '../models/comment_model.dart';
+import '../providers/content_provider.dart';
 
-class DetailChallengeScreen extends StatelessWidget {
+class DetailChallengeScreen extends StatefulWidget {
   static const routeName = '/challenge';
+  final String id;
+
+  DetailChallengeScreen({this.id});
+
+  @override
+  _DetailChallengeScreenState createState() => _DetailChallengeScreenState();
+}
+
+class _DetailChallengeScreenState extends State<DetailChallengeScreen> {
+  ChallengeModel _challengeModel;
+  List<CommentModel> _commentsList = [];
+  bool _isLoading = false;
+
+  Future<void> _fetchChallengeAndComments() async {
+    setState(() {
+      _isLoading = true;
+      _commentsList.clear();
+    });
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .getContent('C', widget.id);
+    if (result == null) {
+      _noExists();
+      return;
+    }
+    List<CommentModel> newObjects =
+        await Provider.of<ContentProvider>(context, listen: false)
+            .getComments(id: widget.id, type: 'C', page: 0);
+    setState(() {
+      _isLoading = false;
+      _challengeModel = result;
+      _commentsList.addAll(newObjects);
+    });
+  }
+
+  void _noExists() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('Este contenido ya no existe'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        Navigator.of(context).pop();
+      });
+    });
+  }
+
+  void _setComment(comment) {
+    setState(() {
+      _commentsList.insert(0, comment);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchChallengeAndComments();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final id = ModalRoute.of(context).settings.arguments;
-    final DocumentReference reference = Firestore.instance.collection('content').document(id);
     return Scaffold(
       appBar: AppBar(
         title: Text(Translations.of(context).text('title_challenge')),
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: FutureBuilder(
-              future: FirebaseAuth.instance.currentUser(),
-              builder: (ctx, userSnap) {
-                if (userSnap.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                return StreamBuilder(
-                  stream: Firestore.instance
-                      .collection('comments')
-                      .where('parent', isEqualTo: reference)
-                      .orderBy('createdAt', descending: true)
-                      .snapshots(),
-                  builder: (ct, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    final documents = snapshot.data.documents;
-
-                    return ListView.builder(
-                      itemCount: documents.isEmpty ? 2 : documents.length + 1,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: <Widget>[
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => _fetchChallengeAndComments(),
+                    child: ListView.builder(
+                      itemCount:
+                          _commentsList.isEmpty ? 2 : _commentsList.length + 1,
                       itemBuilder: (context, i) {
                         if (i == 0) {
-                          return HeaderChallenge(reference, userSnap.data.uid);
+                          return HeaderChallenge(_challengeModel);
                         }
-                        if (documents.isEmpty) {
+                        if (_commentsList.isEmpty) {
                           return Padding(
                             padding: const EdgeInsets.all(16),
                             child: Center(
@@ -54,45 +108,34 @@ class DetailChallengeScreen extends StatelessWidget {
                             ),
                           );
                         }
-                        final doc = documents[i - 1];
-                        int ups = 0;
-                        bool hasUp = false;
-                        int downs = 0;
-                        bool hasDown = false;
+                        final doc = _commentsList[i - 1];
 
-                        if (doc['up'] != null) {
-                          ups = doc['up'].length;
-                          hasUp = doc['up'].contains(userSnap.data.uid);
-                        }
-                        if (doc['down'] != null) {
-                          downs = doc['down'].length;
-                          hasDown = doc['down'].contains(userSnap.data.uid);
-                        }
-
-                        return Comment(
-                          reference: doc.reference,
-                          myId: userSnap.data.uid,
-                          userId: doc['userId'],
-                          title: doc['text'],
-                          comments: doc['comments'],
-                          date: doc['createdAt'].toDate(),
-                          userName: doc['username'],
-                          userImage: doc['userImage'] ?? '',
-                          ups: ups,
-                          hasUp: hasUp,
-                          downs: downs,
-                          hasDown: hasDown,
+                        return CommentTile(
+                          contentId: widget.id,
+                          type: 'C',
+                          id: doc.id,
+                          title: doc.body,
+                          comments: doc.comments,
+                          date: doc.createdAt,
+                          userName: doc.user.userName,
+                          userImage: doc.user.icon ?? '',
+                          ups: doc.likes,
+                          hasUp: doc.hasLike,
+                          downs: doc.dislikes,
+                          hasDown: doc.hasDislike,
+                          certificate: doc.certificate,
                         );
                       },
-                    );
-                  },
-                );
-              },
+                    ),
+                  ),
+                ),
+                NewComment(
+                  id: _challengeModel.id,
+                  type: 'C',
+                  function: _setComment,
+                ),
+              ],
             ),
-          ),
-          NewComment(reference),
-        ],
-      ),
     );
   }
 }

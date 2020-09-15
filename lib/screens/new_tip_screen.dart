@@ -1,21 +1,21 @@
 import 'dart:io';
 
-import 'package:algolia/algolia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:provider/provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../models/category_model.dart';
+import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -37,10 +37,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
-  Algolia algolia;
-  AlgoliaQuery searchQuery;
 
-  String category;
+  CategoryModel category;
 
   void _imageOptions() {
     FocusScope.of(context).requestFocus(FocusNode());
@@ -51,20 +49,30 @@ class _NewTipScreenState extends State<NewTipScreen> {
           color: Colors.transparent,
           child: new Wrap(
             children: <Widget>[
-              ListTile(
-                onTap: () => _openCamera(),
-                leading: Icon(
-                  Icons.camera_alt,
+              if (Platform.isIOS)
+                ListTile(
+                  onTap: () => _openCamera(),
+                  leading: Icon(
+                    Icons.camera_alt,
+                  ),
+                  title: Text("Cámara"),
                 ),
-                title: Text("Foto"),
-              ),
-              ListTile(
-                onTap: () => _takeVideo(),
-                leading: Icon(
-                  Icons.videocam,
+              if (Platform.isAndroid)
+                ListTile(
+                  onTap: () => _openCamera(),
+                  leading: Icon(
+                    Icons.camera_alt,
+                  ),
+                  title: Text("Foto"),
                 ),
-                title: Text("Video"),
-              ),
+              if (Platform.isAndroid)
+                ListTile(
+                  onTap: () => _takeVideo(),
+                  leading: Icon(
+                    Icons.videocam,
+                  ),
+                  title: Text("Video"),
+                ),
               ListTile(
                 onTap: () => _openGallery(),
                 leading: Icon(
@@ -86,21 +94,34 @@ class _NewTipScreenState extends State<NewTipScreen> {
 
   void _openGallery() {
     Navigator.of(context).pop();
-
-    Navigator.of(context)
-        .pushNamed(GalleryScreen.routeName)
-        .then((value) async {
-      if (value != null) {
-        AssetEntity asset = value as AssetEntity;
-        if (asset.type == AssetType.video) {
-          File videoFile = await asset.file;
-          _trimVideo(videoFile);
-        } else {
-          File imgFile = await asset.file;
-          _cropImage(imgFile.path);
+    if (Platform.isIOS)
+      _getPicture();
+    else {
+      Navigator.of(context)
+          .pushNamed(GalleryScreen.routeName)
+          .then((value) async {
+        if (value != null) {
+          AssetEntity asset = value as AssetEntity;
+          if (asset.type == AssetType.video) {
+            File videoFile = await asset.file;
+            _trimVideo(videoFile);
+          } else {
+            File imgFile = await asset.file;
+            _cropImage(imgFile.path);
+          }
         }
-      }
-    });
+      });
+    }
+  }
+
+  Future<void> _getPicture() async {
+    final imageFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+    if (imageFile != null) {
+      _cropImage(imageFile.path);
+    }
   }
 
   Future<void> _takePicture() async {
@@ -131,15 +152,14 @@ class _NewTipScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await VideoCompress.getFileThumbnail(
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-          value,
+        final mFile = await VideoThumbnail.thumbnailFile(
+          video: value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
-          _imageFile = mFile;
+          _imageFile = File(mFile);
           _videoFile = File(value);
         });
       }
@@ -174,7 +194,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
     if (_titleController.text.isNotEmpty &&
         _imageFile != null &&
         category != null) {
-      _saveChallenge();
+      _saveTip();
       return;
     }
     showDialog(
@@ -230,90 +250,117 @@ class _NewTipScreenState extends State<NewTipScreen> {
     Navigator.of(context).pop();
   }
 
-  void _saveChallenge() async {
+  void _showError() async {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Ocurrió un error al guardar tu tip',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  textColor: Colors.white,
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _saveTip() async {
     FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user.uid).get();
-
-    WriteBatch batch = Firestore.instance.batch();
-    String challengeId =
-        Firestore.instance.collection('content').document().documentID;
-
-    StorageReference ref;
+    String idResource;
     if (_isVideo) {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('tips')
-          .child('$challengeId.mp4');
-
-      await ref.putFile(_videoFile).onComplete;
+      idResource = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadResource(
+        _videoFile.path,
+        'V',
+        'TIP',
+      );
     } else {
-      ref = FirebaseStorage.instance
-          .ref()
-          .child('tips')
-          .child(challengeId + '.jpg');
-
-      await ref.putFile(_imageFile).onComplete;
+      idResource = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadResource(
+        _imageFile.path,
+        'I',
+        'TIP',
+      );
     }
 
-    final url = await ref.getDownloadURL();
-    batch.updateData(
-      Firestore.instance.collection('users').document(user.uid),
-      {
-        'created': FieldValue.arrayUnion([challengeId])
-      },
-    );
-
-    List<String> hashes = [];
-    RegExp exp = new RegExp(r"\B#\w\w+");
+    List<Map> hashes = [];
+    RegExp exp = new RegExp(r"\B#\S\S+");
     exp.allMatches(_titleController.text).forEach((match) {
       if (!hashes.contains(match.group(0))) {
-        hashes.add(match.group(0));
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
       }
     });
     exp.allMatches(_descriptionController.text).forEach((match) {
       if (!hashes.contains(match.group(0))) {
-        hashes.add(match.group(0));
+        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
       }
     });
 
-    batch.setData(
-        Firestore.instance.collection('content').document(challengeId), {
-      'type': 'tip',
-      'title': _titleController.text,
-      'description': _descriptionController.text,
-      'user_name': userData['user_name'],
-      'user_id': user.uid,
-      'user_image': userData['image'],
-      "influencer": userData['influencer'],
-      'createdAt': Timestamp.now(),
-      'images': [url],
-      'is_video': _isVideo,
-      'comments': 0,
-      'endDate': Timestamp.now(),
-      'category': category,
-      'tags': hashes,
-      'interactions': 0,
+    List<Map> tags = [];
+    RegExp exps = new RegExp(r"\B@\[\S\S+\]\S\S+");
+    /*
+    exps.allMatches(_titleController.text).forEach((match) {
+      if (!tags.contains({'user_name': match.group(0)})) {
+        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      }
     });
-    hashes.forEach((element) {
-      batch.setData(
-        Firestore.instance.collection('hash').document(element),
-        {
-          'name': element,
-          'interactions': FieldValue.increment(1),
-        },
-        merge: true,
-      );
+    */
+    exps.allMatches(_descriptionController.text).forEach((match) {
+      String toRemove;
+      int start = match.group(0).indexOf('[');
+      if (start != -1) {
+        int finish = match.group(0).indexOf(']');
+        toRemove = match.group(0).substring(start, finish + 1);
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
+      }
+      if (toRemove != null && !tags.contains({'user_name': toRemove})) {
+        tags.add({'user_name': toRemove});
+      }
     });
-    await batch.commit();
+
+    bool result =
+        await Provider.of<ContentProvider>(context, listen: false).newTip(
+      name: _titleController.text,
+      description: '${_descriptionController.text} ',
+      category: category.id,
+      resource: {'id': idResource},
+      hashtag: hashes,
+      taged: tags,
+    );
+
     setState(() {
       _isLoading = false;
     });
-    _showAlert();
+    if (result)
+      _showAlert();
+    else
+      _showError();
   }
 
   Widget _title(text) {
@@ -327,25 +374,26 @@ class _NewTipScreenState extends State<NewTipScreen> {
     );
   }
 
-  Widget _userTile(context, id, doc) {
+  Widget _userTile(context, content) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['user_image'] ?? ''),
+        backgroundImage:
+            content.icon == null ? null : NetworkImage(content.icon),
       ),
       title: Row(
         children: <Widget>[
           Text(
-            doc['name'],
+            content.userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(content.userName, content.certificate, 16),
         ],
       ),
-      subtitle: Text(doc['user_name']),
+      //subtitle: Text(doc['user_name']),
     );
   }
 
@@ -354,23 +402,16 @@ class _NewTipScreenState extends State<NewTipScreen> {
       _isSearching = false;
       return null;
     }
-    searchQuery = algolia.instance.index('suggestions');
     int index = query.lastIndexOf('@');
-    String realQuery = query.substring(index);
-    searchQuery = searchQuery.search(realQuery);
-    AlgoliaQuerySnapshot results = await searchQuery.getObjects();
-    return results.hits;
+    String realQuery = query.substring(index + 1);
+    Map results = await Provider.of<UserProvider>(context, listen: false)
+        .getAutocomplete(realQuery);
+    return results['users'];
   }
 
   @override
   void initState() {
     super.initState();
-
-    // Start listening to changes.
-    algolia = Algolia.init(
-      applicationId: 'J3C3F33D3S',
-      apiKey: '70469e6182ac069696c17d836c210780',
-    );
   }
 
   @override
@@ -396,49 +437,19 @@ class _NewTipScreenState extends State<NewTipScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SuggestionField(
-                textFieldConfiguration: TextFieldConfiguration(
-                  controller: _titleController,
-                  spanBuilder: MySpecialTextSpanBuilder(),
-                  autofocus: true,
-                  maxLines: null,
-                  autocorrect: true,
-                  maxLength: 120,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    border: InputBorder.none,
-                    hintText: Translations.of(context).text('hint_tip_title'),
-                  ),
-                  style: TextStyle(fontSize: 22),
+              TextField(
+                controller: _titleController,
+                autofocus: true,
+                autocorrect: true,
+                maxLines: null,
+                maxLength: 120,
+                decoration: InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  hintText:
+                      Translations.of(context).text('hint_challenge_title'),
                 ),
-                suggestionsCallback: (pattern) {
-                  //TextSelection selection = _descriptionController.selection;
-                  //String toCheck = pattern.substring(0, selection.end);
-                  if (_isSearching) {
-                    return _getSuggestions(pattern);
-                  }
-                  if (pattern.endsWith('@')) {
-                    _isSearching = true;
-                  }
-                  return null;
-                },
-                itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
-                },
-                onSuggestionSelected: (suggestion) {
-                  _isSearching = false;
-                  int index = _titleController.text.lastIndexOf('@');
-                  String subs = _titleController.text.substring(0, index);
-                  _titleController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
-                  _titleController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: _titleController.text.length));
-                },
-                autoFlipDirection: true,
+                style: TextStyle(fontSize: 22),
               ),
               SizedBox(height: 16),
               _title(Translations.of(context).text('label_media_challenge')),
@@ -473,7 +484,9 @@ class _NewTipScreenState extends State<NewTipScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Text('${category ?? 'Selecciona una categoría'}'),
+                  child: (category == null)
+                      ? Text('Selecciona una categoría')
+                      : Text('${category.name}'),
                 ),
               ),
               SuggestionField(
@@ -483,8 +496,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   focusNode: _descFocus,
                   maxLines: null,
                   autocorrect: true,
-                  maxLength: 2000,
                   keyboardType: TextInputType.multiline,
+                  maxLength: 2000,
                   decoration: InputDecoration(
                     labelText:
                         Translations.of(context).text('hint_description'),
@@ -502,11 +515,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   return null;
                 },
                 itemBuilder: (context, itemData) {
-                  AlgoliaObjectSnapshot result = itemData;
-                  if (result.data['interactions'] == null) {
-                    return _userTile(context, result.objectID, result.data);
-                  }
-                  return Container();
+                  return _userTile(context, itemData);
                 },
                 onSuggestionSelected: (suggestion) {
                   _isSearching = false;
@@ -514,7 +523,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   int index = _descriptionController.text.lastIndexOf('@');
                   String subs = _descriptionController.text.substring(0, index);
                   _descriptionController.text =
-                      '$subs@[${suggestion.objectID}]${suggestion.data['name']} ';
+                      '$subs@[${suggestion.userName}]${suggestion.userName} ';
                   _descriptionController.selection = TextSelection.fromPosition(
                       TextPosition(offset: _descriptionController.text.length));
                   //_descFocus.requestFocus();

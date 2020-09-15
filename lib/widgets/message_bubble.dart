@@ -63,16 +63,19 @@ class MessageBubble extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       if (!isMe) SizedBox(width: 32),
-                      Text(
-                        username,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: isMe
-                              ? Colors.black
-                              : Theme.of(context)
-                                  .accentTextTheme
-                                  .headline1
-                                  .color,
+                      GestureDetector(
+                        onTap: () => _toProfile(context),
+                        child: Text(
+                          username,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isMe
+                                ? Colors.black
+                                : Theme.of(context)
+                                    .accentTextTheme
+                                    .headline1
+                                    .color,
+                          ),
                         ),
                       ),
                       if (isMe) SizedBox(width: 32),
@@ -99,7 +102,8 @@ class MessageBubble extends StatelessWidget {
           child: GestureDetector(
             onTap: () => _toProfile(context),
             child: CircleAvatar(
-              backgroundImage: NetworkImage(userimage),
+              backgroundImage:
+                  userimage == null ? null : NetworkImage(userimage),
             ),
           ),
         )

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
-import '../models/category.dart';
+import '../models/category_model.dart';
+import '../providers/database_provider.dart';
+import '../providers/auth_provider.dart';
 
 class NewContentCategoryScreen extends StatefulWidget {
   static const routeName = '/content-category';
@@ -14,6 +17,8 @@ class NewContentCategoryScreen extends StatefulWidget {
 class _NewContentCategoryScreenState extends State<NewContentCategoryScreen> {
   TextEditingController _controller = new TextEditingController();
   String _filter;
+  bool _isLoading = false;
+  List<CategoryModel> _categories = [];
   final defaultDiacriticsRemovalap = [
     {
       'base': 'A',
@@ -270,12 +275,29 @@ class _NewContentCategoryScreenState extends State<NewContentCategoryScreen> {
     }
   ];
 
-  void _setSelected(value, context) {
+  void _setSelected(context, value) {
     Navigator.of(context).pop(value);
+  }
+
+  void _getCategories() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final mList = await Provider.of<DatabaseProvider>(context, listen: false)
+        .getCategories();
+    if (mList.isEmpty) {
+      await Provider.of<AuthProvider>(context, listen: false).getCatalogs();
+      _getCategories();
+    }
+    setState(() {
+      _isLoading = false;
+      _categories = mList;
+    });
   }
 
   @override
   void initState() {
+    _getCategories();
     super.initState();
     _controller.addListener(() {
       setState(() {
@@ -307,54 +329,57 @@ class _NewContentCategoryScreenState extends State<NewContentCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categoryList = Category.categoriesList;
     return Scaffold(
       appBar: AppBar(
         title: Text('Categoría'),
       ),
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                  icon: Icon(Icons.search),
-                  hintText: Translations.of(context).text('hint_search')),
-              controller: _controller,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: TextField(
+                    decoration: InputDecoration(
+                        icon: Icon(Icons.search),
+                        hintText: Translations.of(context).text('hint_search')),
+                    controller: _controller,
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: _categories.length,
+                      itemBuilder: (ctx, i) {
+                        return _filter == null || _filter == ""
+                            ? Column(
+                                children: <Widget>[
+                                  ListTile(
+                                    onTap: () =>
+                                        _setSelected(context, _categories[i]),
+                                    title: Text(_categories[i].name),
+                                  ),
+                                  Divider()
+                                ],
+                              )
+                            : removeDiacritics(
+                                        _categories[i].name.toLowerCase())
+                                    .contains(
+                                        removeDiacritics(_filter.toLowerCase()))
+                                ? Column(
+                                    children: <Widget>[
+                                      ListTile(
+                                        onTap: () => _setSelected(
+                                            context, _categories[i]),
+                                        title: Text(_categories[i].name),
+                                      ),
+                                      Divider(),
+                                    ],
+                                  )
+                                : Container();
+                      }),
+                )
+              ],
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-                itemCount: categoryList.length,
-                itemBuilder: (ctx, i) {
-                  return _filter == null || _filter == ""
-                      ? Column(
-                          children: <Widget>[
-                            ListTile(
-                              onTap: () =>
-                                  _setSelected(categoryList[i].name, context),
-                              title: Text(categoryList[i].name),
-                            ),
-                            Divider()
-                          ],
-                        )
-                      : removeDiacritics(categoryList[i].name.toLowerCase())
-                              .contains(removeDiacritics(_filter.toLowerCase()))
-                          ? Column(
-                              children: <Widget>[
-                                ListTile(
-                                  onTap: () => _setSelected(
-                                      categoryList[i].name, context),
-                                  title: Text(categoryList[i].name),
-                                ),
-                                Divider(),
-                              ],
-                            )
-                          : Container();
-                }),
-          )
-        ],
-      ),
     );
   }
 }

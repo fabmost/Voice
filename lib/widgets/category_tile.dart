@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/category_model.dart';
+
 class CategoryTile extends StatelessWidget {
-  final String _name;
+  final CategoryModel _name;
   final bool _isSelected;
   final Function _action;
 
@@ -22,7 +24,7 @@ class CategoryTile extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              _name,
+              _name.name,
               style: TextStyle(
                 fontSize: 18,
                 color: _isSelected ? Colors.white : Colors.black,

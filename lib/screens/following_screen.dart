@@ -1,12 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import 'auth_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'view_profile_screen.dart';
 import '../translations.dart';
+import '../providers/user_provider.dart';
+import '../models/user_model.dart';
 import '../widgets/influencer_badge.dart';
+import '../widgets/follow_button.dart';
+
+enum LoadMoreStatus { LOADING, STABLE }
 
 class FollowingScreen extends StatefulWidget {
   final userId;
@@ -19,14 +23,20 @@ class FollowingScreen extends StatefulWidget {
 
 class _FollowingScreenState extends State<FollowingScreen> {
   TextEditingController _controller = new TextEditingController();
-  List documents;
+  List<UserModel> _userList = [];
+  List<UserModel> _searchList = [];
   bool _isLoading = false;
-  String _filter;
-  String userId;
+  bool _hasMore = true;
+  bool _isSearching = false;
+  bool _finishedSearching = false;
+  int _currentPageNumber = 0;
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  final ScrollController scrollController = new ScrollController();
+  String _currentUser;
+  Timer _debounce;
 
   void _toProfile(userId) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.uid != userId) {
+    if (_currentUser != userId) {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: userId)
           .then((value) {
@@ -37,141 +47,123 @@ class _FollowingScreenState extends State<FollowingScreen> {
     }
   }
 
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (_controller.text.length > 2)
+        _searchUsers();
+      else {
+        setState(() {
+          _isSearching = false;
+        });
+        loadMoreStatus = LoadMoreStatus.STABLE;
+      }
+    });
+  }
+
+  void _searchUsers() async {
+    setState(() {
+      _searchList.clear();
+      _isSearching = true;
+      _finishedSearching = false;
+    });
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    final users = await Provider.of<UserProvider>(context, listen: false)
+        .getFollowing(widget.userId, 0, _controller.text);
+    setState(() {
+      _searchList = users;
+      _finishedSearching = true;
+    });
+  }
+
   void _getData() async {
     setState(() {
       _isLoading = true;
     });
-    final user = await FirebaseAuth.instance.currentUser();
-    userId = user.uid;
-    QuerySnapshot usersSnap = await Firestore.instance
-        .collection('users')
-        .where('followers', arrayContains: widget.userId)
-        .orderBy('user_name')
-        .getDocuments();
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    final users = await Provider.of<UserProvider>(context, listen: false)
+        .getFollowing(widget.userId, _currentPageNumber);
+    _currentUser = Provider.of<UserProvider>(context, listen: false).getUser;
     setState(() {
-      documents = usersSnap.documents;
+      if (users.isEmpty) {
+        _hasMore = false;
+      }
+      _userList = users;
       _isLoading = false;
     });
+    loadMoreStatus = LoadMoreStatus.STABLE;
   }
 
-  void _follow(context, userId, myId, isFollowing) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    if (user.isAnonymous) {
-      _anonymousAlert(context);
-      return;
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      var triggerFetchMoreSize =
+          0.7 * scrollController.position.maxScrollExtent;
+      if (scrollController.position.pixels > triggerFetchMoreSize) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<UserProvider>(context, listen: false)
+              .getFollowing(widget.userId, _currentPageNumber)
+              .then((newUsers) {
+            setState(() {
+              if (newUsers.isEmpty) {
+                _hasMore = false;
+              } else {
+                _userList.addAll(newUsers);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
     }
-
-    WriteBatch batch = Firestore.instance.batch();
-    if (!isFollowing) {
-      FirebaseMessaging().subscribeToTopic(userId);
-      batch.updateData(
-        Firestore.instance.collection('users').document(userId),
-        {
-          'followers': FieldValue.arrayUnion([myId]),
-          'followers_count': FieldValue.increment(1)
-        },
-      );
-      batch.updateData(
-        Firestore.instance.collection('users').document(myId),
-        {
-          'following': FieldValue.arrayUnion([userId])
-        },
-      );
-    } else {
-      FirebaseMessaging().unsubscribeFromTopic(userId);
-      batch.updateData(
-        Firestore.instance.collection('users').document(userId),
-        {
-          'followers': FieldValue.arrayRemove([myId]),
-          'followers_count': FieldValue.increment(-1)
-        },
-      );
-      batch.updateData(
-        Firestore.instance.collection('users').document(myId),
-        {
-          'following': FieldValue.arrayRemove([userId])
-        },
-      );
-    }
-    await batch.commit();
-    _getData();
-  }
-
-  void _anonymousAlert(context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(Translations.of(context).text('dialog_need_account')),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            textColor: Colors.red,
-            child: Text(Translations.of(context).text('button_cancel')),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(AuthScreen.routeName);
-            },
-            textColor: Theme.of(context).accentColor,
-            child: Text(Translations.of(context).text('button_create_account')),
-          ),
-        ],
-      ),
-    );
+    return true;
   }
 
   @override
   void initState() {
     super.initState();
     _getData();
-    _controller.addListener(() {
-      setState(() {
-        _filter = _controller.text;
-      });
-    });
+    _controller.addListener(_onSearchChanged);
   }
 
-  Widget _userTile(doc) {
+  @override
+  void dispose() {
+    scrollController.dispose();
+    _controller.removeListener(_onSearchChanged);
+    _controller.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Widget _userTile(UserModel user) {
     return ListTile(
-      onTap: () => _toProfile(doc.documentID),
+      onTap: () => _toProfile(user.userName),
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(doc['image'] ?? ''),
+        backgroundImage: user.icon == null ? null : NetworkImage(user.icon),
       ),
       title: Row(
         children: <Widget>[
           Flexible(
             child: Text(
-              '${doc['name']} ${doc['last_name']}',
+              '${user.name} ${user.lastName}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           SizedBox(width: 8),
-          InfluencerBadge(doc['influencer'] ?? '', 16),
+          InfluencerBadge(user.userName, user.certificate, 16),
         ],
       ),
-      subtitle: Text('@${doc['user_name']}'),
-      trailing: _followButton(doc.documentID, doc['followers']),
-    );
-  }
-
-  Widget _followButton(profileId, followers) {
-    if (profileId == userId) {
-      return Text('');
-    }
-    if (followers == null || !followers.contains(userId)) {
-      return RaisedButton(
-        onPressed: () => _follow(context, profileId, userId, false),
-        textColor: Colors.white,
-        child: Text('Seguir'),
-      );
-    }
-    return OutlineButton(
-      onPressed: () => _follow(context, profileId, userId, true),
-      child: Text('Siguiendo'),
+      subtitle: Text('@${user.userName}'),
+      trailing: (_currentUser != user.userName)
+          ? FollowButton(
+              userName: user.userName,
+              isFollowing: user.isFollowing,
+            )
+          : SizedBox(),
     );
   }
 
@@ -183,7 +175,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : (documents.isEmpty)
+          : (_userList.isEmpty)
               ? Center(
                   child: Text(Translations.of(context).text('empty_following')),
                 )
@@ -200,24 +192,43 @@ class _FollowingScreenState extends State<FollowingScreen> {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: documents.length,
-                        itemBuilder: (ctx, i) {
-                          final doc = documents[i];
+                      child: NotificationListener(
+                        onNotification: onNotification,
+                        child: ListView.separated(
+                          controller: scrollController,
+                          separatorBuilder: (context, index) => Divider(),
+                          itemCount: _isSearching
+                              ? _searchList.isEmpty ? 1 : _searchList.length
+                              : _hasMore
+                                  ? _userList.length + 1
+                                  : _userList.length,
+                          itemBuilder: (ctx, i) {
+                            if (_isSearching) {
+                              if (i == _searchList.length)
+                                return Container(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  alignment: Alignment.center,
+                                  child: _finishedSearching
+                                      ? Text('Sin resultados')
+                                      : CircularProgressIndicator(),
+                                );
+                              final doc = _searchList[i];
 
-                          return _filter == null || _filter == ""
-                              ? Column(
-                                  children: <Widget>[
-                                    _userTile(doc),
-                                    Divider(),
-                                  ],
-                                )
-                              : doc['user_name']
-                                      .toLowerCase()
-                                      .contains(_filter.toLowerCase())
-                                  ? _userTile(doc)
-                                  : Container();
-                        },
+                              return _userTile(doc);
+                            }
+                            if (i == _userList.length)
+                              return Container(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                alignment: Alignment.center,
+                                child: CircularProgressIndicator(),
+                              );
+                            final doc = _userList[i];
+
+                            return _userTile(doc);
+                          },
+                        ),
                       ),
                     ),
                   ],
