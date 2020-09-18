@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'title_content.dart';
 import 'description.dart';
+import 'challenge_meter.dart';
+import 'comment_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import 'poll_video.dart';
@@ -15,11 +16,11 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../models/resource_model.dart';
-import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../providers/user_provider.dart';
 
 class ChallengeTile extends StatelessWidget with ShareContent {
+  final String reference;
   final String id;
   final String userName;
   final String userImage;
@@ -39,6 +40,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
   final certificate;
 
   ChallengeTile({
+    @required this.reference,
     @required this.id,
     @required this.title,
     @required this.description,
@@ -67,122 +69,18 @@ class ChallengeTile extends StatelessWidget with ShareContent {
     }
   }
 
-  void _toComments(context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CommentsScreen(
-          id: id,
-          type: 'C',
-        ),
-      ),
-    );
-  }
-
   void _share() {
     shareChallenge(id, title);
   }
 
   Widget _challengeGoal(context) {
-    String goalString;
-    int amount;
-    switch (parameter) {
-      case 'L':
-        goalString = 'Likes';
-        amount = likes;
-        /*
-        if (likes >= goal) {
-          goalReached = true;
-        }*/
-        break;
-      case 'C':
-        goalString = 'Comentarios';
-        amount = comments;
-        /*
-        if (comments >= goal) {
-          goalReached = true;
-        }*/
-        break;
-      case 'R':
-        goalString = 'Regalups';
-        amount = regalups;
-        /*
-        if (reposts >= goal) {
-          goalReached = true;
-        }*/
-        break;
-    }
-    var totalPercentage = (amount == 0) ? 0.0 : amount / goal;
-    if (totalPercentage > 1) totalPercentage = 1;
-    final format = NumberFormat('###.##');
+    if (resources != null && resources.isNotEmpty) {
+      ResourceModel resource = resources[0];
 
-    ResourceModel resource = resources[0];
-    return Column(
-      children: <Widget>[
-        if (resource.type == 'V') PollVideo(resource.url, null),
-        if (resource.type == 'I') PollImages([resource.url], ''),
-        Container(
-          height: 42,
-          margin: EdgeInsets.all(16),
-          child: Stack(
-            children: <Widget>[
-              FractionallySizedBox(
-                widthFactor: totalPercentage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xAAA4175D),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      topRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                      bottomRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        goalString,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(),
-                      ),
-                      Text(
-                        '${format.format(totalPercentage * 100)}%',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+      if (resource.type == 'V') return PollVideo(resource.url, null);
+      if (resource.type == 'I') return PollImages([resource.url], reference);
+    }
+    return Container();
   }
 
   @override
@@ -267,8 +165,9 @@ class ChallengeTile extends StatelessWidget with ShareContent {
             SizedBox(height: 16),
             TitleContent(title),
             SizedBox(height: 16),
-            if (goal > 0) _challengeGoal(context),
-            if (goal > 0) SizedBox(height: 16),
+            _challengeGoal(context),
+            if (goal > 0) ChallengeMeter(id),
+            SizedBox(height: 16),
             if (description != null && description.trim().isNotEmpty)
               Description(description),
             if (description != null && description.trim().isNotEmpty)
@@ -278,10 +177,9 @@ class ChallengeTile extends StatelessWidget with ShareContent {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: () => _toComments(context),
-                    icon: Icon(GalupFont.message),
-                    label: Text(comments == 0 ? '' : '$comments'),
+                  CommentContent(
+                    id: id,
+                    type: 'C',
                   ),
                   LikeContent(
                     id: id,

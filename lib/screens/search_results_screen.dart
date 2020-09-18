@@ -33,7 +33,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
-      reference: 'home',
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -56,6 +56,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -77,6 +78,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   Widget _causeWidget(content) {
     return CauseTile(
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -100,6 +102,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   Widget _tipWidget(TipModel content) {
     return TipTile(
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

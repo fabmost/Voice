@@ -25,11 +25,21 @@ class ContentProvider with ChangeNotifier, TextMixin {
   List<ContentModel> _causesContent = [];
   List<UserModel> _usersList = [];
   List<NotificationModel> _notificationsList = [];
+  Map<String, PollModel> _polls = {};
+  Map<String, ChallengeModel> _challenges = {};
+  Map<String, TipModel> _tips = {};
+  Map<String, CauseModel> _causes = {};
+  Map<String, CommentModel> _comments = {};
 
   List<ContentModel> get getHome => [..._homeContent];
   List<ContentModel> get getCauses => [..._causesContent];
   List<UserModel> get getUsers => [..._usersList];
   List<NotificationModel> get getNotificationsList => [..._notificationsList];
+  Map<String, PollModel> get getPolls => {..._polls};
+  Map<String, ChallengeModel> get getChallenges => {..._challenges};
+  Map<String, TipModel> get getTips => {..._tips};
+  Map<String, CauseModel> get getCausesList => {..._causes};
+  Map<String, CommentModel> get getCommentsMap => {..._comments};
 
   Future<bool> getBaseTimeline(int page, String type, [tries = 1]) async {
     var url = '${API.baseURL}/timeLine/';
@@ -52,7 +62,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       },
       body: body,
     );
-    
+
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
       return false;
@@ -73,19 +83,27 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-            _homeContent.add(PollModel.fromJson(content));
+            PollModel poll = PollModel.fromJson(content);
+            _homeContent.add(poll);
+            _polls[poll.id] = poll;
             break;
           case 'challenge':
           case 'regalup_c':
-            _homeContent.add(ChallengeModel.fromJson(content));
+            ChallengeModel challenge = ChallengeModel.fromJson(content);
+            _homeContent.add(challenge);
+            _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
           case 'regalup_ti':
-            _homeContent.add(TipModel.fromJson(content));
+            TipModel tip = TipModel.fromJson(content);
+            _homeContent.add(tip);
+            _tips[tip.id] = tip;
             break;
           case 'causes':
           case 'regalup_ca':
-            _homeContent.add(CauseModel.fromJson(content));
+            CauseModel cause = CauseModel.fromJson(content);
+            _homeContent.add(cause);
+            _causes[cause.id] = cause;
             break;
         }
       });
@@ -185,19 +203,27 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-            contentList.add(PollModel.fromJson(content));
+            PollModel poll = PollModel.fromJson(content);
+            contentList.add(poll);
+            _polls[poll.id] = poll;
             break;
           case 'challenge':
           case 'regalup_c':
-            contentList.add(ChallengeModel.fromJson(content));
+            ChallengeModel challenge = ChallengeModel.fromJson(content);
+            contentList.add(challenge);
+            _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
           case 'regalup_ti':
-            contentList.add(TipModel.fromJson(content));
+            TipModel tip = TipModel.fromJson(content);
+            contentList.add(tip);
+            _tips[tip.id] = tip;
             break;
           case 'causes':
           case 'regalup_ca':
-            contentList.add(CauseModel.fromJson(content));
+            CauseModel cause = CauseModel.fromJson(content);
+            contentList.add(cause);
+            _causes[cause.id] = cause;
             break;
         }
       });
@@ -237,16 +263,24 @@ class ContentProvider with ChangeNotifier, TextMixin {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
-            contentList.add(PollModel.fromJson(content));
+            PollModel poll = PollModel.fromJson(content);
+            contentList.add(poll);
+            _polls[poll.id] = poll;
             break;
           case 'challenge':
-            contentList.add(ChallengeModel.fromJson(content));
+            ChallengeModel challenge = ChallengeModel.fromJson(content);
+            contentList.add(challenge);
+            _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
-            contentList.add(TipModel.fromJson(content));
+            TipModel tip = TipModel.fromJson(content);
+            contentList.add(tip);
+            _tips[tip.id] = tip;
             break;
           case 'causes':
-            contentList.add(CauseModel.fromJson(content));
+            CauseModel cause = CauseModel.fromJson(content);
+            contentList.add(cause);
+            _causes[cause.id] = cause;
             break;
         }
       });
@@ -286,16 +320,24 @@ class ContentProvider with ChangeNotifier, TextMixin {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
-            contentList.add(PollModel.fromJson(content));
+            PollModel poll = PollModel.fromJson(content);
+            contentList.add(poll);
+            _polls[poll.id] = poll;
             break;
           case 'challenge':
-            contentList.add(ChallengeModel.fromJson(content));
+            ChallengeModel challenge = ChallengeModel.fromJson(content);
+            contentList.add(challenge);
+            _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
-            contentList.add(TipModel.fromJson(content));
+            TipModel tip = TipModel.fromJson(content);
+            contentList.add(tip);
+            _tips[tip.id] = tip;
             break;
           case 'causes':
-            contentList.add(CauseModel.fromJson(content));
+            CauseModel cause = CauseModel.fromJson(content);
+            contentList.add(cause);
+            _causes[cause.id] = cause;
             break;
         }
       });
@@ -373,15 +415,21 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-            contentList.add(PollModel.fromJson(content));
+            PollModel poll = PollModel.fromJson(content);
+            contentList.add(poll);
+            _polls[poll.id] = poll;
             break;
           case 'challenge':
           case 'regalup_c':
-            contentList.add(ChallengeModel.fromJson(content));
+            ChallengeModel challenge = ChallengeModel.fromJson(content);
+            contentList.add(challenge);
+            _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
           case 'regalup_ti':
-            contentList.add(TipModel.fromJson(content));
+            TipModel tip = TipModel.fromJson(content);
+            contentList.add(tip);
+            _tips[tip.id] = tip;
             break;
         }
       });
@@ -421,16 +469,24 @@ class ContentProvider with ChangeNotifier, TextMixin {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
-            contentList.add(PollModel.fromJson(content));
+            PollModel poll = PollModel.fromJson(content);
+            contentList.add(poll);
+            _polls[poll.id] = poll;
             break;
           case 'challenge':
-            contentList.add(ChallengeModel.fromJson(content));
+            ChallengeModel challenge = ChallengeModel.fromJson(content);
+            contentList.add(challenge);
+            _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
-            contentList.add(TipModel.fromJson(content));
+            TipModel tip = TipModel.fromJson(content);
+            contentList.add(tip);
+            _tips[tip.id] = tip;
             break;
           case 'causes':
-            contentList.add(CauseModel.fromJson(content));
+            CauseModel cause = CauseModel.fromJson(content);
+            contentList.add(cause);
+            _causes[cause.id] = cause;
             break;
         }
       });
@@ -467,13 +523,21 @@ class ContentProvider with ChangeNotifier, TextMixin {
       if (dataMap['data']['id'] == 'null') return null;
       switch (type) {
         case 'P':
-          return PollModel.fromJson(dataMap['data']);
+          PollModel poll = PollModel.fromJson(dataMap['data']);
+          _polls[poll.id] = poll;
+          return poll;
         case 'C':
-          return ChallengeModel.fromJson(dataMap['data']);
+          ChallengeModel challenge = ChallengeModel.fromJson(dataMap['data']);
+          _challenges[challenge.id] = challenge;
+          return challenge;
         case 'CA':
-          return CauseModel.fromJson(dataMap['data']);
+          CauseModel cause = CauseModel.fromJson(dataMap['data']);
+          _causes[cause.id] = cause;
+          return cause;
         case 'T':
-          return TipModel.fromJson(dataMap['data']);
+          TipModel tip = TipModel.fromJson(dataMap['data']);
+          _tips[tip.id] = tip;
+          return tip;
       }
     }
     if (dataMap['alert']['action'] == 4) {
@@ -504,7 +568,10 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      return CommentModel.fromJson(dataMap['comments']);
+      CommentModel comment = CommentModel.fromJson(dataMap['comments']);
+      _comments[comment.id] = comment;
+      notifyListeners();
+      return comment;
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
@@ -534,7 +601,14 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      return CommentModel.listFromJson(dataMap['comments']);
+      List<CommentModel> commentList = [];
+      (dataMap['comments'] as List).forEach((element) {
+        CommentModel comment = CommentModel.fromJson(element);
+        commentList.add(comment);
+        _comments[comment.id] = comment;
+      });
+      notifyListeners();
+      return commentList;
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
@@ -568,7 +642,14 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      return CommentModel.listFromJson(dataMap['comments']);
+      List<CommentModel> commentList = [];
+      (dataMap['comments'] as List).forEach((element) {
+        CommentModel comment = CommentModel.fromJson(element);
+        commentList.add(comment);
+        _comments[comment.id] = comment;
+      });
+      notifyListeners();
+      return commentList;
     }
     if (dataMap['alert']['action'] == 4) {
       await _renewToken();
@@ -604,105 +685,105 @@ class ContentProvider with ChangeNotifier, TextMixin {
       _saveToken(dataMap['session']['token']);
       bool hasLiked = dataMap['is_likes'];
 
-      final index = _homeContent.indexWhere((element) => element.id == id);
-      if (index != -1) {
-        ContentModel content;
-        switch (type) {
-          case 'P':
-            PollModel oldPoll = _homeContent[index];
-            content = PollModel(
-              id: oldPoll.id,
-              type: oldPoll.type,
-              user: oldPoll.user,
-              title: oldPoll.title,
-              createdAt: oldPoll.createdAt,
-              votes: oldPoll.votes,
-              likes: hasLiked ? oldPoll.likes + 1 : oldPoll.likes - 1,
-              regalups: oldPoll.regalups,
-              comments: oldPoll.comments,
-              hasVoted: oldPoll.hasVoted,
-              hasLiked: hasLiked,
-              hasRegalup: oldPoll.hasRegalup,
-              hasSaved: oldPoll.hasSaved,
-              answers: oldPoll.answers,
-              resources: oldPoll.resources,
-              body: oldPoll.body,
-              certificate: oldPoll.certificate,
-              creator: oldPoll.creator,
-              description: oldPoll.description,
-            );
-            break;
-          case 'C':
-            ChallengeModel oldChallenge = _homeContent[index];
-            content = ChallengeModel(
-              id: oldChallenge.id,
-              type: oldChallenge.type,
-              user: oldChallenge.user,
-              title: oldChallenge.title,
-              createdAt: oldChallenge.createdAt,
-              likes: hasLiked ? oldChallenge.likes + 1 : oldChallenge.likes - 1,
-              regalups: oldChallenge.regalups,
-              comments: oldChallenge.comments,
-              hasLiked: hasLiked,
-              hasRegalup: oldChallenge.hasRegalup,
-              hasSaved: oldChallenge.hasSaved,
-              resources: oldChallenge.resources,
-              certificate: oldChallenge.certificate,
-              creator: oldChallenge.creator,
-              description: oldChallenge.description,
-              goal: oldChallenge.goal,
-              parameter: oldChallenge.parameter,
-            );
-            break;
-          case 'TIP':
-            TipModel oldTip = _homeContent[index];
-            content = TipModel(
-              id: oldTip.id,
-              type: oldTip.type,
-              user: oldTip.user,
-              title: oldTip.title,
-              createdAt: oldTip.createdAt,
-              likes: hasLiked ? oldTip.likes + 1 : oldTip.likes - 1,
-              regalups: oldTip.regalups,
-              comments: oldTip.comments,
-              hasLiked: hasLiked,
-              hasRegalup: oldTip.hasRegalup,
-              hasSaved: oldTip.hasSaved,
-              resources: oldTip.resources,
-              certificate: oldTip.certificate,
-              creator: oldTip.creator,
-              description: oldTip.description,
-              body: oldTip.body,
-              hasRated: oldTip.hasRated,
-              total: oldTip.total,
-            );
-            break;
-          case 'CA':
-            CauseModel oldCause = _homeContent[index];
-            content = CauseModel(
-                id: oldCause.id,
-                type: oldCause.type,
-                account: oldCause.account,
-                by: oldCause.by,
-                certificate: oldCause.certificate,
-                createdAt: oldCause.createdAt,
-                creator: oldCause.creator,
-                description: oldCause.description,
-                goal: oldCause.goal,
-                hasLiked: hasLiked,
-                hasRegalup: oldCause.hasRegalup,
-                hasSaved: oldCause.hasSaved,
-                info: oldCause.info,
-                likes: hasLiked ? oldCause.likes + 1 : oldCause.likes - 1,
-                phone: oldCause.phone,
-                regalups: oldCause.regalups,
-                resources: oldCause.resources,
-                title: oldCause.title,
-                user: oldCause.user,
-                web: oldCause.web);
-            break;
-        }
-        _homeContent[index] = content;
+      switch (type) {
+        case 'P':
+          PollModel oldPoll = _polls[id];
+          final content = PollModel(
+            id: oldPoll.id,
+            type: oldPoll.type,
+            user: oldPoll.user,
+            title: oldPoll.title,
+            createdAt: oldPoll.createdAt,
+            votes: oldPoll.votes,
+            likes: hasLiked ? oldPoll.likes + 1 : oldPoll.likes - 1,
+            regalups: oldPoll.regalups,
+            comments: oldPoll.comments,
+            hasVoted: oldPoll.hasVoted,
+            hasLiked: hasLiked,
+            hasRegalup: oldPoll.hasRegalup,
+            hasSaved: oldPoll.hasSaved,
+            answers: oldPoll.answers,
+            resources: oldPoll.resources,
+            body: oldPoll.body,
+            certificate: oldPoll.certificate,
+            creator: oldPoll.creator,
+            description: oldPoll.description,
+          );
+          _polls[content.id] = content;
+          break;
+        case 'C':
+          ChallengeModel oldChallenge = _challenges[id];
+          final content = ChallengeModel(
+            id: oldChallenge.id,
+            type: oldChallenge.type,
+            user: oldChallenge.user,
+            title: oldChallenge.title,
+            createdAt: oldChallenge.createdAt,
+            likes: hasLiked ? oldChallenge.likes + 1 : oldChallenge.likes - 1,
+            regalups: oldChallenge.regalups,
+            comments: oldChallenge.comments,
+            hasLiked: hasLiked,
+            hasRegalup: oldChallenge.hasRegalup,
+            hasSaved: oldChallenge.hasSaved,
+            resources: oldChallenge.resources,
+            certificate: oldChallenge.certificate,
+            creator: oldChallenge.creator,
+            description: oldChallenge.description,
+            goal: oldChallenge.goal,
+            parameter: oldChallenge.parameter,
+          );
+          _challenges[content.id] = content;
+          break;
+        case 'TIP':
+          TipModel oldTip = _tips[id];
+          final content = TipModel(
+            id: oldTip.id,
+            type: oldTip.type,
+            user: oldTip.user,
+            title: oldTip.title,
+            createdAt: oldTip.createdAt,
+            likes: hasLiked ? oldTip.likes + 1 : oldTip.likes - 1,
+            regalups: oldTip.regalups,
+            comments: oldTip.comments,
+            hasLiked: hasLiked,
+            hasRegalup: oldTip.hasRegalup,
+            hasSaved: oldTip.hasSaved,
+            resources: oldTip.resources,
+            certificate: oldTip.certificate,
+            creator: oldTip.creator,
+            description: oldTip.description,
+            body: oldTip.body,
+            hasRated: oldTip.hasRated,
+            total: oldTip.total,
+          );
+          _tips[content.id] = content;
+          break;
+        case 'CA':
+          CauseModel oldCause = _causes[id];
+          final content = CauseModel(
+            id: oldCause.id,
+            type: oldCause.type,
+            account: oldCause.account,
+            by: oldCause.by,
+            certificate: oldCause.certificate,
+            createdAt: oldCause.createdAt,
+            creator: oldCause.creator,
+            description: oldCause.description,
+            goal: oldCause.goal,
+            hasLiked: hasLiked,
+            hasRegalup: oldCause.hasRegalup,
+            hasSaved: oldCause.hasSaved,
+            info: oldCause.info,
+            likes: hasLiked ? oldCause.likes + 1 : oldCause.likes - 1,
+            phone: oldCause.phone,
+            regalups: oldCause.regalups,
+            resources: oldCause.resources,
+            title: oldCause.title,
+            user: oldCause.user,
+            web: oldCause.web,
+          );
+          _causes[content.id] = content;
+          break;
       }
       if (type == 'CA') {
         final index2 = _causesContent.indexWhere((element) => element.id == id);
@@ -743,7 +824,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return null;
   }
 
-  Future<Map> likeComment(id, like) async {
+  Future<void> likeComment(id, like) async {
     var url = '${API.baseURL}/registerLike/comments/$id';
     final token = await _getToken();
     Map parameters = {
@@ -764,16 +845,45 @@ class ContentProvider with ChangeNotifier, TextMixin {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return {};
+      return;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
-      return {
-        'like': dataMap['is_likes'],
-        'dislike': dataMap['is_dislike'],
-      };
+      bool isLike = dataMap['is_likes'];
+      bool isDislike = dataMap['is_dislike'];
+
+      CommentModel comment = _comments[id];
+      int newLikes = comment.likes;
+      int newDislikes = comment.dislikes;
+      if (isLike) {
+        newLikes++;
+      } else {
+        if (comment.hasLike) newLikes--;
+      }
+      if (isDislike) {
+        newDislikes++;
+      } else {
+        if (comment.hasDislike) newDislikes--;
+      }
+      final newComment = CommentModel(
+        id: comment.id,
+        user: comment.user,
+        certificate: comment.certificate,
+        createdAt: comment.createdAt,
+        body: comment.body,
+        comments: comment.comments,
+        parentId: comment.parentId,
+        parentType: comment.parentType,
+        hasLike: isLike,
+        hasDislike: isDislike,
+        likes: newLikes,
+        dislikes: newDislikes,
+      );
+      _comments[newComment.id] = newComment;
+      notifyListeners();
+      await _saveToken(dataMap['session']['token']);
+      return;
     }
-    return {};
+    return;
   }
 
   Future<void> votePoll(id, answer) async {
@@ -800,47 +910,42 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return;
     }
     if (dataMap['status'] == 'success') {
-      final index = _homeContent.indexWhere((element) => (element.id == id &&
-          (element.type == 'poll' || element.type == 'regalup_p')));
-      if (index != -1) {
-        PollModel oldPoll = _homeContent[index];
-        final answers = oldPoll.answers;
-        final indexAnswer =
-            answers.indexWhere((element) => element.id == answer);
-        if (indexAnswer != -1) {
-          final oldAnswer = answers[indexAnswer];
-          final newAnswer = PollAnswerModel(
-            id: oldAnswer.id,
-            answer: oldAnswer.answer,
-            count: oldAnswer.count + 1,
-            isVote: true,
-            url: oldAnswer.url,
-          );
-          answers[indexAnswer] = newAnswer;
-          final content = PollModel(
-            id: oldPoll.id,
-            type: oldPoll.type,
-            user: oldPoll.user,
-            title: oldPoll.title,
-            createdAt: oldPoll.createdAt,
-            votes: oldPoll.votes + 1,
-            likes: oldPoll.likes,
-            regalups: oldPoll.regalups,
-            comments: oldPoll.comments,
-            hasVoted: true,
-            hasLiked: oldPoll.hasLiked,
-            hasRegalup: oldPoll.hasRegalup,
-            hasSaved: oldPoll.hasSaved,
-            answers: answers,
-            resources: oldPoll.resources,
-            body: oldPoll.body,
-            certificate: oldPoll.certificate,
-            creator: oldPoll.creator,
-            description: oldPoll.description,
-          );
-          _homeContent[index] = content;
-          notifyListeners();
-        }
+      PollModel oldPoll = _polls[id];
+      final answers = oldPoll.answers;
+      final indexAnswer = answers.indexWhere((element) => element.id == answer);
+      if (indexAnswer != -1) {
+        final oldAnswer = answers[indexAnswer];
+        final newAnswer = PollAnswerModel(
+          id: oldAnswer.id,
+          answer: oldAnswer.answer,
+          count: oldAnswer.count + 1,
+          isVote: true,
+          url: oldAnswer.url,
+        );
+        answers[indexAnswer] = newAnswer;
+        final content = PollModel(
+          id: oldPoll.id,
+          type: oldPoll.type,
+          user: oldPoll.user,
+          title: oldPoll.title,
+          createdAt: oldPoll.createdAt,
+          votes: oldPoll.votes + 1,
+          likes: oldPoll.likes,
+          regalups: oldPoll.regalups,
+          comments: oldPoll.comments,
+          hasVoted: true,
+          hasLiked: oldPoll.hasLiked,
+          hasRegalup: oldPoll.hasRegalup,
+          hasSaved: oldPoll.hasSaved,
+          answers: answers,
+          resources: oldPoll.resources,
+          body: oldPoll.body,
+          certificate: oldPoll.certificate,
+          creator: oldPoll.creator,
+          description: oldPoll.description,
+        );
+        _polls[content.id] = content;
+        notifyListeners();
       }
       await _saveToken(dataMap['session']['token']);
       return;
@@ -871,33 +976,29 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return 0;
     }
     if (dataMap['success'] == 'success') {
-      final index = _homeContent.indexWhere((element) => (element.id == id &&
-          (element.type == 'Tips' || element.type == 'regalup_ti')));
-      if (index != -1) {
-        TipModel oldTip = _homeContent[index];
-        final content = TipModel(
-          id: oldTip.id,
-          type: oldTip.type,
-          user: oldTip.user,
-          title: oldTip.title,
-          createdAt: oldTip.createdAt,
-          likes: oldTip.likes,
-          regalups: oldTip.regalups,
-          comments: oldTip.comments,
-          hasLiked: oldTip.hasLiked,
-          hasRegalup: oldTip.hasRegalup,
-          hasSaved: oldTip.hasSaved,
-          resources: oldTip.resources,
-          body: oldTip.body,
-          certificate: oldTip.certificate,
-          creator: oldTip.creator,
-          description: oldTip.description,
-          hasRated: true,
-          total: (dataMap['total'] * 1.0),
-        );
-        _homeContent[index] = content;
-        notifyListeners();
-      }
+      TipModel oldTip = _tips[id];
+      final content = TipModel(
+        id: oldTip.id,
+        type: oldTip.type,
+        user: oldTip.user,
+        title: oldTip.title,
+        createdAt: oldTip.createdAt,
+        likes: oldTip.likes,
+        regalups: oldTip.regalups,
+        comments: oldTip.comments,
+        hasLiked: oldTip.hasLiked,
+        hasRegalup: oldTip.hasRegalup,
+        hasSaved: oldTip.hasSaved,
+        resources: oldTip.resources,
+        body: oldTip.body,
+        certificate: oldTip.certificate,
+        creator: oldTip.creator,
+        description: oldTip.description,
+        hasRated: true,
+        total: (dataMap['total'] * 1.0),
+      );
+      _tips[content.id] = content;
+      notifyListeners();
       await _saveToken(dataMap['session']['token']);
       return (dataMap['total'] * 1.0);
     }
@@ -1104,83 +1205,81 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      final index = _homeContent.indexWhere((element) => element.id == id);
-      if (index != -1) {
-        ContentModel content;
-        switch (type) {
-          case 'P':
-            PollModel oldPoll = _homeContent[index];
-            content = PollModel(
-              id: oldPoll.id,
-              type: oldPoll.type,
-              user: oldPoll.user,
-              title: oldPoll.title,
-              createdAt: oldPoll.createdAt,
-              votes: oldPoll.votes,
-              likes: oldPoll.likes,
-              regalups: oldPoll.regalups,
-              comments: oldPoll.comments + 1,
-              hasVoted: oldPoll.hasVoted,
-              hasLiked: oldPoll.hasLiked,
-              hasRegalup: oldPoll.hasRegalup,
-              hasSaved: oldPoll.hasSaved,
-              answers: oldPoll.answers,
-              resources: oldPoll.resources,
-              body: oldPoll.body,
-              certificate: oldPoll.certificate,
-              creator: oldPoll.creator,
-              description: oldPoll.description,
-            );
-            break;
-          case 'C':
-            ChallengeModel oldChallenge = _homeContent[index];
-            content = ChallengeModel(
-              id: oldChallenge.id,
-              type: oldChallenge.type,
-              user: oldChallenge.user,
-              title: oldChallenge.title,
-              createdAt: oldChallenge.createdAt,
-              likes: oldChallenge.likes,
-              regalups: oldChallenge.regalups,
-              comments: oldChallenge.comments + 1,
-              hasLiked: oldChallenge.hasLiked,
-              hasRegalup: oldChallenge.hasRegalup,
-              hasSaved: oldChallenge.hasSaved,
-              resources: oldChallenge.resources,
-              certificate: oldChallenge.certificate,
-              creator: oldChallenge.creator,
-              description: oldChallenge.description,
-              goal: oldChallenge.goal,
-              parameter: oldChallenge.parameter,
-            );
-            break;
-          case 'TIP':
-            TipModel oldTip = _homeContent[index];
-            content = TipModel(
-              id: oldTip.id,
-              type: oldTip.type,
-              user: oldTip.user,
-              title: oldTip.title,
-              createdAt: oldTip.createdAt,
-              likes: oldTip.likes,
-              regalups: oldTip.regalups,
-              comments: oldTip.comments + 1,
-              hasLiked: oldTip.hasLiked,
-              hasRegalup: oldTip.hasRegalup,
-              hasSaved: oldTip.hasSaved,
-              resources: oldTip.resources,
-              certificate: oldTip.certificate,
-              creator: oldTip.creator,
-              description: oldTip.description,
-              body: oldTip.body,
-              hasRated: oldTip.hasRated,
-              total: oldTip.total,
-            );
-            break;
-        }
-        _homeContent[index] = content;
-        notifyListeners();
+      switch (type) {
+        case 'P':
+          PollModel oldPoll = _polls[id];
+          final content = PollModel(
+            id: oldPoll.id,
+            type: oldPoll.type,
+            user: oldPoll.user,
+            title: oldPoll.title,
+            createdAt: oldPoll.createdAt,
+            votes: oldPoll.votes,
+            likes: oldPoll.likes,
+            regalups: oldPoll.regalups,
+            comments: oldPoll.comments + 1,
+            hasVoted: oldPoll.hasVoted,
+            hasLiked: oldPoll.hasLiked,
+            hasRegalup: oldPoll.hasRegalup,
+            hasSaved: oldPoll.hasSaved,
+            answers: oldPoll.answers,
+            resources: oldPoll.resources,
+            body: oldPoll.body,
+            certificate: oldPoll.certificate,
+            creator: oldPoll.creator,
+            description: oldPoll.description,
+          );
+          _polls[content.id] = content;
+          break;
+        case 'C':
+          ChallengeModel oldChallenge = _challenges[id];
+          final content = ChallengeModel(
+            id: oldChallenge.id,
+            type: oldChallenge.type,
+            user: oldChallenge.user,
+            title: oldChallenge.title,
+            createdAt: oldChallenge.createdAt,
+            likes: oldChallenge.likes,
+            regalups: oldChallenge.regalups,
+            comments: oldChallenge.comments + 1,
+            hasLiked: oldChallenge.hasLiked,
+            hasRegalup: oldChallenge.hasRegalup,
+            hasSaved: oldChallenge.hasSaved,
+            resources: oldChallenge.resources,
+            certificate: oldChallenge.certificate,
+            creator: oldChallenge.creator,
+            description: oldChallenge.description,
+            goal: oldChallenge.goal,
+            parameter: oldChallenge.parameter,
+          );
+          _challenges[content.id] = content;
+          break;
+        case 'TIP':
+          TipModel oldTip = _tips[id];
+          final content = TipModel(
+            id: oldTip.id,
+            type: oldTip.type,
+            user: oldTip.user,
+            title: oldTip.title,
+            createdAt: oldTip.createdAt,
+            likes: oldTip.likes,
+            regalups: oldTip.regalups,
+            comments: oldTip.comments + 1,
+            hasLiked: oldTip.hasLiked,
+            hasRegalup: oldTip.hasRegalup,
+            hasSaved: oldTip.hasSaved,
+            resources: oldTip.resources,
+            certificate: oldTip.certificate,
+            creator: oldTip.creator,
+            description: oldTip.description,
+            body: oldTip.body,
+            hasRated: oldTip.hasRated,
+            total: oldTip.total,
+          );
+          _tips[content.id] = content;
+          break;
       }
+      notifyListeners();
       return CommentModel.fromJson(dataMap['comment']);
     }
     return null;
@@ -1212,8 +1311,27 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return null;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
-      return CommentModel.fromJson(dataMap['comment']);
+      await _saveToken(dataMap['session']['token']);
+      CommentModel comment = _comments[id];
+      final newComment = CommentModel(
+        id: comment.id,
+        parentId: comment.parentId,
+        parentType: comment.parentType,
+        user: comment.user,
+        certificate: comment.certificate,
+        createdAt: comment.createdAt,
+        body: comment.body,
+        comments: comment.comments + 1,
+        likes: comment.likes,
+        dislikes: comment.dislikes,
+        hasLike: comment.hasLike,
+        hasDislike: comment.hasDislike,
+      );
+      CommentModel reply = CommentModel.fromJson(dataMap['comment']);
+      _comments[newComment.id] = newComment;
+      _comments[reply.id] = reply;
+      notifyListeners();
+      return reply;
     }
     return null;
   }
@@ -1241,110 +1359,108 @@ class ContentProvider with ChangeNotifier, TextMixin {
       _saveToken(dataMap['session']['token']);
       bool hasRegalup = dataMap['is_regalup'];
 
-      final index = _homeContent.indexWhere((element) => element.id == id);
-      if (index != -1) {
-        ContentModel content;
-        switch (type) {
-          case 'P':
-            PollModel oldPoll = _homeContent[index];
-            content = PollModel(
-              id: oldPoll.id,
-              type: oldPoll.type,
-              user: oldPoll.user,
-              title: oldPoll.title,
-              createdAt: oldPoll.createdAt,
-              votes: oldPoll.votes,
-              likes: oldPoll.likes,
-              regalups:
-                  hasRegalup ? oldPoll.regalups + 1 : oldPoll.regalups - 1,
-              comments: oldPoll.comments,
-              hasVoted: oldPoll.hasVoted,
-              hasLiked: oldPoll.hasLiked,
-              hasRegalup: hasRegalup,
-              hasSaved: oldPoll.hasSaved,
-              answers: oldPoll.answers,
-              resources: oldPoll.resources,
-              body: oldPoll.body,
-              certificate: oldPoll.certificate,
-              creator: oldPoll.creator,
-              description: oldPoll.description,
-            );
-            break;
-          case 'C':
-            ChallengeModel oldChallenge = _homeContent[index];
-            content = ChallengeModel(
-              id: oldChallenge.id,
-              type: oldChallenge.type,
-              user: oldChallenge.user,
-              title: oldChallenge.title,
-              createdAt: oldChallenge.createdAt,
-              likes: oldChallenge.likes,
-              regalups: hasRegalup
-                  ? oldChallenge.regalups + 1
-                  : oldChallenge.regalups - 1,
-              comments: oldChallenge.comments,
-              hasLiked: oldChallenge.hasLiked,
-              hasRegalup: hasRegalup,
-              hasSaved: oldChallenge.hasSaved,
-              resources: oldChallenge.resources,
-              certificate: oldChallenge.certificate,
-              creator: oldChallenge.creator,
-              description: oldChallenge.description,
-              goal: oldChallenge.goal,
-              parameter: oldChallenge.parameter,
-            );
-            break;
-          case 'TIP':
-            TipModel oldTip = _homeContent[index];
-            content = TipModel(
-              id: oldTip.id,
-              type: oldTip.type,
-              user: oldTip.user,
-              title: oldTip.title,
-              createdAt: oldTip.createdAt,
-              likes: oldTip.likes,
-              regalups: hasRegalup ? oldTip.regalups + 1 : oldTip.regalups - 1,
-              comments: oldTip.comments,
-              hasLiked: oldTip.hasLiked,
-              hasRegalup: hasRegalup,
-              hasSaved: oldTip.hasSaved,
-              resources: oldTip.resources,
-              certificate: oldTip.certificate,
-              creator: oldTip.creator,
-              description: oldTip.description,
-              body: oldTip.body,
-              hasRated: oldTip.hasRated,
-              total: oldTip.total,
-            );
-            break;
-          case 'CA':
-            CauseModel oldCause = _homeContent[index];
-            content = CauseModel(
-              id: oldCause.id,
-              type: oldCause.type,
-              user: oldCause.user,
-              title: oldCause.title,
-              createdAt: oldCause.createdAt,
-              likes: oldCause.likes,
-              regalups:
-                  hasRegalup ? oldCause.regalups + 1 : oldCause.regalups - 1,
-              hasLiked: oldCause.hasLiked,
-              hasRegalup: hasRegalup,
-              hasSaved: oldCause.hasSaved,
-              resources: oldCause.resources,
-              certificate: oldCause.certificate,
-              creator: oldCause.creator,
-              description: oldCause.description,
-              account: oldCause.account,
-              by: oldCause.by,
-              goal: oldCause.goal,
-              info: oldCause.info,
-              phone: oldCause.phone,
-              web: oldCause.web,
-            );
-            break;
-        }
-        _homeContent[index] = content;
+      switch (type) {
+        case 'P':
+          PollModel oldPoll = _polls[id];
+          final content = PollModel(
+            id: oldPoll.id,
+            type: oldPoll.type,
+            user: oldPoll.user,
+            title: oldPoll.title,
+            createdAt: oldPoll.createdAt,
+            votes: oldPoll.votes,
+            likes: oldPoll.likes,
+            regalups: hasRegalup ? oldPoll.regalups + 1 : oldPoll.regalups - 1,
+            comments: oldPoll.comments,
+            hasVoted: oldPoll.hasVoted,
+            hasLiked: oldPoll.hasLiked,
+            hasRegalup: hasRegalup,
+            hasSaved: oldPoll.hasSaved,
+            answers: oldPoll.answers,
+            resources: oldPoll.resources,
+            body: oldPoll.body,
+            certificate: oldPoll.certificate,
+            creator: oldPoll.creator,
+            description: oldPoll.description,
+          );
+          _polls[content.id] = content;
+          break;
+        case 'C':
+          ChallengeModel oldChallenge = _challenges[id];
+          final content = ChallengeModel(
+            id: oldChallenge.id,
+            type: oldChallenge.type,
+            user: oldChallenge.user,
+            title: oldChallenge.title,
+            createdAt: oldChallenge.createdAt,
+            likes: oldChallenge.likes,
+            regalups: hasRegalup
+                ? oldChallenge.regalups + 1
+                : oldChallenge.regalups - 1,
+            comments: oldChallenge.comments,
+            hasLiked: oldChallenge.hasLiked,
+            hasRegalup: hasRegalup,
+            hasSaved: oldChallenge.hasSaved,
+            resources: oldChallenge.resources,
+            certificate: oldChallenge.certificate,
+            creator: oldChallenge.creator,
+            description: oldChallenge.description,
+            goal: oldChallenge.goal,
+            parameter: oldChallenge.parameter,
+          );
+          _challenges[content.id] = content;
+          break;
+        case 'TIP':
+          TipModel oldTip = _tips[id];
+          final content = TipModel(
+            id: oldTip.id,
+            type: oldTip.type,
+            user: oldTip.user,
+            title: oldTip.title,
+            createdAt: oldTip.createdAt,
+            likes: oldTip.likes,
+            regalups: hasRegalup ? oldTip.regalups + 1 : oldTip.regalups - 1,
+            comments: oldTip.comments,
+            hasLiked: oldTip.hasLiked,
+            hasRegalup: hasRegalup,
+            hasSaved: oldTip.hasSaved,
+            resources: oldTip.resources,
+            certificate: oldTip.certificate,
+            creator: oldTip.creator,
+            description: oldTip.description,
+            body: oldTip.body,
+            hasRated: oldTip.hasRated,
+            total: oldTip.total,
+          );
+          _tips[content.id] = content;
+          break;
+        case 'CA':
+          CauseModel oldCause = _causes[id];
+          final content = CauseModel(
+            id: oldCause.id,
+            type: oldCause.type,
+            user: oldCause.user,
+            title: oldCause.title,
+            createdAt: oldCause.createdAt,
+            likes: oldCause.likes,
+            regalups:
+                hasRegalup ? oldCause.regalups + 1 : oldCause.regalups - 1,
+            hasLiked: oldCause.hasLiked,
+            hasRegalup: hasRegalup,
+            hasSaved: oldCause.hasSaved,
+            resources: oldCause.resources,
+            certificate: oldCause.certificate,
+            creator: oldCause.creator,
+            description: oldCause.description,
+            account: oldCause.account,
+            by: oldCause.by,
+            goal: oldCause.goal,
+            info: oldCause.info,
+            phone: oldCause.phone,
+            web: oldCause.web,
+          );
+          _causes[content.id] = content;
+          break;
       }
       notifyListeners();
 

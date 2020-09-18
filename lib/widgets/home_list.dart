@@ -60,6 +60,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'home',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -81,6 +82,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _tipWidget(TipModel content) {
     return TipTile(
+      reference: 'home',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -102,6 +104,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
+      reference: 'home',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -125,7 +128,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _repostPollWidget(PollModel content) {
     return PollTile(
-      reference: 'reposthome',
+      reference: 'home_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -149,6 +152,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _repostChallengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'home_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -171,6 +175,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _repostTipWidget(TipModel content) {
     return TipTile(
+      reference: 'home_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -193,6 +198,7 @@ class _HomeListState extends State<HomeList> {
 
   Widget _repostCauseWidget(content) {
     return CauseTile(
+      reference: 'home_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

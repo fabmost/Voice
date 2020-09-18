@@ -11,7 +11,6 @@ class ChallengeModel extends ContentModel {
   final String parameter;
   final int goal;
   final List<ResourceModel> resources;
-  final int comments;
 
   ChallengeModel({
     id,
@@ -22,6 +21,7 @@ class ChallengeModel extends ContentModel {
     title,
     likes,
     regalups,
+    comments,
     hasLiked,
     hasRegalup,
     hasSaved,
@@ -30,7 +30,6 @@ class ChallengeModel extends ContentModel {
     this.parameter,
     this.goal,
     this.resources,
-    this.comments,
   }) : super(
           id: id,
           type: type,
@@ -40,6 +39,7 @@ class ChallengeModel extends ContentModel {
           createdAt: createdAt,
           likes: likes,
           regalups: regalups,
+          comments: comments,
           hasLiked: hasLiked,
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,

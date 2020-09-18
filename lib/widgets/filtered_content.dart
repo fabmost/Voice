@@ -35,7 +35,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
-      reference: 'list',
+      reference: 'list_${widget.category}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -58,6 +58,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'list_${widget.category}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -79,6 +80,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _tipWidget(TipModel content) {
     return TipTile(
+      reference: 'list_${widget.category}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -100,6 +102,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
+      reference: 'list_${widget.category}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -123,7 +126,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _repostPollWidget(PollModel content) {
     return PollTile(
-      reference: 'home',
+      reference: 'list_${widget.category}_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -147,6 +150,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _repostChallengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'list_${widget.category}_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -169,6 +173,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _repostTipWidget(TipModel content) {
     return TipTile(
+      reference: 'list_${widget.category}_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -191,6 +196,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   Widget _repostCauseWidget(content) {
     return CauseTile(
+      reference: 'list_${widget.category}_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

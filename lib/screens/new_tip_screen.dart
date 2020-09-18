@@ -447,7 +447,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
                   counterText: '',
                   border: InputBorder.none,
                   hintText:
-                      Translations.of(context).text('hint_challenge_title'),
+                      Translations.of(context).text('hint_tip_title'),
                 ),
                 style: TextStyle(fontSize: 22),
               ),

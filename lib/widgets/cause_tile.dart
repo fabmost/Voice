@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'description.dart';
+import 'cause_meter.dart';
 import 'menu_content.dart';
 import 'cause_button.dart';
 import 'regalup_content.dart';
@@ -18,6 +18,7 @@ import '../providers/user_provider.dart';
 import '../screens/view_profile_screen.dart';
 
 class CauseTile extends StatelessWidget with ShareContent {
+  final String reference;
   final String id;
   final String userName;
   final String userImage;
@@ -41,6 +42,7 @@ class CauseTile extends StatelessWidget with ShareContent {
   final Color color = Color(0xFFF0F0F0);
 
   CauseTile({
+    @required this.reference,
     @required this.id,
     @required this.title,
     @required this.description,
@@ -111,78 +113,19 @@ class CauseTile extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
-    var totalPercentage = (likes == 0) ? 0.0 : likes / goal;
-    if (totalPercentage > 1) totalPercentage = 1;
-    final format = NumberFormat('###.##');
-
-    return Column(
-      children: [
-        if (resources.isNotEmpty && resources[0].type == 'V')
-          PollVideo(resources[0].url, null),
-        if (resources.isNotEmpty && resources[0].type == 'I')
-          PollImages([resources[0].url], ''),
-        Container(
-          height: 42,
-          margin: EdgeInsets.all(16),
-          child: Stack(
-            children: <Widget>[
-              FractionallySizedBox(
-                widthFactor: totalPercentage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      topRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                      bottomRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        'Firmas',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(),
-                      ),
-                      Text(
-                        '${format.format(totalPercentage * 100)}%',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+    if (resources != null && resources.isNotEmpty) {
+      if (resources[0].type == 'V')
+        return PollVideo(
+          resources[0].url,
+          null,
+        );
+      if (resources[0].type == 'I')
+        return PollImages(
+          [resources[0].url],
+          reference,
+        );
+    }
+    return Container();
   }
 
   Widget _userTile(context) {
@@ -298,8 +241,9 @@ class CauseTile extends StatelessWidget with ShareContent {
               ),
             ),
             const SizedBox(height: 16),
-            if (goal != null && goal > 0) _challengeGoal(context),
-            if (goal != null && goal > 0) SizedBox(height: 16),
+            _challengeGoal(context),
+            if (goal != null && goal > 0) CauseMeter(id),
+            SizedBox(height: 16),
             if (description != null && description.trim().isNotEmpty)
               Description(description),
             if (description != null && description.trim().isNotEmpty)

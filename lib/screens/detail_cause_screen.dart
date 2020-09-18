@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
@@ -12,6 +11,7 @@ import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
 import '../models/cause_model.dart';
 import '../widgets/description.dart';
+import '../widgets/cause_meter.dart';
 import '../widgets/menu_content.dart';
 import '../widgets/regalup_content.dart';
 import '../widgets/cause_button.dart';
@@ -195,81 +195,13 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   }
 
   Widget _challengeGoal(context) {
-    var totalPercentage =
-        (_causeModel.likes == 0) ? 0.0 : _causeModel.likes / _causeModel.goal;
-    if (totalPercentage > 1) totalPercentage = 1;
-    final format = NumberFormat('###.##');
-
-    return Column(
-      children: [
-        if (_causeModel.resources.isNotEmpty &&
-            _causeModel.resources[0].type == 'V')
-          PollVideo(_causeModel.resources[0].url, null),
-        if (_causeModel.resources.isNotEmpty &&
-            _causeModel.resources[0].type == 'I')
-          PollImages([_causeModel.resources[0].url], null),
-        Container(
-          height: 42,
-          margin: EdgeInsets.all(16),
-          child: Stack(
-            children: <Widget>[
-              FractionallySizedBox(
-                widthFactor: totalPercentage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      topRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                      bottomRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        'Firmas',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(),
-                      ),
-                      Text(
-                        '${format.format(totalPercentage * 100)}%',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+    if (_causeModel.resources != null && _causeModel.resources.isNotEmpty) {
+      if (_causeModel.resources[0].type == 'V')
+        return PollVideo(_causeModel.resources[0].url, null);
+      if (_causeModel.resources[0].type == 'I')
+        return PollImages([_causeModel.resources[0].url], null);
+    }
+    return Container();
   }
 
   @override
@@ -299,10 +231,10 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    _challengeGoal(context),
                     if (_causeModel.goal != null && _causeModel.goal > 0)
-                      _challengeGoal(context),
-                    if (_causeModel.goal != null && _causeModel.goal > 0)
-                      const SizedBox(height: 16),
+                      CauseMeter(_causeModel.id),
+                    const SizedBox(height: 16),
                     if (_causeModel.description != null &&
                         _causeModel.description.isNotEmpty)
                       Description(_causeModel.description),

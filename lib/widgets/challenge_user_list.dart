@@ -29,6 +29,7 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'user',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -50,6 +51,7 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
 
   Widget _repostChallengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'user_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

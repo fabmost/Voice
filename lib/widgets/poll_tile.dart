@@ -11,12 +11,14 @@ import 'poll_images.dart';
 import 'menu_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
+import 'comment_content.dart';
 import '../translations.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
-import '../screens/comments_screen.dart';
 import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
+import '../models/poll_model.dart';
 
 class PollTile extends StatelessWidget with ShareContent {
   final String reference;
@@ -68,18 +70,6 @@ class PollTile extends StatelessWidget with ShareContent {
       Navigator.of(context)
           .pushNamed(ViewProfileScreen.routeName, arguments: userName);
     }
-  }
-
-  void _toComments(context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CommentsScreen(
-          id: id,
-          type: 'P',
-        ),
-      ),
-    );
   }
 
   void _share() {
@@ -187,21 +177,26 @@ class PollTile extends StatelessWidget with ShareContent {
               ),
               child: PollOptions(
                 id: id,
-                votes: votes,
-                hasVoted: hasVoted,
-                answers: answers,
+                isMine: false,
               ),
             ),
-            if (votes > 0)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  bottom: 16,
-                ),
-                child: Text(votes == 1
-                    ? '$votes participante'
-                    : '$votes participantes'),
-              ),
+            Consumer<ContentProvider>(
+              builder: (context, value, child) {
+                PollModel poll = value.getPolls[id];
+                if (poll.votes > 0) {
+                  return Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      bottom: 16,
+                    ),
+                    child: Text(poll.votes == 1
+                        ? '${poll.votes} participante'
+                        : '${poll.votes} participantes'),
+                  );
+                }
+                return Container();
+              },
+            ),
             if (description != null && description.trim().isNotEmpty)
               Description(description),
             if (description != null && description.trim().isNotEmpty)
@@ -211,10 +206,9 @@ class PollTile extends StatelessWidget with ShareContent {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: () => _toComments(context),
-                    icon: Icon(GalupFont.message),
-                    label: Text(comments == 0 ? '' : '$comments'),
+                  CommentContent(
+                    id: id,
+                    type: 'P',
                   ),
                   LikeContent(
                     id: id,

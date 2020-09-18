@@ -10,6 +10,7 @@ class ContentModel {
   final String title;
   final int likes;
   final int regalups;
+  final int comments;
   final bool hasLiked;
   final bool hasRegalup;
   final bool hasSaved;
@@ -24,6 +25,7 @@ class ContentModel {
     this.type,
     this.likes,
     this.regalups,
+    this.comments,
     this.hasLiked,
     this.hasRegalup,
     this.hasSaved,

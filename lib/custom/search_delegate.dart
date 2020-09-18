@@ -40,7 +40,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
-      reference: 'home',
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -63,6 +63,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -84,6 +85,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
+      reference: 'search',
       id: content.id,
       certificate: content.certificate,
       title: content.title,
@@ -107,6 +109,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   Widget _tipWidget(TipModel content) {
     return TipTile(
+      reference: 'search',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

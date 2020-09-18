@@ -55,6 +55,7 @@ class _SavedListState extends State<SavedList> {
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+        reference: 'saved',
         id: content.id,
         date: content.createdAt,
         userName: content.user.userName,
@@ -75,6 +76,7 @@ class _SavedListState extends State<SavedList> {
 
   Widget _tipWidget(content) {
     return TipTile(
+      reference: 'saved',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -96,6 +98,7 @@ class _SavedListState extends State<SavedList> {
 
   Widget _causeWidget(content) {
     return CauseTile(
+      reference: 'saved',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

@@ -14,7 +14,6 @@ class PollModel extends ContentModel {
   final bool hasVoted;
   final List<PollAnswerModel> answers;
   final List<ResourceModel> resources;
-  final int comments;
 
   PollModel({
     id,
@@ -24,6 +23,7 @@ class PollModel extends ContentModel {
     createdAt,
     title,
     likes,
+    comments,
     regalups,
     hasLiked,
     hasRegalup,
@@ -35,7 +35,6 @@ class PollModel extends ContentModel {
     this.hasVoted,
     this.answers,
     this.resources,
-    this.comments,
   }) : super(
           id: id,
           type: type,
@@ -45,6 +44,7 @@ class PollModel extends ContentModel {
           createdAt: createdAt,
           likes: likes,
           regalups: regalups,
+          comments: comments,
           hasLiked: hasLiked,
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,

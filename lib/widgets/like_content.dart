@@ -5,8 +5,9 @@ import '../mixins/alert_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../models/content_model.dart';
 
-class LikeContent extends StatefulWidget {
+class LikeContent extends StatelessWidget with AlertMixin {
   final String id;
   final String type;
   final int likes;
@@ -21,64 +22,46 @@ class LikeContent extends StatefulWidget {
     this.tipFunction,
   });
 
-  @override
-  _LikeContentState createState() => _LikeContentState();
-}
-
-class _LikeContentState extends State<LikeContent> with AlertMixin {
-  int _likes;
-  bool _hasLiked;
-  Color _color;
-
-  void _like() async {
-    bool canInteract = await Provider.of<AuthProvider>(context, listen: false).canInteract();
+  void _like(context) async {
+    bool canInteract =
+        await Provider.of<AuthProvider>(context, listen: false).canInteract();
     if (!canInteract) {
       anonymousAlert(context);
       return;
     }
-    setState(() {
-      _hasLiked = !_hasLiked;
-      if (_hasLiked) {
-        _likes++;
-        if(widget.tipFunction != null){
-          widget.tipFunction();
-        }
-      } else {
-        _likes--;
-      }
-    });
     await Provider.of<ContentProvider>(context, listen: false)
-        .likeContent(widget.type, widget.id);
-    
-  }
-
-  @override
-  void initState() {
-    _likes = widget.likes;
-    _hasLiked = widget.hasLiked;
-    switch (widget.type) {
-      case 'P':
-        _color = Color(0xFF6767CB);
-        break;
-      case 'C':
-        _color = Color(0xFFA4175D);
-        break;
-      case 'TIP':
-        _color = Color(0xFF00B2E3);
-        break;
-    }
-    super.initState();
+        .likeContent(type, id);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton.icon(
-      onPressed: _like,
-      icon: Icon(
-        GalupFont.like,
-        color: _hasLiked ? _color : Colors.black,
-      ),
-      label: Text(_likes == 0 ? '' : '$_likes'),
+    Color _color;
+    ContentModel _content;
+    return Consumer<ContentProvider>(
+      builder: (context, value, child) {
+        switch (type) {
+          case 'P':
+            _color = Color(0xFF6767CB);
+            _content = value.getPolls[id];
+            break;
+          case 'C':
+            _color = Color(0xFFA4175D);
+            _content = value.getChallenges[id];
+            break;
+          case 'TIP':
+            _color = Color(0xFF00B2E3);
+            _content = value.getTips[id];
+            break;
+        }
+        return FlatButton.icon(
+          onPressed: () => _like(context),
+          icon: Icon(
+            GalupFont.like,
+            color: _content.hasLiked ? _color : Colors.black,
+          ),
+          label: Text(_content.likes == 0 ? '' : '${_content.likes}'),
+        );
+      },
     );
   }
 }

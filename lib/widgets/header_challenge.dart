@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'description.dart';
+import 'challenge_meter.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'like_content.dart';
@@ -79,106 +80,14 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   }
 
   Widget _challengeGoal(context) {
-    //bool goalReached = false;
-    String goal;
-    int amount;
-    switch (challengeModel.parameter) {
-      case 'L':
-        goal = 'Likes';
-        amount = challengeModel.likes;
-        /*
-        if (likes >= goal) {
-          goalReached = true;
-        }*/
-        break;
-      case 'C':
-        goal = 'Comentarios';
-        amount = challengeModel.comments;
-        /*
-        if (comments >= goal) {
-          goalReached = true;
-        }*/
-        break;
-      case 'R':
-        goal = 'Regalups';
-        amount = challengeModel.regalups;
-        /*
-        if (reposts >= goal) {
-          goalReached = true;
-        }*/
-        break;
-    }
-    var totalPercentage = (amount == 0) ? 0.0 : amount / challengeModel.goal;
-    if (totalPercentage > 1) totalPercentage = 1;
-    final format = NumberFormat('###.##');
+    if (challengeModel.resources != null &&
+        challengeModel.resources.isNotEmpty) {
+      ResourceModel resource = challengeModel.resources[0];
 
-    ResourceModel resource = challengeModel.resources[0];
-    return Column(
-      children: <Widget>[
-        if (resource.type == 'V') PollVideo(resource.url, null),
-        if (resource.type == 'I') PollImages([resource.url], ''),
-        Container(
-          height: 42,
-          margin: EdgeInsets.all(16),
-          child: Stack(
-            children: <Widget>[
-              FractionallySizedBox(
-                widthFactor: totalPercentage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xAAA4175D),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      topRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                      bottomRight: totalPercentage == 1
-                          ? Radius.circular(12)
-                          : Radius.zero,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        goal,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(),
-                      ),
-                      Text(
-                        '${format.format(totalPercentage * 100)}%',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+      if (resource.type == 'V') return PollVideo(resource.url, null);
+      if (resource.type == 'I') return PollImages([resource.url], 'detail');
+    }
+    return Container();
   }
 
   @override
@@ -218,7 +127,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
                   ),
                 ),
                 SizedBox(width: 8),
-                InfluencerBadge(challengeModel.id, challengeModel.certificate, 16),
+                InfluencerBadge(
+                    challengeModel.id, challengeModel.certificate, 16),
               ],
             ),
             subtitle: Text(timeago.format(now.subtract(difference),
@@ -243,6 +153,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         ),
         SizedBox(height: 16),
         _challengeGoal(context),
+        if(challengeModel.goal > 0) ChallengeMeter(challengeModel.id),
         SizedBox(height: 16),
         if (challengeModel.description != null &&
             challengeModel.description.isNotEmpty)

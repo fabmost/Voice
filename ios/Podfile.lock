@@ -282,13 +282,6 @@ PODS:
     - Firebase/Analytics (~> 6.0)
     - Firebase/Core
     - Flutter
-<<<<<<< HEAD
-  - firebase_auth (0.0.1):
-    - Firebase/Auth (~> 6.3)
-    - Firebase/Core
-    - Flutter
-=======
->>>>>>> dev
   - firebase_core (0.0.1):
     - Firebase/Core
     - Flutter
@@ -381,11 +374,6 @@ PODS:
     - Flutter
     - flutter_ffmpeg/https (= 0.2.10)
   - flutter_ffmpeg/https (0.2.10):
-<<<<<<< HEAD
-    - Flutter
-    - mobile-ffmpeg-https (= 4.3.1)
-  - flutter_keyboard_visibility (0.0.1):
-=======
     - Flutter
     - mobile-ffmpeg-https (= 4.3.1)
   - flutter_keyboard_visibility (0.0.1):
@@ -393,7 +381,6 @@ PODS:
   - flutter_secure_storage (3.3.1):
     - Flutter
   - flutter_user_agent (1.2.2):
->>>>>>> dev
     - Flutter
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
@@ -487,12 +474,9 @@ PODS:
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
-<<<<<<< HEAD
-=======
   - sqflite (0.0.1):
     - Flutter
     - FMDB (~> 2.7.2)
->>>>>>> dev
   - SwiftyGif (5.3.0)
   - TOCropViewController (2.5.3)
   - url_launcher (0.0.1):
@@ -511,10 +495,6 @@ DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
-<<<<<<< HEAD
-  - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
-=======
->>>>>>> dev
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_crashlytics (from `.symlinks/plugins/firebase_crashlytics/ios`)
   - firebase_dynamic_links (from `.symlinks/plugins/firebase_dynamic_links/ios`)
@@ -523,11 +503,8 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_ffmpeg (from `.symlinks/plugins/flutter_ffmpeg/ios`)
   - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
-<<<<<<< HEAD
-=======
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - flutter_user_agent (from `.symlinks/plugins/flutter_user_agent/ios`)
->>>>>>> dev
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - package_info (from `.symlinks/plugins/package_info/ios`)
@@ -535,10 +512,7 @@ DEPENDENCIES:
   - photo_manager (from `.symlinks/plugins/photo_manager/ios`)
   - share (from `.symlinks/plugins/share/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
-<<<<<<< HEAD
-=======
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
->>>>>>> dev
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
   - video_compress (from `.symlinks/plugins/video_compress/ios`)
   - video_player (from `.symlinks/plugins/video_player/ios`)
@@ -591,11 +565,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   firebase_analytics:
     :path: ".symlinks/plugins/firebase_analytics/ios"
-<<<<<<< HEAD
-  firebase_auth:
-    :path: ".symlinks/plugins/firebase_auth/ios"
-=======
->>>>>>> dev
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
   firebase_crashlytics:
@@ -612,13 +581,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_ffmpeg/ios"
   flutter_keyboard_visibility:
     :path: ".symlinks/plugins/flutter_keyboard_visibility/ios"
-<<<<<<< HEAD
-=======
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
   flutter_user_agent:
     :path: ".symlinks/plugins/flutter_user_agent/ios"
->>>>>>> dev
   image_cropper:
     :path: ".symlinks/plugins/image_cropper/ios"
   image_picker:
@@ -633,11 +599,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/share/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
-<<<<<<< HEAD
-=======
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
->>>>>>> dev
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
   video_compress:
@@ -660,10 +623,6 @@ SPEC CHECKSUMS:
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
   Firebase: 7cf5f9c67f03cb3b606d1d6535286e1080e57eb6
   firebase_analytics: 9118044ffb98bee71d84733fc594f5134fe4bc1b
-<<<<<<< HEAD
-  firebase_auth: af8784c4d8d87c36f730a305f97bfbcb24db024b
-=======
->>>>>>> dev
   firebase_core: 335c02abd48672b7c83c683df833d0488a72e73e
   firebase_crashlytics: bd8c58df07f107cb7e1a20cb190b9a468e0a69fd
   firebase_dynamic_links: c70e8764252b4f4f130fffe273e0bbd01e6b7aef
@@ -685,12 +644,9 @@ SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_ffmpeg: cf0a6941ef67e88248c998cc3e34f8acb0b4e454
   flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069
-<<<<<<< HEAD
-=======
   flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
   flutter_user_agent: 27c45d034dc31b80948d29998cea52cd3a7bf936
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
->>>>>>> dev
   GoogleAppMeasurement: 67458367830514fb20fd9e233496f1eef9d90185
   GoogleDataTransport: 9a8a16f79feffc7f42096743de2a7c4815e84020
   GoogleDataTransportCCTSupport: d70a561f7d236af529fee598835caad5e25f6d3d
@@ -711,10 +667,7 @@ SPEC CHECKSUMS:
   SDWebImage: 84000f962cbfa70c07f19d2234cbfcf5d779b5dc
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
   shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
-<<<<<<< HEAD
-=======
   sqflite: 4001a31ff81d210346b500c55b17f4d6c7589dd0
->>>>>>> dev
   SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
   TOCropViewController: 20a14b6a7a098308bf369e7c8d700dc983a974e6
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef

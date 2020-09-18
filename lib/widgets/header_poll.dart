@@ -16,6 +16,7 @@ import '../models/poll_model.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
 import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
 
 class HeaderPoll extends StatelessWidget with ShareContent {
   final PollModel pollModel;
@@ -159,21 +160,26 @@ class HeaderPoll extends StatelessWidget with ShareContent {
           ),
           child: PollOptions(
             id: pollModel.id,
-            votes: pollModel.votes,
-            hasVoted: pollModel.hasVoted,
-            answers: pollModel.answers,
+            isMine: false,
           ),
         ),
-        if (pollModel.votes > 0)
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 16,
-              bottom: 16,
-            ),
-            child: Text(pollModel.votes == 1
-                ? '${pollModel.votes} participante'
-                : '${pollModel.votes} participantes'),
-          ),
+        Consumer<ContentProvider>(
+          builder: (context, value, child) {
+            PollModel poll = value.getPolls[pollModel.id];
+            if (poll.votes > 0) {
+              return Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  bottom: 16,
+                ),
+                child: Text(poll.votes == 1
+                    ? '${poll.votes} participante'
+                    : '${poll.votes} participantes'),
+              );
+            }
+            return Container();
+          },
+        ),
         if (pollModel.description != null && pollModel.description.isNotEmpty)
           Description(pollModel.description),
         if (pollModel.description != null && pollModel.description.isNotEmpty)

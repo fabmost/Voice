@@ -29,6 +29,7 @@ class _TipListState extends State<TipUserList> {
 
   Widget _tipWidget(TipModel content) {
     return TipTile(
+      reference: 'user_list',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -50,6 +51,7 @@ class _TipListState extends State<TipUserList> {
 
   Widget _repostTipWidget(TipModel content) {
     return TipTile(
+      reference: 'user_list_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

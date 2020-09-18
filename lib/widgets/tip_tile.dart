@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'description.dart';
+import 'comment_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import 'poll_video.dart';
@@ -14,11 +15,11 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../models/resource_model.dart';
-import '../screens/comments_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../providers/user_provider.dart';
 
 class TipTile extends StatelessWidget with ShareContent {
+  final String reference;
   final String id;
   final String userName;
   final String userImage;
@@ -38,6 +39,7 @@ class TipTile extends StatelessWidget with ShareContent {
   final certificate;
 
   TipTile({
+    @required this.reference,
     @required this.id,
     @required this.title,
     @required this.description,
@@ -66,30 +68,18 @@ class TipTile extends StatelessWidget with ShareContent {
     }
   }
 
-  void _toComments(context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CommentsScreen(
-          id: id,
-          type: 'TIP',
-        ),
-      ),
-    );
-  }
-
   void showVote() {
     if (!hasRated) {}
   }
 
   void _share() {
-    shareChallenge(id, title);
+    shareTip(id, title);
   }
 
   Widget _challengeGoal(context) {
     ResourceModel resource = resources[0];
     if (resource.type == 'V') return PollVideo(resource.url, null);
-    if (resource.type == 'I') return PollImages([resource.url], '');
+    if (resource.type == 'I') return PollImages([resource.url], reference);
     return Container();
   }
 
@@ -207,10 +197,9 @@ class TipTile extends StatelessWidget with ShareContent {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: () => _toComments(context),
-                    icon: Icon(GalupFont.message),
-                    label: Text(comments == 0 ? '' : '$comments'),
+                  CommentContent(
+                    id: id,
+                    type: 'TIP',
                   ),
                   LikeContent(
                     id: id,

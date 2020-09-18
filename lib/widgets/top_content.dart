@@ -57,6 +57,7 @@ class _FilteredContentState extends State<TopContent>
 
   Widget _challengeWidget(ChallengeModel content) {
     return ChallengeTile(
+      reference: 'top',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -78,6 +79,7 @@ class _FilteredContentState extends State<TopContent>
 
   Widget _tipWidget(TipModel content) {
     return TipTile(
+      reference: 'top',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -99,6 +101,7 @@ class _FilteredContentState extends State<TopContent>
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
+      reference: 'top',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

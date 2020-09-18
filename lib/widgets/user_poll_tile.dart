@@ -3,16 +3,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'title_content.dart';
 import 'poll_images.dart';
 import 'poll_video.dart';
 import 'poll_options.dart';
+import 'comment_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/content_provider.dart';
-import '../screens/comments_screen.dart';
 import '../screens/analytics_screen.dart';
 
 class UserPollTile extends StatelessWidget with ShareContent {
@@ -53,18 +54,6 @@ class UserPollTile extends StatelessWidget with ShareContent {
     @required this.resources,
     @required this.removeFunction,
   });
-
-  void _toComments(context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CommentsScreen(
-          id: id,
-          type: 'P',
-        ),
-      ),
-    );
-  }
 
   void _toAnalytics(context) {
     Navigator.push(
@@ -117,8 +106,9 @@ class UserPollTile extends StatelessWidget with ShareContent {
   }
 
   void _deleteContent(context) async {
-    final result = await Provider.of<ContentProvider>(context, listen: false).deleteContent(id: id, type: 'P');
-    if(result){
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .deleteContent(id: id, type: 'P');
+    if (result) {
       //Navigator.of(context).pop();
       removeFunction(id);
     }
@@ -193,16 +183,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
               ),
             ),
             SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            TitleContent(title),
             if (resources.isNotEmpty) SizedBox(height: 16),
             if (resources.isNotEmpty) _handleResources(),
             Padding(
@@ -214,9 +195,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
               ),
               child: PollOptions(
                 id: id,
-                votes: votes,
-                hasVoted: true,
-                answers: answers,
+                isMine: true,
               ),
             ),
             if (votes > 0)
@@ -234,10 +213,9 @@ class UserPollTile extends StatelessWidget with ShareContent {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  FlatButton.icon(
-                    onPressed: () => _toComments(context),
-                    icon: Icon(GalupFont.message),
-                    label: Text(comments == 0 ? '' : '$comments'),
+                  CommentContent(
+                    id: id,
+                    type: 'P',
                   ),
                   LikeContent(
                     id: id,

@@ -10,7 +10,6 @@ class TipModel extends ContentModel {
   final String body;
   final String description;
   final List<ResourceModel> resources;
-  final int comments;
   final double total;
   final bool hasRated;
 
@@ -23,6 +22,7 @@ class TipModel extends ContentModel {
       title,
       likes,
       regalups,
+      comments,
       hasLiked,
       hasRegalup,
       hasSaved,
@@ -30,7 +30,6 @@ class TipModel extends ContentModel {
       this.body,
       this.description,
       this.resources,
-      this.comments,
       this.total,
       this.hasRated})
       : super(
@@ -42,6 +41,7 @@ class TipModel extends ContentModel {
           createdAt: createdAt,
           likes: likes,
           regalups: regalups,
+          comments: comments,
           hasLiked: hasLiked,
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,

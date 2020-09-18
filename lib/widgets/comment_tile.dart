@@ -132,23 +132,6 @@ class CommentTile extends StatelessWidget {
           hasDislike: hasDown,
           toComments: () => _toComment(context),
         ),
-        if (comments > 0)
-          Row(
-            children: <Widget>[
-              SizedBox(width: 16),
-              Expanded(
-                child: Container(
-                  height: 1,
-                  color: Colors.grey,
-                ),
-              ),
-              FlatButton(
-                child: Text('Ver respuestas ($comments)'),
-                onPressed: () => _toComment(context),
-              ),
-            ],
-          ),
-        if (comments == 0) Divider(),
       ],
     );
   }

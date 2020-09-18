@@ -8,9 +8,8 @@ import '../providers/auth_provider.dart';
 
 class TipRating extends StatefulWidget {
   final String id;
-  final Function saveRate;
 
-  TipRating(this.id, this.saveRate);
+  TipRating(this.id);
 
   @override
   _TipRatingState createState() => _TipRatingState();
@@ -21,7 +20,8 @@ class _TipRatingState extends State<TipRating> with AlertMixin {
   bool _isLoading = false;
 
   void _saveRate() async {
-    bool canInteract = await Provider.of<AuthProvider>(context, listen: false).canInteract();
+    bool canInteract =
+        await Provider.of<AuthProvider>(context, listen: false).canInteract();
     if (!canInteract) {
       anonymousAlert(context);
       return;
@@ -29,11 +29,12 @@ class _TipRatingState extends State<TipRating> with AlertMixin {
     setState(() {
       _isLoading = true;
     });
-    final result = await Provider.of<ContentProvider>(context, listen: false).rateTip(widget.id, _rating);
+    await Provider.of<ContentProvider>(context, listen: false)
+        .rateTip(widget.id, _rating);
     setState(() {
       _isLoading = false;
     });
-    widget.saveRate(context, result);
+    Navigator.of(context).pop();
   }
 
   @override

@@ -28,6 +28,7 @@ class _CauseUserListState extends State<CauseUserList> {
 
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
+      reference: 'user',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -51,6 +52,7 @@ class _CauseUserListState extends State<CauseUserList> {
 
   Widget _repostCauseWidget(content) {
     return CauseTile(
+      reference: 'user_${content.creator}',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,

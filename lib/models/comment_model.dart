@@ -57,6 +57,7 @@ class CommentModel {
     );
   }
 
+/*
   static List<CommentModel> listFromJson(List<dynamic> content) {
     List<CommentModel> mList = [];
 
@@ -84,4 +85,5 @@ class CommentModel {
 
     return mList;
   }
+  */
 }

@@ -304,7 +304,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     remoteConfig.setDefaults(<String, dynamic>{
       'app_version': 0,
     });
-    await remoteConfig.fetch();
+    await remoteConfig.fetch(expiration: const Duration(seconds: 1));
     await remoteConfig.activateFetched();
 
     final remoteVersion = remoteConfig.getDouble('app_version');
