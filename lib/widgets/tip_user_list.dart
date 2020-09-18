@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'tip_tile.dart';
+import 'user_tip_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 import '../models/content_model.dart';
@@ -28,7 +29,7 @@ class _TipListState extends State<TipUserList> {
   bool _hasMore = true;
 
   Widget _tipWidget(TipModel content) {
-    return TipTile(
+    return UserTipTile(
       reference: 'user_list',
       id: content.id,
       date: content.createdAt,
@@ -46,6 +47,7 @@ class _TipListState extends State<TipUserList> {
       hasSaved: content.hasSaved,
       resources: content.resources,
       hasRated: content.hasRated,
+      removeFunction: _removeContent,
     );
   }
 
@@ -103,6 +105,12 @@ class _TipListState extends State<TipUserList> {
       }
     }
     return true;
+  }
+
+  void _removeContent(id) {
+    setState(() {
+      _list.removeWhere((element) => element.id == id);
+    });
   }
 
   void _getData() async {

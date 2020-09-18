@@ -76,7 +76,7 @@ class _SearchScreenState extends State<SearchScreen>
               children: [
                 TopContent(_playVideo),
                 FilteredContent('1', _playVideo),
-                FilteredContent('2', _playVideo),
+                FilteredContent('3', _playVideo),
                 FilteredContent('5', _playVideo),
                 FilteredContent('8', _playVideo),
                 CategoriesList(),

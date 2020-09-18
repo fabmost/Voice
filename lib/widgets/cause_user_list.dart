@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'cause_tile.dart';
+import 'user_cause_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/content_model.dart';
 import '../models/cause_model.dart';
@@ -27,7 +28,7 @@ class _CauseUserListState extends State<CauseUserList> {
   bool _hasMore = true;
 
   Widget _causeWidget(CauseModel content) {
-    return CauseTile(
+    return UserCauseTile(
       reference: 'user',
       id: content.id,
       date: content.createdAt,
@@ -47,6 +48,7 @@ class _CauseUserListState extends State<CauseUserList> {
       hasRegalup: content.hasRegalup,
       hasSaved: content.hasSaved,
       resources: content.resources,
+      removeFunction: _removeContent,
     );
   }
 
@@ -106,6 +108,12 @@ class _CauseUserListState extends State<CauseUserList> {
       }
     }
     return true;
+  }
+
+  void _removeContent(id) {
+    setState(() {
+      _list.removeWhere((element) => element.id == id);
+    });
   }
 
   void _getData() async {

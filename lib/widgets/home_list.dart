@@ -19,11 +19,8 @@ enum LoadMoreStatus { LOADING, STABLE }
 
 class HomeList extends StatefulWidget {
   final ScrollController scrollController;
-  final List<ContentModel> mList;
-  final List<ContentModel> mCauses;
-  final List<UserModel> mUsers;
 
-  HomeList(this.scrollController, this.mList, this.mCauses, this.mUsers);
+  HomeList(this.scrollController);
 
   @override
   _HomeListState createState() => _HomeListState();
@@ -31,6 +28,9 @@ class HomeList extends StatefulWidget {
 
 class _HomeListState extends State<HomeList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  List<UserModel> mUsers = [];
+  List<CauseModel> mCauses = [];
+  List<ContentModel> mList = [];
   int currentPageNumber;
   bool _hasMore = true;
   bool _requestMoreUsers = false;
@@ -233,8 +233,14 @@ class _HomeListState extends State<HomeList> {
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
               .getBaseTimeline(currentPageNumber, null)
-              .then((moviesObject) {
-            _hasMore = moviesObject;
+              .then((newObjects) {
+            setState(() {
+              if (newObjects.isEmpty) {
+                _hasMore = false;
+              } else {
+                mList.addAll(newObjects);
+              }
+            });
             loadMoreStatus = LoadMoreStatus.STABLE;
           });
         }
@@ -246,15 +252,31 @@ class _HomeListState extends State<HomeList> {
   Future<void> _refreshTimeLine() async {
     currentPageNumber = 0;
     loadMoreStatus = LoadMoreStatus.LOADING;
-    final result = await Provider.of<ContentProvider>(context, listen: false)
+    final results = await Provider.of<ContentProvider>(context, listen: false)
         .getBaseTimeline(currentPageNumber, null);
-    _hasMore = result;
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        mList = results;
+      }
+    });
     loadMoreStatus = LoadMoreStatus.STABLE;
     return;
   }
 
+  void _moreUsers() async {
+    final usersResult =
+        await Provider.of<ContentProvider>(context, listen: false)
+            .getTopUsers(1);
+    _requestMoreUsers = true;
+    setState(() {
+      mUsers.addAll(usersResult);
+    });
+  }
+
   Widget _usersCarrousel() {
-    if (widget.mUsers.isEmpty) {
+    if (mUsers.isEmpty) {
       return Container(
         height: 42,
         alignment: Alignment.center,
@@ -262,8 +284,7 @@ class _HomeListState extends State<HomeList> {
       );
     }
     if (!_requestMoreUsers) {
-      Provider.of<ContentProvider>(context, listen: false).getTopUsers(1);
-      _requestMoreUsers = true;
+      _moreUsers();
     }
     return Container(
       height: 220,
@@ -291,9 +312,9 @@ class _HomeListState extends State<HomeList> {
               padding: EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
               separatorBuilder: (context, index) => SizedBox(width: 16),
-              itemCount: widget.mUsers.length,
+              itemCount: mUsers.length,
               itemBuilder: (context, i) {
-                UserModel model = widget.mUsers[i];
+                UserModel model = mUsers[i];
                 return UserCard(
                   userName: model.userName,
                   icon: model.icon,
@@ -309,7 +330,7 @@ class _HomeListState extends State<HomeList> {
   }
 
   Widget _causesCarrousel() {
-    if (widget.mCauses.isEmpty) {
+    if (mCauses.isEmpty) {
       return Container(
         height: 42,
         alignment: Alignment.center,
@@ -322,9 +343,9 @@ class _HomeListState extends State<HomeList> {
         padding: EdgeInsets.symmetric(horizontal: 16),
         scrollDirection: Axis.horizontal,
         separatorBuilder: (context, index) => SizedBox(width: 16),
-        itemCount: widget.mCauses.length,
+        itemCount: mCauses.length,
         itemBuilder: (context, i) {
-          CauseModel model = widget.mCauses[i];
+          CauseModel model = mCauses[i];
           return CauseCard(
             id: model.id,
             title: model.title,
@@ -337,13 +358,29 @@ class _HomeListState extends State<HomeList> {
 
   void _fetchData() async {
     loadMoreStatus = LoadMoreStatus.LOADING;
-    final result = await Provider.of<ContentProvider>(context, listen: false)
+    final results = await Provider.of<ContentProvider>(context, listen: false)
         .getBaseTimeline(currentPageNumber, null);
-    _hasMore = result;
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        mList = results;
+      }
+    });
     loadMoreStatus = LoadMoreStatus.STABLE;
-    await Provider.of<ContentProvider>(context, listen: false)
-        .getCausesCarrousel();
-    await Provider.of<ContentProvider>(context, listen: false).getTopUsers(0);
+
+    final usersResult =
+        await Provider.of<ContentProvider>(context, listen: false)
+            .getTopUsers(0);
+    setState(() {
+      mUsers = usersResult;
+    });
+    final causesResult =
+        await Provider.of<ContentProvider>(context, listen: false)
+            .getCausesCarrousel();
+    setState(() {
+      mCauses = causesResult;
+    });
   }
 
   @override
@@ -361,18 +398,16 @@ class _HomeListState extends State<HomeList> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.mList.isEmpty) return Center(child: CircularProgressIndicator());
+    if (mList.isEmpty) return Center(child: CircularProgressIndicator());
     return NotificationListener(
       onNotification: onNotification,
       child: RefreshIndicator(
         onRefresh: _refreshTimeLine,
         child: ListView.builder(
           controller: widget.scrollController,
-          itemCount: (widget.mList.length < 6)
-              ? widget.mList.length + 1
-              : widget.mList.length + 3,
+          itemCount: (mList.length < 6) ? mList.length + 1 : mList.length + 3,
           itemBuilder: (ctx, i) {
-            if ((widget.mList.length > 6 && i == widget.mList.length + 2)) {
+            if ((mList.length > 6 && i == mList.length + 2)) {
               return Center(
                   child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -385,7 +420,7 @@ class _HomeListState extends State<HomeList> {
             if (i == 6) {
               return _causesCarrousel();
             }
-            final doc = (i > 6) ? widget.mList[i - 2] : widget.mList[i - 1];
+            final doc = (i > 6) ? mList[i - 2] : mList[i - 1];
             switch (doc.type) {
               case 'poll':
                 return _pollWidget(doc);

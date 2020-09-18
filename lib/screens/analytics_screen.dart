@@ -50,7 +50,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       idAnswer: _selection == -1 ? null : widget.answers[_selection].id,
     );
     setState(() {
-      if(results.isEmpty || results.length < 10){
+      if (results.isEmpty || results.length < 10) {
         _hasMore = false;
       }
       _isLoading = false;
@@ -127,7 +127,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         onNotification: onNotification,
         child: ListView.builder(
           controller: _scrollController,
-          itemCount: _isLoading || _hasMore ? _voters.length + 4 : _voters.length + 3,
+          itemCount:
+              _isLoading || _hasMore ? _voters.length + 4 : _voters.length + 3,
           itemBuilder: (context, i) {
             if (i == 0)
               return Padding(
@@ -175,13 +176,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               return Center(child: CircularProgressIndicator());
             }
             UserModel user = _voters[i - 3];
+            bool isAnon = user.userName.contains('ANONIMO');
             return ListTile(
-              onTap: () => _toProfile(user.userName),
+              onTap: () => isAnon ? null : _toProfile(user.userName),
               leading: CircleAvatar(
                 backgroundImage:
                     user.icon == null ? null : NetworkImage(user.icon),
               ),
-              title: Text(user.userName),
+              title: isAnon ? Text('Usuario anónimo') : Text(user.userName),
               subtitle: Text('Votó - ${_answersString[user.idAnswer]}'),
             );
           },

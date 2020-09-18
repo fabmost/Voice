@@ -44,10 +44,12 @@ class UserCard extends StatelessWidget {
                   topLeft: Radius.circular(7),
                   topRight: Radius.circular(7),
                 ),
-                image: DecorationImage(
-                  image: icon == null ? null : NetworkImage(icon),
-                  fit: BoxFit.cover,
-                ),
+                image: icon == null
+                    ? null
+                    : DecorationImage(
+                        image: NetworkImage(icon),
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             const SizedBox(height: 8),
@@ -66,12 +68,6 @@ class UserCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            /*
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(8),
-              child: _followButton(context)
-            ),*/
           ],
         ),
       ),

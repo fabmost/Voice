@@ -21,9 +21,6 @@ import '../models/notification_model.dart';
 
 class ContentProvider with ChangeNotifier, TextMixin {
   final _storage = FlutterSecureStorage();
-  List<ContentModel> _homeContent = [];
-  List<ContentModel> _causesContent = [];
-  List<UserModel> _usersList = [];
   List<NotificationModel> _notificationsList = [];
   Map<String, PollModel> _polls = {};
   Map<String, ChallengeModel> _challenges = {};
@@ -31,9 +28,6 @@ class ContentProvider with ChangeNotifier, TextMixin {
   Map<String, CauseModel> _causes = {};
   Map<String, CommentModel> _comments = {};
 
-  List<ContentModel> get getHome => [..._homeContent];
-  List<ContentModel> get getCauses => [..._causesContent];
-  List<UserModel> get getUsers => [..._usersList];
   List<NotificationModel> get getNotificationsList => [..._notificationsList];
   Map<String, PollModel> get getPolls => {..._polls};
   Map<String, ChallengeModel> get getChallenges => {..._challenges};
@@ -41,7 +35,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
   Map<String, CauseModel> get getCausesList => {..._causes};
   Map<String, CommentModel> get getCommentsMap => {..._comments};
 
-  Future<bool> getBaseTimeline(int page, String type, [tries = 1]) async {
+  Future<List<ContentModel>> getBaseTimeline(int page, String type,
+      [tries = 1]) async {
     var url = '${API.baseURL}/timeLine/';
     final token = await _getToken();
 
@@ -65,63 +60,58 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return false;
+      return [];
     }
 
-    if (page == 0) {
-      _homeContent.clear();
-    }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      await _saveToken(dataMap['session']['token']);
 
+      List<ContentModel> contentList = [];
       List timeLine = dataMap['timeline'];
-      if (timeLine.isEmpty) {
-        return false;
-      }
+
       timeLine.forEach((element) {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
             PollModel poll = PollModel.fromJson(content);
-            _homeContent.add(poll);
+            contentList.add(poll);
             _polls[poll.id] = poll;
             break;
           case 'challenge':
           case 'regalup_c':
             ChallengeModel challenge = ChallengeModel.fromJson(content);
-            _homeContent.add(challenge);
+            contentList.add(challenge);
             _challenges[challenge.id] = challenge;
             break;
           case 'Tips':
           case 'regalup_ti':
             TipModel tip = TipModel.fromJson(content);
-            _homeContent.add(tip);
+            contentList.add(tip);
             _tips[tip.id] = tip;
             break;
           case 'causes':
           case 'regalup_ca':
             CauseModel cause = CauseModel.fromJson(content);
-            _homeContent.add(cause);
+            contentList.add(cause);
             _causes[cause.id] = cause;
             break;
         }
       });
       notifyListeners();
-      return true;
+      return contentList;
     }
     if (dataMap['action'] == 4 && tries < 3) {
       await _renewToken();
       return getBaseTimeline(page, type, tries + 1);
     }
-    return false;
+    return [];
   }
 
-  Future<bool> getCausesCarrousel() async {
+  Future<List<CauseModel>> getCausesCarrousel() async {
     var url = '${API.baseURL}/timeLine/';
     final token = await _getToken();
 
-    _causesContent.clear();
     final Map parameters = {'page': 0, 'type': 'CA'};
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -138,31 +128,32 @@ class ContentProvider with ChangeNotifier, TextMixin {
     );
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return false;
+      return [];
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      await _saveToken(dataMap['session']['token']);
 
+      List<CauseModel> contentList = [];
       List timeLine = dataMap['timeline'];
-      if (timeLine.isEmpty) {
-        return false;
-      }
+
       timeLine.forEach((element) {
         Map content = element as Map;
         switch (content['type']) {
           case 'causes':
-            _causesContent.add(CauseModel.fromJson(content));
+            CauseModel cause = CauseModel.fromJson(content);
+            contentList.add(cause);
+            _causes[cause.id] = cause;
             break;
         }
       });
       notifyListeners();
-      return true;
+      return contentList;
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
       return getCausesCarrousel();
     }
-    return false;
+    return [];
   }
 
   Future<List<ContentModel>> getUserTimeline(
@@ -350,7 +341,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return [];
   }
 
-  Future<void> getTopUsers(page) async {
+  Future<List<UserModel>> getTopUsers(page) async {
     var url = '${API.baseURL}/topUsers/$page';
     final token = await _getToken();
 
@@ -368,23 +359,22 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
     final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
     if (dataMap == null) {
-      return;
+      return [];
     }
 
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      await _saveToken(dataMap['session']['token']);
+      List<UserModel> userList = [];
 
-      if (page == 0)
-        _usersList = UserModel.listFromJson(dataMap['users']);
-      else
-        _usersList.addAll(UserModel.listFromJson(dataMap['users']));
-      notifyListeners();
+      userList.addAll(UserModel.listFromJson(dataMap['users']));
+
+      return userList;
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
       return getTopUsers(page);
     }
-    return;
+    return [];
   }
 
   Future<List<ContentModel>> getCategory(String category, int page) async {
@@ -785,34 +775,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
           _causes[content.id] = content;
           break;
       }
-      if (type == 'CA') {
-        final index2 = _causesContent.indexWhere((element) => element.id == id);
-        CauseModel oldCause = _causesContent[index2];
-        final content = CauseModel(
-            id: oldCause.id,
-            type: oldCause.type,
-            account: oldCause.account,
-            by: oldCause.by,
-            certificate: oldCause.certificate,
-            createdAt: oldCause.createdAt,
-            creator: oldCause.creator,
-            description: oldCause.description,
-            goal: oldCause.goal,
-            hasLiked: hasLiked,
-            hasRegalup: oldCause.hasRegalup,
-            hasSaved: oldCause.hasSaved,
-            info: oldCause.info,
-            likes: hasLiked ? oldCause.likes + 1 : oldCause.likes - 1,
-            phone: oldCause.phone,
-            regalups: oldCause.regalups,
-            resources: oldCause.resources,
-            title: oldCause.title,
-            user: oldCause.user,
-            web: oldCause.web);
-        if (index2 != -1) {
-          _causesContent[index2] = content;
-        }
-      }
+
       notifyListeners();
 
       return hasLiked;

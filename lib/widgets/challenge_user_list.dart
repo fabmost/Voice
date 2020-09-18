@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'challenge_tile.dart';
+import 'user_challenge_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 import '../models/content_model.dart';
@@ -28,7 +29,7 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
   bool _hasMore = true;
 
   Widget _challengeWidget(ChallengeModel content) {
-    return ChallengeTile(
+    return UserChallengeTile(
       reference: 'user',
       id: content.id,
       date: content.createdAt,
@@ -46,6 +47,7 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
       resources: content.resources,
+      removeFunction: _removeContent,
     );
   }
 
@@ -103,6 +105,12 @@ class _ChallengeUserListState extends State<ChallengeUserList> {
       }
     }
     return true;
+  }
+
+  void _removeContent(id) {
+    setState(() {
+      _list.removeWhere((element) => element.id == id);
+    });
   }
 
   void _getData() async {
