@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+//import 'package:video_compress/video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -52,30 +53,20 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
           color: Colors.transparent,
           child: new Wrap(
             children: <Widget>[
-              if (Platform.isIOS)
-                ListTile(
-                  onTap: () => _openCamera(),
-                  leading: Icon(
-                    Icons.camera_alt,
-                  ),
-                  title: Text("Cámara"),
+              ListTile(
+                onTap: () => _openCamera(),
+                leading: Icon(
+                  Icons.camera_alt,
                 ),
-              if (Platform.isAndroid)
-                ListTile(
-                  onTap: () => _openCamera(),
-                  leading: Icon(
-                    Icons.camera_alt,
-                  ),
-                  title: Text("Foto"),
+                title: Text("Foto"),
+              ),
+              ListTile(
+                onTap: () => _takeVideo(),
+                leading: Icon(
+                  Icons.videocam,
                 ),
-              if (Platform.isAndroid)
-                ListTile(
-                  onTap: () => _takeVideo(),
-                  leading: Icon(
-                    Icons.videocam,
-                  ),
-                  title: Text("Video"),
-                ),
+                title: Text("Video"),
+              ),
               ListTile(
                 onTap: () => _openGallery(),
                 leading: Icon(
@@ -97,34 +88,20 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
 
   void _openGallery() {
     Navigator.of(context).pop();
-    if (Platform.isIOS)
-      _getPicture();
-    else {
-      Navigator.of(context)
-          .pushNamed(GalleryScreen.routeName)
-          .then((value) async {
-        if (value != null) {
-          AssetEntity asset = value as AssetEntity;
-          if (asset.type == AssetType.video) {
-            File videoFile = await asset.file;
-            _trimVideo(videoFile);
-          } else {
-            File imgFile = await asset.file;
-            _cropImage(imgFile.path);
-          }
+    Navigator.of(context)
+        .pushNamed(GalleryScreen.routeName)
+        .then((value) async {
+      if (value != null) {
+        AssetEntity asset = value as AssetEntity;
+        if (asset.type == AssetType.video) {
+          File videoFile = await asset.file;
+          _trimVideo(videoFile);
+        } else {
+          File imgFile = await asset.file;
+          _cropImage(imgFile.path);
         }
-      });
-    }
-  }
-
-  Future<void> _getPicture() async {
-    final imageFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-    );
-    if (imageFile != null) {
-      _cropImage(imageFile.path);
-    }
+      }
+    });
   }
 
   Future<void> _takePicture() async {
@@ -155,14 +132,15 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoThumbnail.thumbnailFile(
-          video: value,
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
+          value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
-          _imageFile = File(mFile);
+          _imageFile = mFile;
           _videoFile = File(value);
         });
       }

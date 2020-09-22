@@ -29,6 +29,7 @@ class CauseModel extends ContentModel {
     hasRegalup,
     hasSaved,
     certificate,
+    thumbnail,
     this.description,
     this.by,
     this.info,
@@ -50,6 +51,7 @@ class CauseModel extends ContentModel {
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,
           certificate: certificate,
+          thumbnail: thumbnail,
         );
 
   static CauseModel fromJson(Map content) {

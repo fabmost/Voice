@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'user_model.dart';
 import 'certificate_model.dart';
 
@@ -15,6 +17,7 @@ class ContentModel {
   final bool hasRegalup;
   final bool hasSaved;
   final CertificateModel certificate;
+  final Uint8List thumbnail;
 
   ContentModel({
     this.id,
@@ -30,5 +33,6 @@ class ContentModel {
     this.hasRegalup,
     this.hasSaved,
     this.certificate,
+    this.thumbnail,
   });
 }

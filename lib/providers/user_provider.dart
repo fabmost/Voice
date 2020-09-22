@@ -15,11 +15,13 @@ class UserProvider with ChangeNotifier, TextMixin {
   final String _myUser;
   final _storage = FlutterSecureStorage();
   UserModel _currentUser;
+  Map<String, UserModel> _users = {};
 
   UserProvider(this._myUser);
 
   String get getUser => _myUser;
   UserModel get getUserModel => _currentUser;
+  Map<String, UserModel> get getUsers => {..._users};
 
   Future<UserModel> userProfile() async {
     var url = '${API.baseURL}/profile/$_myUser';
@@ -215,8 +217,22 @@ class UserProvider with ChangeNotifier, TextMixin {
       return null;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
-      return dataMap['is_following'];
+      await _saveToken(dataMap['session']['token']);
+      bool isFollowing = dataMap['is_following'];
+      if (_users.containsKey(id)) {
+        UserModel oldUser = _users[id];
+        final newUser = UserModel(
+          name: oldUser.name,
+          lastName: oldUser.lastName,
+          userName: oldUser.userName,
+          icon: oldUser.icon,
+          certificate: oldUser.certificate,
+          isFollowing: isFollowing,
+        );
+        _users[newUser.userName] = newUser;
+        notifyListeners();
+      }
+      return isFollowing;
     }
     if (dataMap['alert']['action'] == 4) {
       await _renewToken();
@@ -251,9 +267,13 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
 
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
-
-      return UserModel.listFromJson(dataMap['followers']);
+      await _saveToken(dataMap['session']['token']);
+      List<UserModel> mUsers = UserModel.listFromJson(dataMap['followers']);
+      mUsers.forEach((element) {
+        _users[element.userName] = element;
+      });
+      notifyListeners();
+      return mUsers;
     }
     if (dataMap['action'] == 4) {
       await _renewToken();
@@ -289,9 +309,14 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
 
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      await _saveToken(dataMap['session']['token']);
 
-      return UserModel.listFromJson(dataMap['followings']);
+      List<UserModel> mUsers = UserModel.listFromJson(dataMap['followings']);
+      mUsers.forEach((element) {
+        _users[element.userName] = element;
+      });
+      notifyListeners();
+      return mUsers;
     }
     if (dataMap['action'] == 4) {
       await _renewToken();

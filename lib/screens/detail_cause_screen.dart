@@ -197,7 +197,8 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   Widget _challengeGoal(context) {
     if (_causeModel.resources != null && _causeModel.resources.isNotEmpty) {
       if (_causeModel.resources[0].type == 'V')
-        return PollVideo(_causeModel.resources[0].url, null);
+        return PollVideo(
+            _causeModel.id, 'CA', _causeModel.resources[0].url, null);
       if (_causeModel.resources[0].type == 'I')
         return PollImages([_causeModel.resources[0].url], null);
     }

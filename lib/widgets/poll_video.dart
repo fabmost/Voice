@@ -1,16 +1,18 @@
-import 'dart:io';
-
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+
+import 'poll_video_thumb.dart';
 
 class PollVideo extends StatefulWidget {
+  final String id;
+  final String type;
   final String videoUrl;
   final Function _playVideo;
 
   PollVideo(
+    this.id,
+    this.type,
     this.videoUrl,
     this._playVideo,
   );
@@ -22,26 +24,11 @@ class PollVideo extends StatefulWidget {
 class _PollVideoState extends State<PollVideo> {
   VideoPlayerController _controller;
   ChewieController _chewieController;
-  File _thumbnailTemp;
   bool _isPlaying = false;
   bool _isLoading = false;
 
-  void _getThumbnail() async {
-    final dir = await getExternalStorageDirectory();
-    final mFile = await VideoThumbnail.thumbnailFile(
-        video: widget.videoUrl,
-        thumbnailPath: dir.path,
-        imageFormat: ImageFormat.JPEG,
-        quality: 50,
-        timeMs: 1000);
-    setState(() {
-      _thumbnailTemp = File(mFile);
-    });
-  }
-
   @override
   void initState() {
-    _getThumbnail();
     super.initState();
   }
 
@@ -101,9 +88,11 @@ class _PollVideoState extends State<PollVideo> {
                   ? AspectRatio(
                       aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(_controller))
-                  : _thumbnailTemp != null
-                      ? Image.file(_thumbnailTemp)
-                      : Center(child: CircularProgressIndicator()),
+                  : PollVideoThumb(
+                      id: widget.id,
+                      type: widget.type,
+                      videoUrl: widget.videoUrl,
+                    ),
               if (!_isPlaying)
                 CircleAvatar(
                   backgroundColor: Colors.white,

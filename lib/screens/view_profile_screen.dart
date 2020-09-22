@@ -100,42 +100,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
   }
 
   void _blockContent(context, userId) async {
-    /*
-    final myUser = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(userId).get();
-
-    WriteBatch batch = Firestore.instance.batch();
-    final List creations = userData['created'] ?? [];
-    if (userData['reposted'] != null) {
-      (userData['reposted'] as List).forEach((element) {
-        creations.add(element.values.first);
-      });
-    }
-    batch.updateData(
-      Firestore.instance.collection('users').document(userId),
-      {
-        'followers': FieldValue.arrayRemove([myUser.uid]),
-        'followers_count': FieldValue.increment(-1)
-      },
-    );
-    batch.updateData(
-      Firestore.instance.collection('users').document(myUser.uid),
-      {
-        'following': FieldValue.arrayRemove([userId])
-      },
-    );
-    creations.forEach((element) {
-      batch.updateData(
-        Firestore.instance.collection('content').document(element),
-        {
-          'home': FieldValue.arrayRemove([myUser.uid]),
-          'flag': FieldValue.arrayUnion([myUser.uid])
-        },
-      );
-    });
-    await batch.commit();
-    */
+    
     Navigator.of(context).pop();
   }
 

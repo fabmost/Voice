@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+//import 'package:video_compress/video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -132,13 +133,15 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await VideoThumbnail.thumbnailFile(
-          video: value,
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
+          value,
+          //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
-          _imageFile = File(mFile);
+          _imageFile = mFile;
           _videoFile = File(value);
         });
       }

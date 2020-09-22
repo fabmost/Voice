@@ -503,8 +503,48 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     final Uri deepLink = data?.link;
 
     if (deepLink != null) {
-      Navigator.pushNamed(context, '/${deepLink.pathSegments[0]}',
-          arguments: deepLink.pathSegments[1]);
+      switch (deepLink.pathSegments[0]) {
+        case 'poll':
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailPollScreen(
+                id: deepLink.pathSegments[1],
+              ),
+            ),
+          );
+          break;
+        case 'challenge':
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailChallengeScreen(
+                id: deepLink.pathSegments[1],
+              ),
+            ),
+          );
+          break;
+        case 'tip':
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailTipScreen(
+                id: deepLink.pathSegments[1],
+              ),
+            ),
+          );
+          break;
+        case 'cause':
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailCauseScreen(
+                id: deepLink.pathSegments[1],
+              ),
+            ),
+          );
+          break;
+      }
     }
 
     FirebaseDynamicLinks.instance.onLink(

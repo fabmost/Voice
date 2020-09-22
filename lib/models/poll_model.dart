@@ -29,6 +29,7 @@ class PollModel extends ContentModel {
     hasRegalup,
     hasSaved,
     certificate,
+    thumbnail,
     this.body,
     this.description,
     this.votes,
@@ -49,6 +50,7 @@ class PollModel extends ContentModel {
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,
           certificate: certificate,
+          thumbnail: thumbnail,
         );
 
   static PollModel fromJson(Map content) {

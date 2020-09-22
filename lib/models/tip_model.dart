@@ -27,6 +27,7 @@ class TipModel extends ContentModel {
       hasRegalup,
       hasSaved,
       certificate,
+      thumbnail,
       this.body,
       this.description,
       this.resources,
@@ -46,6 +47,7 @@ class TipModel extends ContentModel {
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,
           certificate: certificate,
+          thumbnail: thumbnail,
         );
 
   static TipModel fromJson(Map content) {

@@ -26,6 +26,7 @@ class ChallengeModel extends ContentModel {
     hasRegalup,
     hasSaved,
     certificate,
+    thumbnail,
     this.description,
     this.parameter,
     this.goal,
@@ -44,6 +45,7 @@ class ChallengeModel extends ContentModel {
           hasRegalup: hasRegalup,
           hasSaved: hasSaved,
           certificate: certificate,
+          thumbnail: thumbnail,
         );
 
   static ChallengeModel fromJson(Map content) {

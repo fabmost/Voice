@@ -2,11 +2,12 @@ import 'dart:io';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+//import 'package:video_compress/video_compress.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
@@ -29,7 +30,7 @@ class NewPollScreen extends StatefulWidget {
   _NewPollScreenState createState() => _NewPollScreenState();
 }
 
-class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
+class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   bool _isLoading = false;
   bool _isSearching = false;
   bool _isVideo = false;
@@ -288,13 +289,14 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
       }),
     ).then((value) async {
       if (value != null) {
-          final mFile = await VideoThumbnail.thumbnailFile(
-          video: value,
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
+          value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
-          _videoThumb = File(mFile);
+          _videoThumb = mFile;
           _videoFile = File(value);
           _isVideo = true;
         });
@@ -516,6 +518,16 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin{
               .uploadResource(
         element.path,
         'I',
+        'P',
+      );
+      images.add({"id": idResource});
+    }
+    if (_videoFile != null) {
+      final idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadResource(
+        _videoFile.path,
+        'V',
         'P',
       );
       images.add({"id": idResource});

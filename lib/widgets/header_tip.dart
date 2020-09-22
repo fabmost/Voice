@@ -68,7 +68,8 @@ class HeaderTip extends StatelessWidget with ShareContent {
 
   Widget _challengeGoal(context) {
     ResourceModel resource = tipModel.resources[0];
-    if (resource.type == 'V') return PollVideo(resource.url, null);
+    if (resource.type == 'V')
+      return PollVideo(tipModel.id, 'TIP', resource.url, null);
     if (resource.type == 'I') return PollImages([resource.url], '');
     return Container();
   }

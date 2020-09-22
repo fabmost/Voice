@@ -77,7 +77,8 @@ class PollTile extends StatelessWidget with ShareContent {
   }
 
   Widget _handleResources() {
-    if (resources[0].type == 'V') return PollVideo(resources[0].url, null);
+    if (resources[0].type == 'V')
+      return PollVideo(id, 'P', resources[0].url, null);
     List urls = resources.map((e) => e.url).toList();
     return PollImages(urls, reference);
   }

@@ -185,10 +185,7 @@ class UserCauseTile extends StatelessWidget with ShareContent {
   Widget _challengeGoal(context) {
     if (resources != null && resources.isNotEmpty) {
       if (resources[0].type == 'V')
-        return PollVideo(
-          resources[0].url,
-          null,
-        );
+        return PollVideo(id, 'CA', resources[0].url, null);
       if (resources[0].type == 'I')
         return PollImages(
           [resources[0].url],

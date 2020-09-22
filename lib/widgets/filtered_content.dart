@@ -265,6 +265,26 @@ class _FilteredContentState extends State<FilteredContent>
     loadMoreStatus = LoadMoreStatus.STABLE;
   }
 
+  Future<void> _resetData() async {
+    loadMoreStatus = LoadMoreStatus.LOADING;
+    _currentPageNumber = 0;
+
+    List results = await Provider.of<ContentProvider>(context, listen: false)
+        .getCategory(widget.category, _currentPageNumber);
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        if (results.length < 10) {
+          _hasMore = false;
+        }
+        _list = results;
+      }
+    });
+    loadMoreStatus = LoadMoreStatus.STABLE;
+    return;
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -286,38 +306,41 @@ class _FilteredContentState extends State<FilteredContent>
         ? Center(child: CircularProgressIndicator())
         : NotificationListener(
             onNotification: onNotification,
-            child: ListView.builder(
-              controller: scrollController,
-              itemCount: _hasMore ? _list.length + 1 : _list.length,
-              itemBuilder: (context, i) {
-                if (i == _list.length)
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 16),
-                    alignment: Alignment.center,
-                    child: CircularProgressIndicator(),
-                  );
-                final doc = _list[i];
-                switch (doc.type) {
-                  case 'poll':
-                    return _pollWidget(doc);
-                  case 'challenge':
-                    return _challengeWidget(doc);
-                  case 'Tips':
-                    return _tipWidget(doc);
-                  case 'causes':
-                    return _causeWidget(doc);
-                  case 'regalup_p':
-                    return _repostPollWidget(doc);
-                  case 'regalup_c':
-                    return _repostChallengeWidget(doc);
-                  case 'repost-cause':
-                    return _repostCauseWidget(doc);
-                  case 'regalup_ti':
-                    return _repostTipWidget(doc);
-                  default:
-                    return SizedBox();
-                }
-              },
+            child: RefreshIndicator(
+              onRefresh: _resetData,
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: _hasMore ? _list.length + 1 : _list.length,
+                itemBuilder: (context, i) {
+                  if (i == _list.length)
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                      alignment: Alignment.center,
+                      child: CircularProgressIndicator(),
+                    );
+                  final doc = _list[i];
+                  switch (doc.type) {
+                    case 'poll':
+                      return _pollWidget(doc);
+                    case 'challenge':
+                      return _challengeWidget(doc);
+                    case 'Tips':
+                      return _tipWidget(doc);
+                    case 'causes':
+                      return _causeWidget(doc);
+                    case 'regalup_p':
+                      return _repostPollWidget(doc);
+                    case 'regalup_c':
+                      return _repostChallengeWidget(doc);
+                    case 'repost-cause':
+                      return _repostCauseWidget(doc);
+                    case 'regalup_ti':
+                      return _repostTipWidget(doc);
+                    default:
+                      return SizedBox();
+                  }
+                },
+              ),
             ),
           );
   }

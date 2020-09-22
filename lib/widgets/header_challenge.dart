@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -84,7 +83,8 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         challengeModel.resources.isNotEmpty) {
       ResourceModel resource = challengeModel.resources[0];
 
-      if (resource.type == 'V') return PollVideo(resource.url, null);
+      if (resource.type == 'V')
+        return PollVideo(challengeModel.id, 'C', resource.url, null);
       if (resource.type == 'I') return PollImages([resource.url], 'detail');
     }
     return Container();
@@ -153,7 +153,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
         ),
         SizedBox(height: 16),
         _challengeGoal(context),
-        if(challengeModel.goal > 0) ChallengeMeter(challengeModel.id),
+        if (challengeModel.goal > 0) ChallengeMeter(challengeModel.id),
         SizedBox(height: 16),
         if (challengeModel.description != null &&
             challengeModel.description.isNotEmpty)

@@ -162,16 +162,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               return null;
           }
         },
-        leading: model.icon != null
-            ? CircleAvatar(
-                radius: 21,
-                backgroundColor: Theme.of(context).accentColor,
-                backgroundImage: NetworkImage(model.icon),
-              )
-            : Icon(
-                Icons.notifications,
-                color: Colors.black,
-              ),
+        leading: CircleAvatar(
+          radius: 21,
+          backgroundColor: Theme.of(context).accentColor,
+          backgroundImage: model.icon == null ? null : NetworkImage(model.icon),
+        ),
         title: Text(model.message),
       ),
     );

@@ -32,6 +32,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
   //var _enteredMessage = '';
   var _toCheck = '';
   bool _isSearching = false;
+  bool _isLoading = false;
 
   Widget _userTile(context, content) {
     return ListTile(
@@ -57,6 +58,9 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
   }
 
   void _sendComment() async {
+    setState(() {
+      _isLoading = true;
+    });
     FocusScope.of(context).unfocus();
     if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       anonymousAlert(context);
@@ -92,6 +96,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
     widget.function(result);
     setState(() {
       _controller.clear();
+      _isLoading = false;
     });
   }
 
@@ -170,7 +175,7 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
           IconButton(
             color: Theme.of(context).primaryColor,
             icon: Icon(Icons.send),
-            onPressed: _toCheck.trim().isEmpty ? null : _sendComment,
+            onPressed: _isLoading ? null : _toCheck.trim().isEmpty ? null : _sendComment,
           )
         ],
       ),

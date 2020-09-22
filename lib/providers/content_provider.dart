@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:voice_inc/models/poll_answer_model.dart';
 import 'package:voice_inc/models/user_model.dart';
 
@@ -1242,8 +1244,10 @@ class ContentProvider with ChangeNotifier, TextMixin {
           _tips[content.id] = content;
           break;
       }
+      CommentModel commentObj = CommentModel.fromJson(dataMap['comment']);
+      _comments[commentObj.id] = commentObj;
       notifyListeners();
-      return CommentModel.fromJson(dataMap['comment']);
+      return commentObj;
     }
     return null;
   }
@@ -1650,6 +1654,132 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return true;
     }
     return false;
+  }
+
+  Future<void> setThumbnail({String type, String id, video}) async {
+    Uint8List mFile;
+    if (Platform.isIOS) {
+      mFile = await VideoThumbnail.thumbnailData(
+        video: video,
+        imageFormat: ImageFormat.JPEG,
+        quality: 50,
+      );
+    } else if (Platform.isAndroid) {
+      mFile = await VideoThumbnail.thumbnailData(
+        video: video,
+        imageFormat: ImageFormat.JPEG,
+        quality: 50,
+        timeMs: 1000,
+      );
+    }
+    if (mFile == null) return;
+
+    switch (type) {
+      case 'P':
+        PollModel oldPoll = _polls[id];
+        final content = PollModel(
+          id: oldPoll.id,
+          type: oldPoll.type,
+          user: oldPoll.user,
+          title: oldPoll.title,
+          createdAt: oldPoll.createdAt,
+          votes: oldPoll.votes,
+          likes: oldPoll.likes,
+          regalups: oldPoll.regalups,
+          comments: oldPoll.comments,
+          hasVoted: oldPoll.hasVoted,
+          hasLiked: oldPoll.hasLiked,
+          hasRegalup: oldPoll.hasRegalup,
+          hasSaved: oldPoll.hasSaved,
+          answers: oldPoll.answers,
+          resources: oldPoll.resources,
+          body: oldPoll.body,
+          certificate: oldPoll.certificate,
+          creator: oldPoll.creator,
+          description: oldPoll.description,
+          thumbnail: mFile,
+        );
+        _polls[content.id] = content;
+        break;
+      case 'C':
+        ChallengeModel oldChallenge = _challenges[id];
+        final content = ChallengeModel(
+          id: oldChallenge.id,
+          type: oldChallenge.type,
+          user: oldChallenge.user,
+          title: oldChallenge.title,
+          createdAt: oldChallenge.createdAt,
+          likes: oldChallenge.likes,
+          regalups: oldChallenge.regalups,
+          comments: oldChallenge.comments,
+          hasLiked: oldChallenge.hasLiked,
+          hasRegalup: oldChallenge.hasRegalup,
+          hasSaved: oldChallenge.hasSaved,
+          resources: oldChallenge.resources,
+          certificate: oldChallenge.certificate,
+          creator: oldChallenge.creator,
+          description: oldChallenge.description,
+          goal: oldChallenge.goal,
+          parameter: oldChallenge.parameter,
+          thumbnail: mFile,
+        );
+        _challenges[content.id] = content;
+        break;
+      case 'TIP':
+        TipModel oldTip = _tips[id];
+        final content = TipModel(
+          id: oldTip.id,
+          type: oldTip.type,
+          user: oldTip.user,
+          title: oldTip.title,
+          createdAt: oldTip.createdAt,
+          likes: oldTip.likes,
+          regalups: oldTip.regalups,
+          comments: oldTip.comments,
+          hasLiked: oldTip.hasLiked,
+          hasRegalup: oldTip.hasRegalup,
+          hasSaved: oldTip.hasSaved,
+          resources: oldTip.resources,
+          certificate: oldTip.certificate,
+          creator: oldTip.creator,
+          description: oldTip.description,
+          body: oldTip.body,
+          hasRated: oldTip.hasRated,
+          total: oldTip.total,
+          thumbnail: mFile,
+        );
+        _tips[content.id] = content;
+        break;
+      case 'CA':
+        CauseModel oldCause = _causes[id];
+        final content = CauseModel(
+          id: oldCause.id,
+          type: oldCause.type,
+          account: oldCause.account,
+          by: oldCause.by,
+          certificate: oldCause.certificate,
+          createdAt: oldCause.createdAt,
+          creator: oldCause.creator,
+          description: oldCause.description,
+          goal: oldCause.goal,
+          hasLiked: oldCause.hasLiked,
+          hasRegalup: oldCause.hasRegalup,
+          hasSaved: oldCause.hasSaved,
+          info: oldCause.info,
+          likes: oldCause.likes,
+          phone: oldCause.phone,
+          regalups: oldCause.regalups,
+          resources: oldCause.resources,
+          title: oldCause.title,
+          user: oldCause.user,
+          web: oldCause.web,
+          thumbnail: mFile,
+        );
+        _causes[content.id] = content;
+        break;
+    }
+    notifyListeners();
+    return;
   }
 
   Future<String> _getToken() {
