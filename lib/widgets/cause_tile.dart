@@ -12,9 +12,11 @@ import 'regalup_content.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import '../translations.dart';
+import '../models/cause_model.dart';
 import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
 import '../screens/view_profile_screen.dart';
 
 class CauseTile extends StatelessWidget with ShareContent {
@@ -248,7 +250,6 @@ class CauseTile extends StatelessWidget with ShareContent {
             CauseButton(
               id: id,
               hasLike: hasLiked,
-              setVotes: null,
             ),
             if (phone != null)
               ListTile(
@@ -295,7 +296,12 @@ class CauseTile extends StatelessWidget with ShareContent {
                     onPressed: _share,
                   ),
                   Expanded(child: SizedBox(height: 1)),
-                  Text(likes == 0 ? '' : '$likes Votos'),
+                  Consumer<ContentProvider>(
+                    builder: (context, value, child) {
+                      CauseModel mCause = value.getCausesList[id];
+                      return Text(likes == 0 ? '' : '${mCause.likes} Votos');
+                    }
+                  ),
                   SizedBox(width: 16),
                 ],
               ),

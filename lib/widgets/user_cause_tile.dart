@@ -292,7 +292,6 @@ class UserCauseTile extends StatelessWidget with ShareContent {
             CauseButton(
               id: id,
               hasLike: hasLiked,
-              setVotes: null,
             ),
             if (phone != null)
               ListTile(

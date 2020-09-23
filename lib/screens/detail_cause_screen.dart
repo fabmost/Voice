@@ -124,12 +124,6 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
     });
   }
 
-  void _setLike(isLike) {
-    setState(() {
-      isLike ? _likes++ : _likes--;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -245,7 +239,6 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
                     CauseButton(
                       id: _causeModel.id,
                       hasLike: _causeModel.hasLiked,
-                      setVotes: _setLike,
                     ),
                     if (_causeModel.phone != null)
                       ListTile(
@@ -292,7 +285,13 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
                             onPressed: _share,
                           ),
                           Expanded(child: SizedBox(height: 1)),
-                          Text(_likes == 0 ? '' : '$_likes Votos'),
+                          Consumer<ContentProvider>(
+                              builder: (context, value, child) {
+                            CauseModel mCause =
+                                value.getCausesList[_causeModel.id];
+                            return Text(
+                                _likes == 0 ? '' : '${mCause.likes} Votos');
+                          }),
                           SizedBox(width: 16),
                         ],
                       ),

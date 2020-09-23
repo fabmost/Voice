@@ -37,6 +37,7 @@ import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
 import 'detail_tip_screen.dart';
 import 'detail_cause_screen.dart';
+import 'view_profile_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -544,6 +545,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             ),
           );
           break;
+        case 'profile':
+          Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
+              arguments: deepLink.pathSegments[1]);
+          break;
       }
     }
 
@@ -592,6 +597,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 ),
               ),
             );
+            break;
+          case 'profile':
+            Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
+                arguments: deepLink.pathSegments[1]);
             break;
         }
       }
