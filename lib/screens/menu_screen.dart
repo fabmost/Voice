@@ -269,7 +269,6 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       }
       return;
     });
-    fm.subscribeToTopic('cause');
     fm.getToken().then((token) {
       Provider.of<AuthProvider>(context, listen: false).setFCM(token);
     });
@@ -546,6 +545,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           );
           break;
         case 'profile':
+          String userName =
+              Provider.of<UserProvider>(context, listen: false).getUser;
+          if (userName != null && userName == deepLink.pathSegments[1]) {
+            _bottomBarSelect(3);
+            return;
+          }
           Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
               arguments: deepLink.pathSegments[1]);
           break;
@@ -599,6 +604,12 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             );
             break;
           case 'profile':
+            String userName =
+                Provider.of<UserProvider>(context, listen: false).getUser;
+            if (userName != null && userName == deepLink.pathSegments[1]) {
+              _bottomBarSelect(3);
+              return;
+            }
             Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
                 arguments: deepLink.pathSegments[1]);
             break;

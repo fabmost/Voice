@@ -1,6 +1,7 @@
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'comment_options.dart';
 import 'influencer_badge.dart';
@@ -24,6 +25,9 @@ class CommentTile extends StatelessWidget {
   final bool hasUp;
   final bool hasDown;
   final certificate;
+
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
   CommentTile({
     @required this.contentId,
@@ -64,6 +68,18 @@ class CommentTile extends StatelessWidget {
         builder: (context) => SearchResultsScreen(hashtag),
       ),
     );
+  }
+
+  void _launchURL(String url) async {
+    String newUrl = url;
+    if (!url.contains('http')) {
+      newUrl = 'http://$url';
+    }
+    if (await canLaunch(newUrl.trim())) {
+      await launch(newUrl.trim());
+    } else {
+      throw 'Could not launch $newUrl';
+    }
   }
 
   @override
@@ -120,6 +136,8 @@ class CommentTile extends StatelessWidget {
                 _toProfile(context, toRemove);
               } else if (parameter.toString().startsWith('#')) {
                 _toHash(context, parameter.toString());
+              } else if (regex.hasMatch(parameter.toString())) {
+                _launchURL(parameter.toString());
               }
             },
           ),
