@@ -19,7 +19,7 @@ class CommentsList extends StatefulWidget {
   _CommentsListState createState() => _CommentsListState();
 }
 
-class _CommentsListState extends State<CommentsList> {
+class _CommentsListState extends State<CommentsList> with AutomaticKeepAliveClientMixin<CommentsList>{
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
   List<CommentModel> _list = [];
@@ -87,6 +87,9 @@ class _CommentsListState extends State<CommentsList> {
       _list.insert(0, comment);
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {

@@ -88,6 +88,9 @@ class _FollowingScreenState extends State<FollowingScreen> {
       if (users.isEmpty) {
         _hasMore = false;
       }
+      if(users.length < 20){
+        _hasMore = false;
+      }
       _userList = users;
       _isLoading = false;
     });

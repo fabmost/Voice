@@ -5,23 +5,24 @@ import 'tip_tile.dart';
 import 'user_tip_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/content_model.dart';
 import '../models/tip_model.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
 class TipUserList extends StatefulWidget {
-  final String userId;
   final ScrollController scrollController;
   final Function setVideo;
 
-  TipUserList(this.userId, this.scrollController, this.setVideo);
+  TipUserList(this.scrollController, this.setVideo);
 
   @override
   _TipListState createState() => _TipListState();
 }
 
 class _TipListState extends State<TipUserList> {
+  String userId;
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<ContentModel> _list = [];
   int _currentPageNumber;
@@ -87,7 +88,7 @@ class _TipListState extends State<TipUserList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'TIP')
+              .getUserTimeline(userId, _currentPageNumber, 'TIP')
               .then((newContent) {
             setState(() {
               if (newContent.isEmpty) {
@@ -117,8 +118,9 @@ class _TipListState extends State<TipUserList> {
     setState(() {
       _isLoading = true;
     });
+    userId = Provider.of<UserProvider>(context, listen: false).getUser;
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'TIP');
+        .getUserTimeline(userId, _currentPageNumber, 'TIP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -137,7 +139,7 @@ class _TipListState extends State<TipUserList> {
     _currentPageNumber = 0;
 
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'TIP');
+        .getUserTimeline(userId, _currentPageNumber, 'TIP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;

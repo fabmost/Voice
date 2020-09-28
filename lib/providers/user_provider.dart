@@ -230,6 +230,14 @@ class UserProvider with ChangeNotifier, TextMixin {
           isFollowing: isFollowing,
         );
         _users[newUser.userName] = newUser;
+        if (isFollowing && _currentUser != null) {
+          int following = _currentUser.following + 1;
+          _currentUser.following = following;
+        }
+        if (!isFollowing && _currentUser != null) {
+          int following = _currentUser.following - 1;
+          _currentUser.following = following;
+        }
         notifyListeners();
       }
       return isFollowing;

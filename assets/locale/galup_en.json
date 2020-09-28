@@ -63,6 +63,7 @@
     "dialog_flag_content": "Your feedback es very important in helping us keep a safe community.",
     "dialog_block": "Are you sure you want to block this user?",
     "dialog_block_content": "We will no longer show you content from this user",
+    "dialog_rate": "Rate this tip",
     "error_missing": "Missing fields",
     "error_missing_name": "Name required",
     "error_missing_last_name": "Last name required",

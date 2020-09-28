@@ -10,13 +10,16 @@ import 'regalup_content.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'tip_total.dart';
+import 'tip_rating.dart';
 import 'menu_content.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../models/resource_model.dart';
+import '../models/tip_model.dart';
 import '../screens/view_profile_screen.dart';
 import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
 
 class TipTile extends StatelessWidget with ShareContent {
   final String reference;
@@ -68,8 +71,17 @@ class TipTile extends StatelessWidget with ShareContent {
     }
   }
 
-  void showVote() {
-    if (!hasRated) {}
+  void showVote(context) {
+    Map tips = Provider.of<ContentProvider>(context, listen: false).getTips;
+    TipModel tip = tips[id];
+    if (!tip.hasRated) {
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          child: TipRating(id),
+        ),
+      );
+    }
   }
 
   void _share() {
@@ -85,8 +97,9 @@ class TipTile extends StatelessWidget with ShareContent {
 
   @override
   Widget build(BuildContext context) {
-    final now = new DateTime.now();
+    final now = new DateTime.now().toUtc();
     final difference = now.difference(date);
+    final newDate = now.subtract(difference).toLocal();
 
     return Container(
       margin: const EdgeInsets.all(8),
@@ -152,7 +165,7 @@ class TipTile extends StatelessWidget with ShareContent {
                           InfluencerBadge(id, certificate, 16),
                         ],
                       ),
-                      subtitle: Text(timeago.format(now.subtract(difference),
+                      subtitle: Text(timeago.format(newDate,
                           locale: Translations.of(context).currentLanguage)),
                       trailing: MenuContent(
                         id: id,
@@ -206,7 +219,7 @@ class TipTile extends StatelessWidget with ShareContent {
                     type: 'TIP',
                     likes: likes,
                     hasLiked: hasLiked,
-                    tipFunction: showVote,
+                    tipFunction: () => showVote(context),
                   ),
                   RegalupContent(
                     id: id,

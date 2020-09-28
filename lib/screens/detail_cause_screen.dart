@@ -133,6 +133,8 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   Widget _userTile(context) {
     final now = new DateTime.now();
     final difference = now.difference(_causeModel.createdAt);
+    final newDate = now.subtract(difference).toLocal();
+
     return ListTile(
       onTap:
           _causeModel.user.userName == null ? null : () => _toProfile(context),
@@ -179,7 +181,7 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
             ),
       subtitle: _causeModel.info.isNotEmpty
           ? Text('Por: Galup')
-          : Text(timeago.format(now.subtract(difference))),
+          : Text(timeago.format(newDate, locale: Translations.of(context).currentLanguage)),
       trailing: MenuContent(
         id: _causeModel.id,
         isSaved: _causeModel.hasSaved,

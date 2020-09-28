@@ -15,20 +15,24 @@ class NewComment extends StatefulWidget {
   final String id;
   final String idComment;
   final Function function;
+  final bool focus;
 
   NewComment({
+    Key key,
     @required this.id,
     @required this.type,
     this.idComment,
     @required this.function,
-  });
+    this.focus = false,
+  }) : super(key: key);
 
   @override
-  _NewCommentState createState() => _NewCommentState();
+  NewCommentState createState() => NewCommentState();
 }
 
-class _NewCommentState extends State<NewComment> with AlertMixin{
+class NewCommentState extends State<NewComment> with AlertMixin {
   final _controller = TextEditingController();
+  final _focus = FocusNode();
   //var _enteredMessage = '';
   var _toCheck = '';
   bool _isSearching = false;
@@ -111,6 +115,11 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
         .getAutocomplete(realQuery);
     return results['users'];
   }
+  
+  void getFocus(String userName){
+    _controller.text = '@[$userName]$userName ';
+    _focus.requestFocus();
+  }
 
   @override
   void initState() {
@@ -127,8 +136,10 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
           Expanded(
             child: SuggestionField(
               textFieldConfiguration: TextFieldConfiguration(
+                autofocus: widget.focus,
                 spanBuilder: MySpecialTextSpanBuilder(),
                 controller: _controller,
+                focusNode: _focus,
                 textCapitalization: TextCapitalization.sentences,
                 keyboardType: TextInputType.multiline,
                 autocorrect: true,
@@ -163,7 +174,8 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
                 //TextSelection selection = _descriptionController.selection;
                 int index = _controller.text.lastIndexOf('@');
                 String subs = _controller.text.substring(0, index);
-                _controller.text = '$subs@[${suggestion.userName}]${suggestion.userName} ';
+                _controller.text =
+                    '$subs@[${suggestion.userName}]${suggestion.userName} ';
                 _controller.selection = TextSelection.fromPosition(
                     TextPosition(offset: _controller.text.length));
                 //_descFocus.requestFocus();
@@ -175,7 +187,9 @@ class _NewCommentState extends State<NewComment> with AlertMixin{
           IconButton(
             color: Theme.of(context).primaryColor,
             icon: Icon(Icons.send),
-            onPressed: _isLoading ? null : _toCheck.trim().isEmpty ? null : _sendComment,
+            onPressed: _isLoading
+                ? null
+                : _toCheck.trim().isEmpty ? null : _sendComment,
           )
         ],
       ),

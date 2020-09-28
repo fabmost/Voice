@@ -66,7 +66,7 @@ class ChallengeModel extends ContentModel {
               : CertificateModel.fromJson(content['certificates']),
       title: TextMixin.fixString(content['body']),
       description: TextMixin.fixString(content['description']),
-      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
+      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       parameter: content['med_param'],
       goal: content['goal'] == null ? 0 : int.parse(content['goal']),
       likes: content['likes'],

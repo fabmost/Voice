@@ -68,7 +68,7 @@ class TipModel extends ContentModel {
               : CertificateModel.fromJson(content['certificates']),
       title: TextMixin.fixString(content['title']),
       description: TextMixin.fixString(content['description']),
-      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
+      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       likes: content['likes'],
       regalups: content['regalups'],
       comments: content['comments'] ?? 0,

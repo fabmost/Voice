@@ -511,8 +511,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return null;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
-      if (dataMap['data']['id'] == 'null') return null;
+      if (dataMap['data']['id'] == 'null' || dataMap['data']['id'] == null) return null;
       switch (type) {
         case 'P':
           PollModel poll = PollModel.fromJson(dataMap['data']);
@@ -531,6 +530,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
           _tips[tip.id] = tip;
           return tip;
       }
+      await _saveToken(dataMap['session']['token']);
     }
     if (dataMap['alert']['action'] == 4) {
       await _renewToken();
@@ -1657,21 +1657,13 @@ class ContentProvider with ChangeNotifier, TextMixin {
   }
 
   Future<void> setThumbnail({String type, String id, video}) async {
-    Uint8List mFile;
-    if (Platform.isIOS) {
-      mFile = await VideoThumbnail.thumbnailData(
-        video: video,
-        imageFormat: ImageFormat.JPEG,
-        quality: 50,
-      );
-    } else if (Platform.isAndroid) {
-      mFile = await VideoThumbnail.thumbnailData(
-        video: video,
-        imageFormat: ImageFormat.JPEG,
-        quality: 50,
-        timeMs: 1000,
-      );
-    }
+    Uint8List mFile = await VideoThumbnail.thumbnailData(
+      video: video,
+      imageFormat: ImageFormat.JPEG,
+      quality: 50,
+      timeMs: 1000,
+    );
+
     if (mFile == null) return;
 
     switch (type) {
@@ -1870,6 +1862,22 @@ class ContentProvider with ChangeNotifier, TextMixin {
     final body = jsonEncode({'id_notify': id});
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+
+    int index = _notificationsList.indexWhere((element) => element.id == id);
+    if (index != -1) {
+      final model = _notificationsList[index];
+      _notificationsList[index] = NotificationModel(
+        id: model.id,
+        icon: model.icon,
+        idContent: model.idContent,
+        message: model.message,
+        type: model.type,
+        userName: model.userName,
+        isNew: false,
+      );
+      notifyListeners();
+    }
+
     final response = await http.post(url,
         headers: {
           'Content-Type': 'application/json',
@@ -1883,21 +1891,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return;
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
-      int index = _notificationsList.indexWhere((element) => element.id == id);
-      if (index != -1) {
-        final model = _notificationsList[index];
-        _notificationsList[index] = NotificationModel(
-          id: model.id,
-          icon: model.icon,
-          idContent: model.idContent,
-          message: model.message,
-          type: model.type,
-          userName: model.userName,
-          isNew: false,
-        );
-        notifyListeners();
-      }
+      await _saveToken(dataMap['session']['token']);
       return;
     }
     return;

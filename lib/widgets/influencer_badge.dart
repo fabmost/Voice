@@ -4,25 +4,27 @@ import '../models/certificate_model.dart';
 
 // ignore: must_be_immutable
 class InfluencerBadge extends StatelessWidget {
-  GlobalKey key;
   final String id;
   final CertificateModel certificate;
   final double size;
 
-  InfluencerBadge(this.id, this.certificate, this.size) {
-    key = GlobalObjectKey(this.id);
-  }
+  InfluencerBadge(
+    this.id,
+    this.certificate,
+    this.size,
+  );
 
   @override
   Widget build(BuildContext context) {
+    final mKey = new GlobalKey();
     return certificate == null
         ? Container()
         : Tooltip(
-            key: key,
+            key: mKey,
             message: 'Influencer ${certificate.description}',
             child: GestureDetector(
               onTap: () {
-                final dynamic tooltip = key.currentState;
+                final dynamic tooltip = mKey.currentState;
                 tooltip.ensureTooltipVisible();
               },
               child: Image.network(

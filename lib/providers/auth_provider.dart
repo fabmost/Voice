@@ -112,57 +112,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
       dataMap['categories'].forEach((e) async {
         Map dataMap = e as Map;
 
-        await dbProvider.saveCategory(
-          id: dataMap['id'],
-          name: dataMap['name'],
-          icon: dataMap['icon'],
-        );
-      });
-      dataMap['configs']['countries'].forEach((e) async {
-        Map dataMap = e as Map;
-
-        await dbProvider.saveCountry(
-          name: dataMap['name'],
-          code: dataMap['country_code'],
-          flag: dataMap['flag'],
-          phone: dataMap['code_phone'],
-        );
-      });
-      _token = dataMap['session']['token'];
-      return dataMap['session']['token'];
-    } else {
-      return null;
-    }
-  }
-
-  Future<String> getCatalogs() async {
-    var url = '${API.baseURL}/catalogs';
-    _token = await _storage.read(key: API.sessionToken) ?? null;
-
-    await FlutterUserAgent.init();
-    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        HttpHeaders.userAgentHeader: webViewUserAgent,
-        HttpHeaders.authorizationHeader: 'Bearer $_token'
-      },
-    );
-
-    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
-    if (dataMap == null) {
-      return null;
-    }
-
-    if (dataMap['status'] == 'success') {
-      DatabaseProvider dbProvider = DatabaseProvider();
-      await dbProvider.deleteAll();
-      dataMap['categories'].forEach((e) async {
-        Map dataMap = e as Map;
-
-        await dbProvider.saveCategory(
+        dbProvider.saveCategory(
           id: dataMap['id'],
           name: dataMap['name'],
           icon: dataMap['icon'],

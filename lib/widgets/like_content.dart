@@ -29,8 +29,11 @@ class LikeContent extends StatelessWidget with AlertMixin {
       anonymousAlert(context);
       return;
     }
-    await Provider.of<ContentProvider>(context, listen: false)
+    bool result = await Provider.of<ContentProvider>(context, listen: false)
         .likeContent(type, id);
+    if (result && tipFunction != null) {
+      tipFunction();
+    }
   }
 
   @override

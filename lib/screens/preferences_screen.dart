@@ -53,8 +53,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     });
     final mToken =
         await Provider.of<AuthProvider>(context, listen: false).installation();
-    final mList = await Provider.of<DatabaseProvider>(context, listen: false)
-        .getCategories();
+    final mList =
+        Provider.of<DatabaseProvider>(context, listen: false).getCategories;
     setState(() {
       _isLoading = false;
       _token = mToken;

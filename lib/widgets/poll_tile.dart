@@ -85,8 +85,9 @@ class PollTile extends StatelessWidget with ShareContent {
 
   @override
   Widget build(BuildContext context) {
-    final now = new DateTime.now();
+    final now = new DateTime.now().toUtc();
     final difference = now.difference(date);
+    final newDate = now.subtract(difference).toLocal();
 
     return Container(
       margin: const EdgeInsets.all(8),
@@ -153,7 +154,7 @@ class PollTile extends StatelessWidget with ShareContent {
                       ],
                     ),
                     subtitle: Text(
-                      timeago.format(now.subtract(difference),
+                      timeago.format(newDate,
                           locale: Translations.of(context).currentLanguage),
                     ),
                     trailing: MenuContent(

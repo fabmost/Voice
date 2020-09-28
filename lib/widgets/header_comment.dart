@@ -1,8 +1,11 @@
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'comment_header_options.dart';
+import 'influencer_badge.dart';
 import '../translations.dart';
 import '../models/comment_model.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -11,10 +14,13 @@ import '../screens/view_profile_screen.dart';
 import '../screens/detail_poll_screen.dart';
 import '../screens/detail_challenge_screen.dart';
 import '../screens/detail_tip_screen.dart';
+import '../providers/user_provider.dart';
 
 class HeaderComment extends StatelessWidget {
   final CommentModel comment;
   final bool fromNotification;
+  final RegExp regex = new RegExp(
+      r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
   HeaderComment(this.comment, this.fromNotification);
 
@@ -52,13 +58,28 @@ class HeaderComment extends StatelessWidget {
   }
 
   void _toTaggedProfile(context, id) {
-    Navigator.of(context).pushNamed(ViewProfileScreen.routeName, arguments: id);
+    if (Provider.of<UserProvider>(context, listen: false).getUser != id) {
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName, arguments: id);
+    }
   }
 
   void _toHash(context, hashtag) {
     MaterialPageRoute(
       builder: (context) => SearchResultsScreen(hashtag),
     );
+  }
+
+  void _launchURL(String url) async {
+    String newUrl = url;
+    if (!url.contains('http')) {
+      newUrl = 'http://$url';
+    }
+    if (await canLaunch(newUrl.trim())) {
+      await launch(newUrl.trim());
+    } else {
+      throw 'Could not launch $newUrl';
+    }
   }
 
   @override
@@ -80,21 +101,29 @@ class HeaderComment extends StatelessWidget {
             ),
           ),
         ListTile(
-          leading: CircleAvatar(
-            backgroundImage: comment.user.icon == null
-                ? null
-                : NetworkImage(comment.user.icon),
+          leading: GestureDetector(
+            onTap: () => _toTaggedProfile(context, comment.user.userName),
+            child: CircleAvatar(
+              backgroundImage: comment.user.icon == null
+                  ? null
+                  : NetworkImage(comment.user.icon),
+            ),
           ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Text(
-                comment.user.userName,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: GestureDetector(
+                  onTap: () => _toTaggedProfile(context, comment.user.userName),
+                  child: Text(
+                    comment.user.userName,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
+              InfluencerBadge(comment.id, comment.user.certificate, 16),
               Text(
                 timeago.format(now.subtract(difference),
                     locale: Translations.of(context).currentLanguage),
@@ -118,6 +147,8 @@ class HeaderComment extends StatelessWidget {
                 _toTaggedProfile(context, toRemove);
               } else if (parameter.toString().startsWith('#')) {
                 _toHash(context, parameter.toString());
+              } else if (regex.hasMatch(parameter.toString())) {
+                _launchURL(parameter.toString());
               }
             },
           ),

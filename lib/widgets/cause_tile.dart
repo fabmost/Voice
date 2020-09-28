@@ -130,6 +130,8 @@ class CauseTile extends StatelessWidget with ShareContent {
   Widget _userTile(context) {
     final now = new DateTime.now();
     final difference = now.difference(date);
+    final newDate = now.subtract(difference).toLocal();
+
     return ListTile(
       onTap: userName == null ? null : () => _toProfile(context),
       leading: CircleAvatar(
@@ -173,7 +175,7 @@ class CauseTile extends StatelessWidget with ShareContent {
             ),
       subtitle: info.isNotEmpty
           ? Text('Por: Galup')
-          : Text(timeago.format(now.subtract(difference),
+          : Text(timeago.format(newDate,
               locale: Translations.of(context).currentLanguage)),
       trailing: MenuContent(
         id: id,

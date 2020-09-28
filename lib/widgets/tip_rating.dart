@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 
+import '../translations.dart';
 import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
 import '../providers/auth_provider.dart';
@@ -45,6 +46,14 @@ class _TipRatingState extends State<TipRating> with AlertMixin {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          Text(
+            Translations.of(context).text('dialog_rate'),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
           RatingBar(
             minRating: 1,
             maxRating: 5,

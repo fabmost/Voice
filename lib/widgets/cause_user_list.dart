@@ -7,20 +7,21 @@ import '../custom/galup_font_icons.dart';
 import '../models/content_model.dart';
 import '../models/cause_model.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
 class CauseUserList extends StatefulWidget {
-  final String userId;
   final ScrollController scrollController;
 
-  CauseUserList(this.userId, this.scrollController);
+  CauseUserList(this.scrollController);
 
   @override
   _CauseUserListState createState() => _CauseUserListState();
 }
 
 class _CauseUserListState extends State<CauseUserList> {
+  String userId;
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<ContentModel> _list = [];
   int _currentPageNumber = 0;
@@ -90,7 +91,7 @@ class _CauseUserListState extends State<CauseUserList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'CA')
+              .getUserTimeline(userId, _currentPageNumber, 'CA')
               .then((newObjects) {
             setState(() {
               if (newObjects.isEmpty) {
@@ -120,8 +121,9 @@ class _CauseUserListState extends State<CauseUserList> {
     setState(() {
       _isLoading = true;
     });
+    userId = Provider.of<UserProvider>(context, listen: false).getUser;
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'CA');
+        .getUserTimeline(userId, _currentPageNumber, 'CA');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -140,7 +142,7 @@ class _CauseUserListState extends State<CauseUserList> {
     _currentPageNumber = 0;
 
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'CA');
+        .getUserTimeline(userId, _currentPageNumber, 'CA');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;

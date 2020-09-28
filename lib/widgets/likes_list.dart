@@ -20,7 +20,7 @@ class LikesList extends StatefulWidget {
   _LikesListState createState() => _LikesListState();
 }
 
-class _LikesListState extends State<LikesList> {
+class _LikesListState extends State<LikesList> with AutomaticKeepAliveClientMixin<LikesList>{
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
   List<UserModel> _list = [];
@@ -36,14 +36,15 @@ class _LikesListState extends State<LikesList> {
   }
 
   Widget _userTile(UserModel user) {
+    bool isAnon = user.userName.contains('ANONIMO');
     return ListTile(
-      onTap: () => _toProfile(user.userName),
+      onTap: () => isAnon ? null : _toProfile(user.userName),
       leading: CircleAvatar(
         backgroundImage: user.icon == null ? null : NetworkImage(user.icon),
       ),
       title: Row(
         children: <Widget>[
-          Text('${user.userName}'),
+          isAnon ? Text('Usuario anónimo') : Text('${user.userName}'),
           SizedBox(width: 8),
           InfluencerBadge(user.userName, user.certificate, 16),
         ],
@@ -109,6 +110,9 @@ class _LikesListState extends State<LikesList> {
       loadMoreStatus = LoadMoreStatus.STABLE;
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {

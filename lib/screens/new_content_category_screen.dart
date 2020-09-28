@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../translations.dart';
 import '../models/category_model.dart';
 import '../providers/database_provider.dart';
-import '../providers/auth_provider.dart';
 
 class NewContentCategoryScreen extends StatefulWidget {
   static const routeName = '/content-category';
@@ -283,10 +282,9 @@ class _NewContentCategoryScreenState extends State<NewContentCategoryScreen> {
     setState(() {
       _isLoading = true;
     });
-    final mList = await Provider.of<DatabaseProvider>(context, listen: false)
-        .getCategories();
+    final mList = Provider.of<DatabaseProvider>(context, listen: false).getCategories;
     if (mList.isEmpty) {
-      await Provider.of<AuthProvider>(context, listen: false).getCatalogs();
+      await Provider.of<DatabaseProvider>(context, listen: false).getCatalogs();
       _getCategories();
     }
     setState(() {

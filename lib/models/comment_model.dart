@@ -38,7 +38,7 @@ class CommentModel {
       parentId: element['parent_id'].toString(),
       parentType: element['parent_type'],
       id: element['id'],
-      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(element['datetime']),
+      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(element['datetime'], true),
       user: UserModel(
         userName: element['user']['user_name'],
         icon: element['user']['icon'],

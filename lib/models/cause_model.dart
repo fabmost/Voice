@@ -78,7 +78,7 @@ class CauseModel extends ContentModel {
       phone: content['phone'],
       web: content['web'],
       account: content['account'],
-      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime']),
+      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       likes: content['likes'],
       regalups: content['regalups'],
       hasLiked: content['is_like'],

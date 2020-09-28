@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../widgets/header_comment.dart';
-import '../widgets/comment_tile.dart';
+import '../widgets/response_tile.dart';
 import '../widgets/new_comment.dart';
 import '../models/comment_model.dart';
 import '../providers/content_provider.dart';
@@ -19,6 +21,8 @@ class DetailCommentScreen extends StatefulWidget {
 }
 
 class _DetailCommentScreenState extends State<DetailCommentScreen> {
+  ScrollController _scrollController = ScrollController();
+  GlobalKey<NewCommentState> _newState;
   CommentModel commentModel;
   List<CommentModel> _commentsList = [];
   bool _isLoading = false;
@@ -71,13 +75,23 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
 
   void _setComment(comment) {
     setState(() {
-      _commentsList.insert(0, comment);
+      _commentsList.add(comment);
     });
+    Timer(
+      Duration(milliseconds: 300),
+      () =>
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent + 80),
+    );
+  }
+
+  void _replyComment(userName) {
+    _newState.currentState.getFocus(userName);
   }
 
   @override
   void initState() {
     _fetchData();
+    _newState = GlobalKey();
     super.initState();
   }
 
@@ -93,6 +107,7 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
               children: <Widget>[
                 Expanded(
                   child: ListView.builder(
+                    controller: _scrollController,
                     itemCount:
                         _commentsList.isEmpty ? 1 : _commentsList.length + 1,
                     itemBuilder: (context, i) {
@@ -111,7 +126,7 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
                       }
                       final doc = _commentsList[i - 1];
 
-                      return CommentTile(
+                      return ResponseTile(
                         id: doc.id,
                         contentId: doc.parentId,
                         type: doc.parentType,
@@ -125,11 +140,13 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
                         downs: doc.dislikes,
                         hasDown: doc.hasDislike,
                         certificate: doc.certificate,
+                        toReply: _replyComment,
                       );
                     },
                   ),
                 ),
                 NewComment(
+                  key: _newState,
                   id: commentModel.parentId,
                   type: commentModel.parentType,
                   idComment: commentModel.id,

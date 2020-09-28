@@ -39,12 +39,6 @@ class TestScreen extends StatelessWidget {
               ),
               RaisedButton(
                 onPressed: () {
-                  Provider.of<AuthProvider>(context, listen: false).getCatalogs();
-                },
-                child: Text('Get catalogs'),
-              ),
-              RaisedButton(
-                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(

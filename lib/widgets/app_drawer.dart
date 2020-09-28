@@ -46,6 +46,7 @@ class AppDrawer extends StatelessWidget with ShareContent {
           ),
           ListTile(
             onTap: ()=> _shareProfile(context),
+            leading: Icon(Icons.share),
             title: Text(Translations.of(context).text('button_share_profile')),
           ),
           ListTile(

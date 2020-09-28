@@ -8,12 +8,11 @@ import 'comment_options.dart';
 import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/my_special_text_span_builder.dart';
-import '../screens/detail_comment_screen.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
 
-class CommentTile extends StatelessWidget {
+class ResponseTile extends StatelessWidget {
   final String contentId;
   final String type;
   final String id;
@@ -27,11 +26,12 @@ class CommentTile extends StatelessWidget {
   final bool hasUp;
   final bool hasDown;
   final certificate;
+  final Function toReply;
 
   final RegExp regex = new RegExp(
       r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
 
-  CommentTile({
+  ResponseTile({
     @required this.contentId,
     @required this.type,
     @required this.id,
@@ -45,18 +45,8 @@ class CommentTile extends StatelessWidget {
     this.hasUp,
     this.hasDown,
     @required this.certificate,
+    this.toReply,
   });
-
-  void _toComment(context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailCommentScreen(
-          id,
-        ),
-      ),
-    );
-  }
 
   void _toProfile(context, user) {
     if (Provider.of<UserProvider>(context, listen: false).getUser != user) {
@@ -148,13 +138,12 @@ class CommentTile extends StatelessWidget {
           ),
         ),
         CommentOptions(
-          id: id,
-          likes: ups,
-          dislikes: downs,
-          hasLike: hasUp,
-          hasDislike: hasDown,
-          toComments: () => _toComment(context),
-        ),
+            id: id,
+            likes: ups,
+            dislikes: downs,
+            hasLike: hasUp,
+            hasDislike: hasDown,
+            toComments: () => toReply(userName)),
       ],
     );
   }

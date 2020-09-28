@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../models/country_model.dart';
-import '../providers/auth_provider.dart';
 import '../providers/database_provider.dart';
 
 class CountriesScreen extends StatefulWidget {
@@ -285,7 +284,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
     final mList = await Provider.of<DatabaseProvider>(context, listen: false)
         .getCountries();
     if (mList.isEmpty) {
-      await Provider.of<AuthProvider>(context, listen: false).getCatalogs();
+      await Provider.of<DatabaseProvider>(context, listen: false).getCatalogs();
       _getCountries();
     }
     setState(() {

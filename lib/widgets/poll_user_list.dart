@@ -5,23 +5,24 @@ import 'user_poll_tile.dart';
 import 'poll_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
 class PollUserList extends StatefulWidget {
-  final String userId;
   final ScrollController scrollController;
   final Function setVideo;
 
-  PollUserList(this.userId, this.scrollController, this.setVideo);
+  PollUserList(this.scrollController, this.setVideo);
 
   @override
   _PollUserListState createState() => _PollUserListState();
 }
 
 class _PollUserListState extends State<PollUserList> {
+  String userId;
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<ContentModel> _list = [];
   int _currentPageNumber;
@@ -86,7 +87,7 @@ class _PollUserListState extends State<PollUserList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'P')
+              .getUserTimeline(userId, _currentPageNumber, 'P')
               .then((newContent) {
             setState(() {
               if (newContent.isEmpty) {
@@ -116,8 +117,9 @@ class _PollUserListState extends State<PollUserList> {
     setState(() {
       _isLoading = true;
     });
+    userId = Provider.of<UserProvider>(context, listen: false).getUser;
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+        .getUserTimeline(userId, _currentPageNumber, 'P');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -136,7 +138,7 @@ class _PollUserListState extends State<PollUserList> {
     _currentPageNumber = 0;
     
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'P');
+        .getUserTimeline(userId, _currentPageNumber, 'P');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;

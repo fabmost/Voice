@@ -87,7 +87,7 @@ class ProfileHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8),
-              InfluencerBadge(user.userName, user.certificate, 20),
+              InfluencerBadge(user.userName, user.certificate, 20)
             ],
           ),
           Text(

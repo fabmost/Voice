@@ -161,7 +161,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                       containerHeight,
                       UserProfileHeader(
                         hasSocialMedia: hasSocialMedia,
-                        user: provider.getUserModel,
                       ),
                     ),
                   ),
@@ -195,32 +194,29 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 ];
               },
-              body: TabBarView(
-                children: [
-                  PollUserList(
-                    provider.getUserModel.userName,
-                    _scrollController,
-                    _playVideo,
-                  ),
-                  ChallengeUserList(
-                    provider.getUserModel.userName,
-                    _scrollController,
-                    _playVideo,
-                  ),
-                  TipUserList(
-                    provider.getUserModel.userName,
-                    _scrollController,
-                    _playVideo,
-                  ),
-                  CauseUserList(
-                    provider.getUserModel.userName,
-                    _scrollController,
-                  ),
-                ],
-              ),
+              body: child,
             ),
           );
         },
+        child: TabBarView(
+          children: [
+            PollUserList(
+              _scrollController,
+              _playVideo,
+            ),
+            ChallengeUserList(
+              _scrollController,
+              _playVideo,
+            ),
+            TipUserList(
+              _scrollController,
+              _playVideo,
+            ),
+            CauseUserList(
+              _scrollController,
+            ),
+          ],
+        ),
       ),
     );
   }
