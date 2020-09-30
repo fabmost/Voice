@@ -14,6 +14,7 @@ import '../screens/view_profile_screen.dart';
 import '../screens/detail_poll_screen.dart';
 import '../screens/detail_challenge_screen.dart';
 import '../screens/detail_tip_screen.dart';
+import '../screens/detail_comment_screen.dart';
 import '../providers/user_provider.dart';
 
 class HeaderComment extends StatelessWidget {
@@ -50,6 +51,17 @@ class HeaderComment extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => DetailTipScreen(
               id: comment.parentId,
+            ),
+          ),
+        );
+        break;
+      case 'comment':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailCommentScreen(
+              comment.parentId,
+              true,
             ),
           ),
         );

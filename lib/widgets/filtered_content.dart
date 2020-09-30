@@ -258,6 +258,9 @@ class _FilteredContentState extends State<FilteredContent>
       if (results.isEmpty) {
         _hasMore = false;
       } else {
+        if(results.length < 10){
+          _hasMore = false;
+        }
         _list = results;
       }
       _isLoading = false;

@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../translations.dart';
+import '../providers/user_provider.dart';
 
 class UserNameScreen extends StatefulWidget {
   static const routeName = '/username';
@@ -33,67 +34,46 @@ class _UserNameScreenState extends State<UserNameScreen> {
     setState(() {
       _isLoading = true;
     });
-    final result = await Firestore.instance
-        .collection('users')
-        .where('user_name', isEqualTo: _userName)
-        .getDocuments();
-    if (result.documents.isNotEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
+
+    try {
+      Map result = await Provider.of<UserProvider>(context, listen: false)
+          .editProfile(userName: _userName);
+
+      if (result['result']) {
+        Navigator.of(context).pop(_userName);
+      } else {
+        var message = result['message'] ?? 'Ocurrió un error';
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Theme.of(context).errorColor,
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } on PlatformException catch (err) {
+      var message = 'An error ocurred';
+      if (err.message != null) {
+        message = err.message;
+      }
       _scaffoldKey.currentState.showSnackBar(
         SnackBar(
-          content: Text('Ese username ya existe'),
+          content: Text(message),
           backgroundColor: Theme.of(context).errorColor,
         ),
       );
-    } else {
-      _saveUserName();
-    }
-  }
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (err) {
+      print(err);
 
-  void _saveUserName() async {
-    final user = '';// = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user).get();
-
-    WriteBatch batch = Firestore.instance.batch();
-    batch.updateData(
-      Firestore.instance.collection('users').document(user),
-      {'user_name': _userName},
-    );
-    batch.updateData(
-      Firestore.instance.collection('hash').document(user),
-      {'name': _userName},
-    );
-    if (userData['created'] != null) {
-      (userData['created'] as List).forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('content').document(element),
-          {'user_name': _userName},
-        );
+      setState(() {
+        _isLoading = false;
       });
     }
-    if (userData['comments'] != null) {
-      (userData['comments'] as List).forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('comments').document(element),
-          {'username': _userName},
-        );
-      });
-    }
-    if (userData['chats'] != null) {
-      (userData['chats'] as List).forEach((element) {
-        batch.updateData(
-          Firestore.instance.collection('chats').document(element),
-          {
-            'participants.$user': {'user_name': _userName}
-          },
-        );
-      });
-    }
-    await batch.commit();
-    Navigator.of(context).pop(_userName);
   }
 
   @override

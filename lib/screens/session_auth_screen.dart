@@ -168,7 +168,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
       });
 
       String token = await Provider.of<AuthProvider>(context, listen: false)
-          .installation();
+          .installation(context);
       Map result = await Provider.of<AuthProvider>(context, listen: false)
           .signUp(
               name: _name,

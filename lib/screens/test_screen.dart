@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
 import 'detail_cause_screen.dart';
+import '../widgets/alert_promo.dart';
 
 class TestScreen extends StatelessWidget {
   static const routeName = '/test';
@@ -36,6 +37,15 @@ class TestScreen extends StatelessWidget {
                       .renewToken();
                 },
                 child: Text('Renew token'),
+              ),
+              RaisedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => AlertPromo(),
+                  );
+                },
+                child: Text('Promo dialog'),
               ),
               RaisedButton(
                 onPressed: () {

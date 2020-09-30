@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -68,7 +69,7 @@ class AuthProvider with ChangeNotifier, TextMixin {
     return false;
   }
 
-  Future<String> installation() async {
+  Future<String> installation(context) async {
     var url = '${API.baseURL}/installation';
 
     final uuid = Uuid();
@@ -109,15 +110,10 @@ class AuthProvider with ChangeNotifier, TextMixin {
       DatabaseProvider dbProvider = DatabaseProvider();
       await dbProvider.deleteAll();
       saveHash(hash);
-      dataMap['categories'].forEach((e) async {
-        Map dataMap = e as Map;
 
-        dbProvider.saveCategory(
-          id: dataMap['id'],
-          name: dataMap['name'],
-          icon: dataMap['icon'],
-        );
-      });
+      Provider.of<DatabaseProvider>(context, listen: false)
+          .saveCategories(dataMap['categories']);
+
       dataMap['configs']['countries'].forEach((e) async {
         Map dataMap = e as Map;
 

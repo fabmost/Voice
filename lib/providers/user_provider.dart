@@ -12,7 +12,7 @@ import '../models/user_model.dart';
 import '../mixins/text_mixin.dart';
 
 class UserProvider with ChangeNotifier, TextMixin {
-  final String _myUser;
+  String _myUser;
   final _storage = FlutterSecureStorage();
   UserModel _currentUser;
   Map<String, UserModel> _users = {};
@@ -111,6 +111,8 @@ class UserProvider with ChangeNotifier, TextMixin {
 
     Map parameters = {};
 
+    bool userNameChanged = false;
+
     if (name != null) {
       parameters['name'] = name;
       if (_currentUser != null) _currentUser.name = name;
@@ -120,6 +122,7 @@ class UserProvider with ChangeNotifier, TextMixin {
       if (_currentUser != null) _currentUser.lastName = lastName;
     }
     if (userName != null) {
+      userNameChanged = true;
       parameters['user_name'] = userName;
       if (_currentUser != null) _currentUser.userName = userName;
     }
@@ -185,6 +188,10 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
 
     if (dataMap['status'] == 'success') {
+      if(userNameChanged){
+        await _storage.write(key: API.userName, value: userName);
+        _myUser = userName;
+      }
       await _saveToken(dataMap['session']['token']);
       notifyListeners();
       return {'result': true};

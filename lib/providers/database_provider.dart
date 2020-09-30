@@ -28,6 +28,20 @@ class DatabaseProvider extends ChangeNotifier {
     });
   }
 
+  void saveCategories(List mList) {
+    mList.forEach((e) {
+      Map dataMap = e as Map;
+
+      saveCategory(
+        id: dataMap['id'],
+        name: dataMap['name'],
+        icon: dataMap['icon'],
+      );
+    });
+    _categories.sort((a, b) => a.name.compareTo(b.name));
+    notifyListeners();
+  }
+
   void saveCategory({id, name, icon}) async {
     _categories.add(
       CategoryModel(

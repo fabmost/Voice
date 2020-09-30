@@ -47,7 +47,7 @@ class _SearchScreenState extends State<SearchScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return DefaultTabController(
-      length: 6,
+      length: 7,
       child: Column(
         children: <Widget>[
           Container(
@@ -62,6 +62,7 @@ class _SearchScreenState extends State<SearchScreen>
                 unselectedLabelColor: Colors.grey,
                 tabs: [
                   Tab(text: 'Tendencia'),
+                  Tab(text: 'Radio'),
                   Tab(text: 'Salud'),
                   Tab(text: 'Tecnología'),
                   Tab(text: 'Deportes'),
@@ -75,6 +76,7 @@ class _SearchScreenState extends State<SearchScreen>
             child: TabBarView(
               children: [
                 TopContent(_playVideo),
+                FilteredContent('50', _playVideo),
                 FilteredContent('1', _playVideo),
                 FilteredContent('3', _playVideo),
                 FilteredContent('5', _playVideo),
