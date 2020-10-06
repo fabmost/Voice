@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'poll_tile.dart';
+import 'poll_promo_tile.dart';
 import 'challenge_tile.dart';
 import 'tip_tile.dart';
 import 'cause_tile.dart';

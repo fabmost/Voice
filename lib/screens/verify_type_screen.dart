@@ -49,7 +49,7 @@ class VerifyTypeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: InkWell(
-                  onTap: () => _selected(context, 'Creativo'),
+                  onTap: () => _selected(context, 'C'),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -78,7 +78,7 @@ class VerifyTypeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: InkWell(
-                  onTap: () => _selected(context, 'Empresa'),
+                  onTap: () => _selected(context, 'E'),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(

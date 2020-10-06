@@ -54,6 +54,23 @@ class PollModel extends ContentModel {
         );
 
   static PollModel fromJson(Map content) {
+    String regalup = content['user_regalup'] == null
+        ? null
+        : content['user_regalup']['user_name'];
+    CertificateModel certificate;
+    if (regalup == null) {
+      certificate = content['certificates'] == null
+          ? null
+          : content['certificates']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificates']);
+    } else {
+      certificate = content['certificatesRegalup'] == null
+          ? null
+          : content['certificatesRegalup']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificatesRegalup']);
+    }
     return PollModel(
       id: content['id'],
       type: content['type'],
@@ -61,17 +78,12 @@ class PollModel extends ContentModel {
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
-      creator: content['user_regalup'] == null
-          ? null
-          : content['user_regalup']['user_name'],
-      certificate: content['certificates'] == null
-          ? null
-          : content['certificates']['icon'] == null
-              ? null
-              : CertificateModel.fromJson(content['certificates']),
+      creator: regalup,
+      certificate: certificate,
       title: TextMixin.fixString(content['body']),
       description: TextMixin.fixString(content['description']),
-      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
+      createdAt:
+          DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       votes: content['votes'],
       likes: content['likes'],
       regalups: content['regalups'],

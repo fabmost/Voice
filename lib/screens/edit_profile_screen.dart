@@ -9,6 +9,7 @@ import 'user_name_screen.dart';
 import 'countries_screen.dart';
 import 'verify_type_screen.dart';
 import '../translations.dart';
+import '../custom/pop_results.dart';
 import '../providers/user_provider.dart';
 import '../models/user_model.dart';
 import '../models/country_model.dart';
@@ -58,7 +59,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Map _appGender = {'M': 'Masculino', 'F': 'Femenino', 'O': 'Otro'};
 
   void _toValidate(context) {
-    Navigator.of(context).pushNamed(VerifyTypeScreen.routeName);
+    Navigator.of(context).pushNamed(VerifyTypeScreen.routeName).then((results) {
+      if (results is PopWithResults) {
+        PopWithResults popResult = results;
+        if (popResult != null) {
+          setState(() {
+            _isValidated = 1;
+          });
+        }
+      }
+    });
   }
 
   void _userSelected() {
@@ -293,7 +303,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _loadingView = false;
       userId = user.userName;
       userData = user;
-      _isValidated = 2;
       _userController.text = user.userName;
       _nameController.text = user.name;
       _lastController.text = user.lastName;
@@ -320,6 +329,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (user.youtube != null) {
         _youtubeController.text = user.youtube;
       }
+      _isValidated = user.validated;
     });
   }
 

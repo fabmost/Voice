@@ -23,6 +23,7 @@ class UserModel {
   bool isFollowing;
   String idAnswer;
   CertificateModel certificate;
+  int validated;
 
   UserModel({
     this.userName,
@@ -44,6 +45,7 @@ class UserModel {
     this.isFollowing,
     this.idAnswer,
     this.certificate,
+    this.validated,
   });
 
   static UserModel fromJson(Map content) {
@@ -72,6 +74,9 @@ class UserModel {
       certificate: content['certificates']['icon'] == null
           ? null
           : CertificateModel.fromJson(content['certificates']),
+      validated: content['certificates']['status'] == null
+          ? 0
+          : int.parse(content['certificates']['status']),
     );
   }
 
@@ -81,8 +86,8 @@ class UserModel {
     content.forEach((element) {
       mList.add(UserModel(
         icon: element['icon'] == null
-          ? null
-          : element['icon'].isEmpty ? null : element['icon'],
+            ? null
+            : element['icon'].isEmpty ? null : element['icon'],
         userName: element['user_name'],
         name: element['name'] == null
             ? null
@@ -108,8 +113,8 @@ class UserModel {
     content.forEach((element) {
       mList.add(UserModel(
         icon: element['icon'] == null
-          ? null
-          : element['icon'].isEmpty ? null : element['icon'],
+            ? null
+            : element['icon'].isEmpty ? null : element['icon'],
         userName: element['user_name'],
         idAnswer: element['id_answer'],
         certificate: element['certificates'] == null
@@ -129,8 +134,8 @@ class UserModel {
     content.forEach((element) {
       mList.add(UserModel(
         icon: element['icon'] == null
-          ? null
-          : element['icon'].isEmpty ? null : element['icon'],
+            ? null
+            : element['icon'].isEmpty ? null : element['icon'],
         userName: element['user_name'],
         certificate: element['certificates'] == null
             ? null

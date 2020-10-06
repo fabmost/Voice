@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AlertPromo extends StatelessWidget {
+  final String business;
+  final String url;
+  final String prize;
+  final String message;
+
+  AlertPromo({this.business, this.url, this.message, this.prize});
+
   static const double padding = 16.0;
   static const double avatarRadius = 24.0;
 
@@ -39,12 +46,12 @@ class AlertPromo extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Image.network(
-                  'https://1000logos.net/wp-content/uploads/2017/05/Pepsi-Logo.png',
+                  url,
                   height: 120,
                 ),
                 const SizedBox(height: 16.0),
                 Text(
-                  '¡Gracias por responder la encuesta de WOLF!',
+                  '¡Gracias por responder la encuesta de $business!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22.0,
@@ -54,7 +61,7 @@ class AlertPromo extends StatelessWidget {
                 ),
                 const SizedBox(height: 16.0),
                 Text(
-                  'Presenta tu username en caja y solicita tu recompensa',
+                  message,
                   style: TextStyle(
                     fontSize: 16.0,
                   ),
@@ -76,7 +83,7 @@ class AlertPromo extends StatelessWidget {
                 ),
                 const SizedBox(height: 22),
                 Text(
-                  'Premio: Orden de alitas',
+                  'Premio: $prize',
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,

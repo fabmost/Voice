@@ -282,15 +282,17 @@ class _NewContentCategoryScreenState extends State<NewContentCategoryScreen> {
     setState(() {
       _isLoading = true;
     });
-    final mList = Provider.of<DatabaseProvider>(context, listen: false).getCategories;
+    final mList =
+        Provider.of<DatabaseProvider>(context, listen: false).getCategories;
     if (mList.isEmpty) {
       await Provider.of<DatabaseProvider>(context, listen: false).getCatalogs();
       _getCategories();
+    } else {
+      setState(() {
+        _isLoading = false;
+        _categories = mList;
+      });
     }
-    setState(() {
-      _isLoading = false;
-      _categories = mList;
-    });
   }
 
   @override

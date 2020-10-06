@@ -188,7 +188,7 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
 
     if (dataMap['status'] == 'success') {
-      if(userNameChanged){
+      if (userNameChanged) {
         await _storage.write(key: API.userName, value: userName);
         _myUser = userName;
       }
@@ -198,6 +198,46 @@ class UserProvider with ChangeNotifier, TextMixin {
     }
     await _renewToken();
     return {'result': false, 'message': dataMap['alert']['message']};
+  }
+
+  Future<void> verifyUser({type, idCategory, idResource}) async {
+    var url = '${API.baseURL}/validateProfile';
+    final token = await _getToken();
+    Map parameters = {
+      'type': type,
+      'category': idCategory,
+      'identification': idResource,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      return;
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return verifyUser(
+        type: type,
+        idCategory: idCategory,
+        idResource: idResource,
+      );
+    }
+    return null;
   }
 
   Future<bool> followUser(id) async {

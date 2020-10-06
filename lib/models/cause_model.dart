@@ -55,6 +55,23 @@ class CauseModel extends ContentModel {
         );
 
   static CauseModel fromJson(Map content) {
+    String regalup = content['user_regalup'] == null
+        ? null
+        : content['user_regalup']['user_name'];
+    CertificateModel certificate;
+    if (regalup == null) {
+      certificate = content['certificates'] == null
+          ? null
+          : content['certificates']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificates']);
+    } else {
+      certificate = content['certificatesRegalup'] == null
+          ? null
+          : content['certificatesRegalup']['icon'] == null
+              ? null
+              : CertificateModel.fromJson(content['certificatesRegalup']);
+    }
     return CauseModel(
       id: content['id'],
       type: content['type'],
@@ -62,14 +79,8 @@ class CauseModel extends ContentModel {
         userName: content['user']['user_name'],
         icon: content['user']['icon'],
       ),
-      creator: content['user_regalup'] == null
-          ? null
-          : content['user_regalup']['user_name'],
-      certificate: content['certificates'] == null
-          ? null
-          : content['certificates']['icon'] == null
-              ? null
-              : CertificateModel.fromJson(content['certificates']),
+      creator: regalup,
+      certificate: certificate,
       title: TextMixin.fixString(content['title']),
       description: TextMixin.fixString(content['description']),
       by: content['by'] ?? '',
@@ -78,7 +89,8 @@ class CauseModel extends ContentModel {
       phone: content['phone'],
       web: content['web'],
       account: content['account'],
-      createdAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
+      createdAt:
+          DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       likes: content['likes'],
       regalups: content['regalups'],
       hasLiked: content['is_like'],

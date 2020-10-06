@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
-import 'edit_profile_screen.dart';
 import '../translations.dart';
+import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 
 class VerifyIdScreen extends StatefulWidget {
   static const routeName = '/verify-id';
@@ -100,37 +101,21 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
     setState(() {
       _isLoading = true;
     });
-    final user = '';// = await FirebaseAuth.instance.currentUser();
-    final userData =
-        await Firestore.instance.collection('users').document(user).get();
-    /*
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('verification')
-        .child(user+ '.jpg');
-        */
-    Map condensed = userData.data;
-    condensed.remove('followers');
-    condensed.remove('following');
-    condensed.remove('created');
-    condensed.remove('liked');
-    condensed.remove('saved');
-    condensed.remove('chats');
-    condensed.remove('categories');
 
-    //await ref.putFile(_imageFile).onComplete;
+    String idResource =
+        await Provider.of<ContentProvider>(context, listen: false)
+            .uploadResourceGetUrl(
+      _imageFile.path,
+      'I',
+      'U',
+    );
 
-    final url = '';//await ref.getDownloadURL();
-    WriteBatch batch = Firestore.instance.batch();
+    await Provider.of<UserProvider>(context, listen: false).verifyUser(
+      type: type,
+      idCategory: category,
+      idResource: idResource,
+    );
 
-    batch.updateData(userData.reference, {'is_validated': 1});
-    batch.setData(Firestore.instance.collection('verifications').document(), {
-      'type': type,
-      'category': category,
-      'identification': url,
-      'user': condensed,
-    });
-    await batch.commit();
     _showAlert();
     setState(() {
       _isLoading = false;
@@ -149,7 +134,7 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
             child: Text('Ok'),
             onPressed: () {
               Navigator.of(context)
-                  .popUntil(ModalRoute.withName(EditProfileScreen.routeName));
+                  .popUntil(ModalRoute.withName('/'));
             },
           )
         ],

@@ -12,6 +12,7 @@ import '../database/countries_table.dart';
 import '../database/categories_table.dart';
 import '../models/category_model.dart';
 import '../models/country_model.dart';
+import '../models/influencer.dart';
 
 class DatabaseProvider extends ChangeNotifier {
   final _storage = FlutterSecureStorage();
@@ -129,6 +130,49 @@ class DatabaseProvider extends ChangeNotifier {
       return null;
     } else {
       return null;
+    }
+  }
+
+  Future<List> getInfluencerCategories() async {
+    var url = '${API.baseURL}/categoryVerify';
+    final _token = await _storage.read(key: API.sessionToken) ?? null;
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $_token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+
+    if (dataMap['status'] == 'success') {
+      List mList = [];
+      dataMap['categories'].forEach((e) async {
+        Map dataMap = e as Map;
+
+        mList.add(
+          Influencer(
+            id: dataMap['id'],
+            name: dataMap['name'],
+            icon: dataMap['icon'],
+          ),
+        );
+      });
+
+      await _storage.write(
+          key: API.sessionToken, value: dataMap['session']['token']);
+      return mList;
+    } else {
+      return [];
     }
   }
 }

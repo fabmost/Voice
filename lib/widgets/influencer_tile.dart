@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../custom/galup_font_icons.dart';
-
 class InfluencerTile extends StatelessWidget {
+  final String _id;
   final String _name;
   final String type;
-  final int color;
+  final String icon;
   final Function _action;
 
-  InfluencerTile(this._name, this.color, this.type, this._action);
+  InfluencerTile(this._id, this._name, this.icon, this.type, this._action);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _action(context, type, _name),
+      onTap: () => _action(context, type, _id),
       child: Align(
         alignment: FractionalOffset.centerLeft,
         child: Card(
@@ -30,9 +29,9 @@ class InfluencerTile extends StatelessWidget {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: Colors.white,
-                  child: Icon(
-                    GalupFont.certification,
-                    color: Color(color),
+                  child: Image.network(
+                    icon,
+                    height: 24,
                   ),
                 ),
                 SizedBox(width: 8),

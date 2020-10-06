@@ -511,7 +511,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return null;
     }
     if (dataMap['status'] == 'success') {
-      if (dataMap['data']['id'] == 'null' || dataMap['data']['id'] == null) return null;
+      if (dataMap['data']['id'] == 'null' || dataMap['data']['id'] == null)
+        return null;
       switch (type) {
         case 'P':
           PollModel poll = PollModel.fromJson(dataMap['data']);
@@ -1520,7 +1521,50 @@ class ContentProvider with ChangeNotifier, TextMixin {
       return [];
     }
     if (dataMap['status'] == 'success') {
-      _saveToken(dataMap['session']['token']);
+      await _saveToken(dataMap['session']['token']);
+      List fromServer = PollAnswerModel.listFromJson(dataMap['answers']);
+      if (fromServer.isNotEmpty) {
+        PollModel oldPoll = _polls[idPoll];
+        List<PollAnswerModel> newAnswers = [];
+        int newCount = 0;
+        oldPoll.answers.forEach((oldAnswer) {
+          newAnswers.add(PollAnswerModel(
+            id: oldAnswer.id,
+            answer: oldAnswer.answer,
+            count:
+                (fromServer.firstWhere((element) => element.id == oldAnswer.id)
+                        as PollAnswerModel)
+                    .count,
+            isVote: oldAnswer.isVote,
+            url: oldAnswer.url,
+          ));
+          newCount += newAnswers.last.count;
+        });
+        final content = PollModel(
+          id: oldPoll.id,
+          type: oldPoll.type,
+          user: oldPoll.user,
+          title: oldPoll.title,
+          createdAt: oldPoll.createdAt,
+          votes: newCount,
+          likes: oldPoll.likes,
+          regalups: oldPoll.regalups,
+          comments: oldPoll.comments,
+          hasVoted: oldPoll.hasVoted,
+          hasLiked: oldPoll.hasLiked,
+          hasRegalup: oldPoll.hasRegalup,
+          hasSaved: oldPoll.hasSaved,
+          answers: newAnswers,
+          resources: oldPoll.resources,
+          body: oldPoll.body,
+          certificate: oldPoll.certificate,
+          creator: oldPoll.creator,
+          description: oldPoll.description,
+        );
+        _polls[content.id] = content;
+        notifyListeners();
+      }
+
       return UserModel.votersListFromJson(dataMap['statistics']);
     }
     if (dataMap['alert']['action'] == 4) {

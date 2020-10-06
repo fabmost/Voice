@@ -144,7 +144,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               );
             if (i == 1)
               return Container(
-                height: 80,
+                height: 100,
                 child: ListView.separated(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
@@ -153,8 +153,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   itemBuilder: (context, i) {
                     PollAnswerModel option = widget.answers[i];
                     return VoteCard(
+                      widget.pollId,
+                      option.id,
                       option.answer,
-                      option.count,
                       _selection == i,
                       () => _selectOption(i),
                     );
