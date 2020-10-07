@@ -6,6 +6,7 @@ import 'influencer_badge.dart';
 import 'title_content.dart';
 import 'description.dart';
 import 'poll_options.dart';
+import 'promo_button.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'menu_content.dart';
@@ -40,6 +41,10 @@ class PollPromoTile extends StatelessWidget with ShareContent {
   final List resources;
   final String regalupName;
   final certificate;
+  final String company;
+  final String promoUrl;
+  final String message;
+  final String prize;
 
   PollPromoTile({
     @required this.reference,
@@ -61,9 +66,13 @@ class PollPromoTile extends StatelessWidget with ShareContent {
     @required this.resources,
     @required this.certificate,
     this.regalupName,
+    @required this.company,
+    @required this.promoUrl,
+    @required this.message,
+    @required this.prize,
   });
 
-  final Color color = Color(0xFFfdf9f5);
+  final Color color = Color(0xFFFDF9F5);
 
   void _toProfile(context) {
     if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
@@ -73,7 +82,7 @@ class PollPromoTile extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    sharePoll(id, title);
+    sharePromoPoll(id, title);
   }
 
   Widget _handleResources() {
@@ -180,8 +189,13 @@ class PollPromoTile extends StatelessWidget with ShareContent {
               child: PollOptions(
                 id: id,
                 isMine: false,
+                company: company,
+                message: message,
+                prize: prize,
+                promoUrl: promoUrl,
               ),
             ),
+            PromoButton(id),
             Consumer<ContentProvider>(
               builder: (context, value, child) {
                 PollModel poll = value.getPolls[id];

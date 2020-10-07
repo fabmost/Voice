@@ -208,6 +208,7 @@ class _FilteredContentState extends State<TopContent>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _isLoading
         ? Center(child: CircularProgressIndicator())
         : NotificationListener(

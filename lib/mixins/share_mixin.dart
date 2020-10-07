@@ -32,6 +32,36 @@ class ShareContent {
         'Vota en esta encuesta Galup y sé la diferencia! Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
   }
 
+  void sharePromoPoll(id, title) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: 'https://galup.page.link',
+      link: Uri.parse('https://galup.app/promo_p/$id'),
+      androidParameters: AndroidParameters(
+        packageName: 'com.galup.app',
+        minimumVersion: 0,
+      ),
+      dynamicLinkParametersOptions: DynamicLinkParametersOptions(
+        shortDynamicLinkPathLength: ShortDynamicLinkPathLength.short,
+      ),
+      iosParameters: IosParameters(
+        bundleId: 'com.galup.app',
+        minimumVersion: '0',
+        appStoreId: '1521345975',
+      ),
+      socialMetaTagParameters: SocialMetaTagParameters(
+        title: title,
+        description: 'En Galup tu opinión cuenta',
+        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+      ),
+    );
+
+    final ShortDynamicLink shortLink = await parameters.buildShortLink();
+    Uri url = shortLink.shortUrl;
+
+    Share.share(
+        'Vota en esta encuesta Galup y sé la diferencia! Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
+  }
+
   void shareChallenge(id, title) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://galup.page.link',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'poll_answers.dart';
+import 'alert_promo.dart';
 import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
 import '../providers/auth_provider.dart';
@@ -9,10 +10,18 @@ import '../providers/auth_provider.dart';
 class PollOptions extends StatefulWidget {
   final String id;
   final bool isMine;
+  final String company;
+  final String promoUrl;
+  final String message;
+  final String prize;
 
   PollOptions({
     @required this.id,
     @required this.isMine,
+    this.company,
+    this.promoUrl,
+    this.message,
+    this.prize,
   });
 
   @override
@@ -21,7 +30,7 @@ class PollOptions extends StatefulWidget {
 
 class _PollOptionsState extends State<PollOptions> with AlertMixin {
   bool _isLoading = false;
-  
+
   void _setVote(idAnswer, position) async {
     bool canInteract =
         await Provider.of<AuthProvider>(context, listen: false).canInteract();
@@ -34,22 +43,22 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin {
     });
     await Provider.of<ContentProvider>(context, listen: false)
         .votePoll(widget.id, idAnswer);
-    /*
-    final selected = _answers.firstWhere((element) => element.id == idAnswer);
-    final newAnswer = PollAnswerModel(
-      id: idAnswer,
-      answer: selected.answer,
-      count: selected.count + 1,
-      isVote: true,
-      url: selected.url,
-    );
-    */
+
     setState(() {
-      // _votes++;
-      // _answers[position] = newAnswer;
-      // _hasVoted = true;
       _isLoading = false;
     });
+
+    if (widget.company != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertPromo(
+          business: widget.company,
+          message: widget.message,
+          prize: widget.prize,
+          url: widget.promoUrl,
+        ),
+      );
+    }
   }
 
   @override

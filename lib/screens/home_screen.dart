@@ -223,6 +223,34 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'home',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      company: content.company,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      prize: content.prize,
+      regalupName: content.creator,
+    );
+  }
+
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       var triggerFetchMoreSize =
@@ -403,6 +431,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (mList.isEmpty) return Center(child: CircularProgressIndicator());
     return NotificationListener(
       onNotification: onNotification,
@@ -443,6 +472,9 @@ class _HomeScreenState extends State<HomeScreen>
                 return _repostCauseWidget(doc);
               case 'regalup_ti':
                 return _repostTipWidget(doc);
+              case 'promo_p':
+              case 'regalup_promo_p':
+                return _promoPollWidget(doc);
               default:
                 return SizedBox();
             }

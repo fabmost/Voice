@@ -128,6 +128,7 @@ class _LikesListState extends State<LikesList> with AutomaticKeepAliveClientMixi
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _isLoading
         ? Center(child: CircularProgressIndicator())
         : _list.isEmpty

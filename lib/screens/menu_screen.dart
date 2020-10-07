@@ -37,6 +37,7 @@ import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
 import 'detail_tip_screen.dart';
 import 'detail_cause_screen.dart';
+import 'detail_promo_poll.dart';
 import 'view_profile_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -544,6 +545,16 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             ),
           );
           break;
+        case 'promo_p':
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailPromoPollScreen(
+                id: deepLink.pathSegments[1],
+              ),
+            ),
+          );
+          break;
         case 'profile':
           String userName =
               Provider.of<UserProvider>(context, listen: false).getUser;
@@ -598,6 +609,16 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
               context,
               MaterialPageRoute(
                 builder: (context) => DetailCauseScreen(
+                  id: deepLink.pathSegments[1],
+                ),
+              ),
+            );
+            break;
+          case 'promo_p':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailPromoPollScreen(
                   id: deepLink.pathSegments[1],
                 ),
               ),

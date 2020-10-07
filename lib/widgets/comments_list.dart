@@ -105,6 +105,7 @@ class _CommentsListState extends State<CommentsList> with AutomaticKeepAliveClie
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _isLoading
         ? Center(child: CircularProgressIndicator())
         : Column(

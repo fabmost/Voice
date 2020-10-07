@@ -14,6 +14,10 @@ class PollModel extends ContentModel {
   final bool hasVoted;
   final List<PollAnswerModel> answers;
   final List<ResourceModel> resources;
+  final String company;
+  final String promoUrl;
+  final String message;
+  final String prize;
 
   PollModel({
     id,
@@ -36,6 +40,10 @@ class PollModel extends ContentModel {
     this.hasVoted,
     this.answers,
     this.resources,
+    this.company,
+    this.promoUrl,
+    this.message,
+    this.prize,
   }) : super(
           id: id,
           type: type,
@@ -94,6 +102,10 @@ class PollModel extends ContentModel {
       hasSaved: content['is_save'],
       answers: PollAnswerModel.listFromJson(content['answer']),
       resources: ResourceModel.listFromJson(content['resource']),
+      company: content['company'],
+      message: content['message'],
+      prize: content['reward'],
+      promoUrl: content['logo'],
     );
   }
 }

@@ -305,6 +305,7 @@ class _FilteredContentState extends State<FilteredContent>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _isLoading
         ? Center(child: CircularProgressIndicator())
         : _list.isEmpty

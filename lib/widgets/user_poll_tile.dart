@@ -11,6 +11,7 @@ import 'comment_content.dart';
 import 'like_content.dart';
 import 'regalup_content.dart';
 import '../translations.dart';
+import '../models/poll_model.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/content_provider.dart';
@@ -199,16 +200,23 @@ class UserPollTile extends StatelessWidget with ShareContent {
                 isMine: true,
               ),
             ),
-            if (votes > 0)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  bottom: 16,
-                ),
-                child: Text(votes == 1
-                    ? '$votes participante'
-                    : '$votes participantes'),
-              ),
+            Consumer<ContentProvider>(
+              builder: (context, value, child) {
+                PollModel poll = value.getPolls[id];
+                if (poll.votes > 0) {
+                  return Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      bottom: 16,
+                    ),
+                    child: Text(poll.votes == 1
+                        ? '${poll.votes} participante'
+                        : '${poll.votes} participantes'),
+                  );
+                }
+                return Container();
+              },
+            ),
             Container(
               color: color,
               child: Row(

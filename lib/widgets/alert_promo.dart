@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/user_provider.dart';
 
 class AlertPromo extends StatelessWidget {
   final String business;
@@ -6,13 +9,19 @@ class AlertPromo extends StatelessWidget {
   final String prize;
   final String message;
 
-  AlertPromo({this.business, this.url, this.message, this.prize});
+  AlertPromo({
+    @required this.business,
+    @required this.url,
+    @required this.message,
+    @required this.prize,
+  });
 
   static const double padding = 16.0;
   static const double avatarRadius = 24.0;
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context, listen: false).getUser;
     return Dialog(
       elevation: 0.0,
       backgroundColor: Colors.transparent,
@@ -42,54 +51,56 @@ class AlertPromo extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Image.network(
-                  url,
-                  height: 120,
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  '¡Gracias por responder la encuesta de $business!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).primaryColor,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Image.network(
+                    url,
+                    height: 120,
                   ),
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  message,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  color: Theme.of(context).primaryColor,
-                  child: Text(
-                    'USERNAME',
+                  const SizedBox(height: 16.0),
+                  Text(
+                    '¡Gracias por responder la encuesta de $business!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Colors.white,
+                      fontSize: 22.0,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
-                ),
-                const SizedBox(height: 22),
-                Text(
-                  'Premio: $prize',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16.0),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 16.0,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 22),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    color: Theme.of(context).primaryColor,
+                    child: Text(
+                      'USERNAME: $user',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Text(
+                    'Premio: $prize',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Positioned(

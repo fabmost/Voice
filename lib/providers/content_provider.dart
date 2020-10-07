@@ -76,6 +76,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
+          case 'promo_p':
+          case 'regalup_promo_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -701,6 +703,11 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
+            company: oldPoll.company,
+            message: oldPoll.message,
+            prize: oldPoll.prize,
+            promoUrl: oldPoll.promoUrl,
+            thumbnail: oldPoll.thumbnail,
           );
           _polls[content.id] = content;
           break;
@@ -909,6 +916,11 @@ class ContentProvider with ChangeNotifier, TextMixin {
           certificate: oldPoll.certificate,
           creator: oldPoll.creator,
           description: oldPoll.description,
+          company: oldPoll.company,
+          message: oldPoll.message,
+          prize: oldPoll.prize,
+          promoUrl: oldPoll.promoUrl,
+          thumbnail: oldPoll.thumbnail,
         );
         _polls[content.id] = content;
         notifyListeners();
@@ -1194,6 +1206,11 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
+            company: oldPoll.company,
+            message: oldPoll.message,
+            prize: oldPoll.prize,
+            promoUrl: oldPoll.promoUrl,
+            thumbnail: oldPoll.thumbnail,
           );
           _polls[content.id] = content;
           break;
@@ -1350,6 +1367,11 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
+            company: oldPoll.company,
+            message: oldPoll.message,
+            prize: oldPoll.prize,
+            promoUrl: oldPoll.promoUrl,
+            thumbnail: oldPoll.thumbnail,
           );
           _polls[content.id] = content;
           break;
@@ -1560,6 +1582,11 @@ class ContentProvider with ChangeNotifier, TextMixin {
           certificate: oldPoll.certificate,
           creator: oldPoll.creator,
           description: oldPoll.description,
+          company: oldPoll.company,
+          message: oldPoll.message,
+          prize: oldPoll.prize,
+          promoUrl: oldPoll.promoUrl,
+          thumbnail: oldPoll.thumbnail,
         );
         _polls[content.id] = content;
         notifyListeners();
@@ -1733,6 +1760,10 @@ class ContentProvider with ChangeNotifier, TextMixin {
           certificate: oldPoll.certificate,
           creator: oldPoll.creator,
           description: oldPoll.description,
+          company: oldPoll.company,
+          message: oldPoll.message,
+          prize: oldPoll.prize,
+          promoUrl: oldPoll.promoUrl,
           thumbnail: mFile,
         );
         _polls[content.id] = content;

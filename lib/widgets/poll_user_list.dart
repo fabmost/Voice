@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'user_poll_tile.dart';
 import 'poll_tile.dart';
+import 'poll_promo_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
@@ -74,6 +75,34 @@ class _PollUserListState extends State<PollUserList> {
     );
   }
 
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'user',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      company: content.company,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      prize: content.prize,
+      regalupName: content.creator,
+    );
+  }
+
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
       if (widget.scrollController.position.maxScrollExtent >
@@ -136,7 +165,7 @@ class _PollUserListState extends State<PollUserList> {
   Future<void> _resetData() async {
     loadMoreStatus = LoadMoreStatus.LOADING;
     _currentPageNumber = 0;
-    
+
     List results = await Provider.of<ContentProvider>(context, listen: false)
         .getUserTimeline(userId, _currentPageNumber, 'P');
     setState(() {
@@ -211,9 +240,12 @@ class _PollUserListState extends State<PollUserList> {
                         );
                       switch (_list[i].type) {
                         case 'poll':
+                        case 'promo_p':
                           return _pollWidget(_list[i]);
                         case 'regalup_p':
                           return _repostPollWidget(_list[i]);
+                        case 'regalup_promo_p':
+                          return _promoPollWidget(_list[i]);
                       }
                       return Container();
                     },

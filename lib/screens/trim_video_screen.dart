@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/file_formats.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
-//import 'package:video_trimmer/storage_dir.dart';
+//import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_trimmer/storage_dir.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 import 'package:video_trimmer/video_viewer.dart';
@@ -53,6 +53,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     });
 
     //iOs
+    /*
     final _path = await widget._trimmer.saveTrimmedVideo(
       startValue: _startValue,
       endValue: _endValue,
@@ -68,9 +69,9 @@ class _TrimmerViewState extends State<TrimmerView> {
       //duration: duration,
       deleteOrigin: true,
     );
+    */
 
     //Android
-    /*
     final _path = await widget._trimmer.saveTrimmedVideo(
       startValue: _startValue,
       endValue: _endValue,
@@ -82,7 +83,6 @@ class _TrimmerViewState extends State<TrimmerView> {
       quality: VideoQuality.MediumQuality,
       deleteOrigin: true,
     );
-    */
 
     setState(() {
       _progressVisibility = false;
