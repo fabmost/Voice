@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../mixins/alert_mixin.dart';
 import '../custom/galup_font_icons.dart';
-import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../models/content_model.dart';
 
@@ -23,9 +23,7 @@ class LikeContent extends StatelessWidget with AlertMixin {
   });
 
   void _like(context) async {
-    bool canInteract =
-        await Provider.of<AuthProvider>(context, listen: false).canInteract();
-    if (!canInteract) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       anonymousAlert(context);
       return;
     }

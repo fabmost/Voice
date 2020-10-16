@@ -77,7 +77,7 @@ class _UserIconState extends State<UserIcon> {
   Future<void> _takePicture(context) async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
-      maxWidth: 600,
+      imageQuality: 60,
     );
     if (imageFile != null) {
       _cropImage(context, imageFile.path);
@@ -87,7 +87,7 @@ class _UserIconState extends State<UserIcon> {
   Future<void> _getPicture(context) async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
-      maxWidth: 600,
+      imageQuality: 60,
     );
     if (imageFile != null) {
       _cropImage(context, imageFile.path);

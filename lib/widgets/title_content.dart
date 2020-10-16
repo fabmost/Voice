@@ -9,8 +9,9 @@ import '../screens/search_results_screen.dart';
 
 class TitleContent extends StatelessWidget {
   final String title;
+  final bool padding;
 
-  TitleContent(this.title);
+  TitleContent(this.title, [this.padding = true]);
 
   void _toTaggedProfile(context, userName) {
     if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
@@ -31,7 +32,7 @@ class TitleContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: padding ? const EdgeInsets.symmetric(horizontal: 16) : const EdgeInsets.all(0),
       child: ExtendedText(
         title,
         style: TextStyle(

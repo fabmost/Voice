@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../translations.dart';
 import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
-import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
 
 class TipRating extends StatefulWidget {
   final String id;
@@ -21,9 +21,7 @@ class _TipRatingState extends State<TipRating> with AlertMixin {
   bool _isLoading = false;
 
   void _saveRate() async {
-    bool canInteract =
-        await Provider.of<AuthProvider>(context, listen: false).canInteract();
-    if (!canInteract) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       anonymousAlert(context);
       return;
     }

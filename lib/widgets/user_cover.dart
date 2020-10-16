@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
+import '../screens/poll_gallery_screen.dart';
 
 class UserCover extends StatefulWidget {
   final String url;
@@ -20,6 +21,19 @@ class UserCover extends StatefulWidget {
 class _UserCoverState extends State<UserCover> {
   String _url;
   bool _isLoading = false;
+
+  void _openImage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PollGalleryScreen(
+          reference: null,
+          galleryItems: [widget.url],
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
 
   void _imageOptions(context) {
     showModalBottomSheet(
@@ -63,7 +77,7 @@ class _UserCoverState extends State<UserCover> {
   Future<void> _takePicture(context) async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.camera,
-      maxWidth: 600,
+      imageQuality: 60,
     );
     if (imageFile != null) {
       _cropImage(context, imageFile.path);
@@ -73,7 +87,7 @@ class _UserCoverState extends State<UserCover> {
   Future<void> _getPicture(context) async {
     final imageFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
-      maxWidth: 600,
+      imageQuality: 60,
     );
     if (imageFile != null) {
       _cropImage(context, imageFile.path);
@@ -123,14 +137,18 @@ class _UserCoverState extends State<UserCover> {
     final containerHeight = (screenWidth * 9) / 16;
     return Stack(
       children: [
-        Container(
-          width: double.infinity,
-          height: containerHeight,
-          decoration: BoxDecoration(
-            color: Color(0xFFECECEC),
-            image:  _url == null ? null : DecorationImage(
-                image: NetworkImage(_url),
-                fit: BoxFit.cover),
+        GestureDetector(
+          onTap: _url == null ? null : _openImage,
+          child: Container(
+            width: double.infinity,
+            height: containerHeight,
+            decoration: BoxDecoration(
+              color: Color(0xFFECECEC),
+              image: _url == null
+                  ? null
+                  : DecorationImage(
+                      image: NetworkImage(_url), fit: BoxFit.cover),
+            ),
           ),
         ),
         if (_isLoading) Center(child: CircularProgressIndicator()),

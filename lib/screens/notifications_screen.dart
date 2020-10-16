@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'detail_poll_screen.dart';
 import 'detail_challenge_screen.dart';
@@ -139,6 +140,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _notification(NotificationModel model) {
+    final now = new DateTime.now().toUtc();
+    final difference = now.difference(model.createdAt);
+    final newDate = now.subtract(difference).toLocal();
+
     return Container(
       color: model.isNew ? Color(0x22000000) : Colors.white,
       child: ListTile(
@@ -168,6 +173,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           backgroundImage: model.icon == null ? null : NetworkImage(model.icon),
         ),
         title: Text(model.message),
+        subtitle: Text(
+          timeago.format(newDate,
+              locale: Translations.of(context).currentLanguage),
+        ),
       ),
     );
   }

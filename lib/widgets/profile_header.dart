@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,13 +23,13 @@ class ProfileHeader extends StatelessWidget {
     }
   }
 
-  void _openImage(context) {
+  void _openImage(context, url) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PollGalleryScreen(
-          reference: null,
-          galleryItems: [user.icon],
+          reference: 'profile',
+          galleryItems: [url],
           initialIndex: 0,
         ),
       ),
@@ -47,26 +48,38 @@ class ProfileHeader extends StatelessWidget {
             height: containerHeight + 60,
             child: Stack(
               children: <Widget>[
-                Container(
-                  width: double.infinity,
-                  height: containerHeight,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFECECEC),
-                    image: DecorationImage(
-                        image: user.cover == null
-                            ? null
-                            : NetworkImage(user.cover),
-                        fit: BoxFit.cover),
+                GestureDetector(
+                  onTap: user.cover == null
+                      ? null
+                      : () => _openImage(context, user.cover),
+                  child: Container(
+                    width: double.infinity,
+                    height: containerHeight,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFECECEC),
+                      image: user.cover == null
+                          ? null
+                          : DecorationImage(
+                              image: CachedNetworkImageProvider(user.cover),
+                              fit: BoxFit.cover),
+                    ),
                   ),
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: GestureDetector(
-                    onTap: user.icon == null ? null : user.icon.isEmpty ? null : () => _openImage(context),
+                    onTap: user.icon == null
+                        ? null
+                        : user.icon.isEmpty
+                            ? null
+                            : () => _openImage(context, user.icon),
                     child: CircleAvatar(
                       radius: 60,
-                      backgroundImage:
-                          user.icon == null ? null : user.icon.isEmpty ? null : NetworkImage(user.icon),
+                      backgroundImage: user.icon == null
+                          ? null
+                          : user.icon.isEmpty
+                              ? null
+                              : CachedNetworkImageProvider(user.icon),
                     ),
                   ),
                 ),

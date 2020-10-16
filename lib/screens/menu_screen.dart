@@ -226,6 +226,43 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         ontap: _newCause,
         color: Colors.black,
       )
+      /*
+      FabMenuItem(
+        icon: Icon(GalupFont.survey),
+        label: 'Encuesta patrocinada',
+        ontap: _newCause,
+        color: Colors.black,
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.survey),
+        label: 'Encuesta cerrada',
+        ontap: _newCause,
+        color: Colors.black,
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.survey),
+        label: 'Encuesta',
+        ontap: _newPoll,
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.cause),
+        label: 'Causa',
+        ontap: _newCause,
+        color: Colors.black,
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.challenge),
+        label: 'Reto',
+        ontap: _newChallenge,
+        color: Color(0xFFA4175D),
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.tips),
+        label: 'Tip',
+        ontap: _newTip,
+        color: Color(0xFF00B2E3),
+      ),
+      */
     ];
 
     final fm = FirebaseMessaging();

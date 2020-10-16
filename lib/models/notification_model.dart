@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class NotificationModel {
   final String id;
   final String userName;
@@ -6,6 +8,7 @@ class NotificationModel {
   final String idContent;
   final String message;
   final bool isNew;
+  final DateTime createdAt;
 
   NotificationModel({
     this.id,
@@ -15,6 +18,7 @@ class NotificationModel {
     this.idContent,
     this.message,
     this.isNew,
+    this.createdAt,
   });
 
   static List<NotificationModel> listFromJson(List<dynamic> content) {
@@ -29,6 +33,8 @@ class NotificationModel {
         idContent: element['id_content'],
         message: element['message'],
         isNew: element['is_new'],
+        createdAt:
+          DateFormat('yyyy-MM-DD HH:mm:ss').parse(element['date'], true),
       ));
     });
 

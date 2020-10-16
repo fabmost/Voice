@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../screens/poll_gallery_screen.dart';
@@ -47,7 +48,7 @@ class PollImages extends StatelessWidget {
         ),
         border: Border.all(color: Colors.black),
         image: DecorationImage(
-          image: NetworkImage(image),
+          image: CachedNetworkImageProvider(image),
           fit: BoxFit.cover,
         ),
       ),

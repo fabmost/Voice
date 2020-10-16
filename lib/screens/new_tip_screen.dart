@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -38,6 +38,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
   FocusNode _descFocus = FocusNode();
   File _imageFile;
   File _videoFile;
+  final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
+      MySpecialTextSpanBuilder();
 
   CategoryModel category;
 
@@ -130,8 +132,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-        //final mFile = await VideoCompress.getFileThumbnail(
+        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        final mFile = await VideoCompress.getFileThumbnail(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -302,13 +304,20 @@ class _NewTipScreenState extends State<NewTipScreen> {
 
     List<Map> tags = [];
     RegExp exps = new RegExp(r"\B@\[\S\S+\]\S\S+");
-    /*
+
     exps.allMatches(_titleController.text).forEach((match) {
-      if (!tags.contains({'user_name': match.group(0)})) {
-        tags.add({'user_name': match.group(0).replaceAll('@', '')});
+      String toRemove;
+      int start = match.group(0).indexOf('[');
+      if (start != -1) {
+        int finish = match.group(0).indexOf(']');
+        toRemove = match.group(0).substring(start, finish + 1);
+        toRemove = toRemove.replaceAll('[', '');
+        toRemove = toRemove.replaceAll(']', '');
+      }
+      if (toRemove != null && !tags.contains({'user_name': toRemove})) {
+        tags.add({'user_name': toRemove});
       }
     });
-    */
     exps.allMatches(_descriptionController.text).forEach((match) {
       String toRemove;
       int start = match.group(0).indexOf('[');
@@ -416,18 +425,43 @@ class _NewTipScreenState extends State<NewTipScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextField(
-                controller: _titleController,
-                autofocus: true,
-                autocorrect: true,
-                maxLines: null,
-                maxLength: 120,
-                decoration: InputDecoration(
-                  counterText: '',
-                  border: InputBorder.none,
-                  hintText: Translations.of(context).text('hint_tip_title'),
+              SuggestionField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: _titleController,
+                  spanBuilder: _mySpecialTextSpanBuilder,
+                  autofocus: true,
+                  autocorrect: true,
+                  maxLines: null,
+                  maxLength: 120,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    border: InputBorder.none,
+                    hintText: Translations.of(context).text('hint_tip_title'),
+                  ),
+                  style: TextStyle(fontSize: 22),
                 ),
-                style: TextStyle(fontSize: 22),
+                suggestionsCallback: (pattern) {
+                  if (_isSearching) {
+                    return _getSuggestions(pattern);
+                  }
+                  if (pattern.endsWith('@')) {
+                    _isSearching = true;
+                  }
+                  return null;
+                },
+                itemBuilder: (context, itemData) {
+                  return _userTile(context, itemData);
+                },
+                onSuggestionSelected: (suggestion) {
+                  _isSearching = false;
+                  int index = _titleController.text.lastIndexOf('@');
+                  String subs = _titleController.text.substring(0, index);
+                  _titleController.text =
+                      '$subs@[${suggestion.userName}]${suggestion.userName} ';
+                  _titleController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _titleController.text.length));
+                },
+                autoFlipDirection: true,
               ),
               SizedBox(height: 16),
               _title(Translations.of(context).text('label_media_challenge')),
@@ -443,7 +477,10 @@ class _NewTipScreenState extends State<NewTipScreen> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: Colors.black),
                       image: _imageFile != null
-                          ? DecorationImage(image: FileImage(_imageFile))
+                          ? DecorationImage(
+                              image: FileImage(_imageFile),
+                              fit: BoxFit.cover,
+                            )
                           : null,
                     ),
                     child: Icon(Icons.camera_alt),
@@ -469,7 +506,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
               ),
               SuggestionField(
                 textFieldConfiguration: TextFieldConfiguration(
-                  spanBuilder: MySpecialTextSpanBuilder(),
+                  spanBuilder: _mySpecialTextSpanBuilder,
                   controller: _descriptionController,
                   focusNode: _descFocus,
                   maxLines: null,

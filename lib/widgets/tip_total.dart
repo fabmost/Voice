@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 
 import 'tip_rating.dart';
 import '../models/tip_model.dart';
+import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 
-class TipTotal extends StatelessWidget {
+class TipTotal extends StatelessWidget with AlertMixin {
   final String id;
   final double total;
   final bool hasRated;
@@ -14,12 +16,17 @@ class TipTotal extends StatelessWidget {
   TipTotal({this.id, this.total, this.hasRated});
 
   void _rateAlert(context) {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      anonymousAlert(context);
+      return;
+    }
     showDialog(
       context: context,
       builder: (context) => Dialog(
         child: TipRating(id),
       ),
     );
+
   }
 
   @override

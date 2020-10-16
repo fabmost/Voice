@@ -53,12 +53,13 @@ class ChallengeModel extends ContentModel {
         ? null
         : content['user_regalup']['user_name'];
     CertificateModel certificate;
-    if (regalup == null) {
-      certificate = content['certificates'] == null
-          ? null
-          : content['certificates']['icon'] == null
-              ? null
-              : CertificateModel.fromJson(content['certificates']);
+    //if (regalup == null) {
+    certificate = content['certificates'] == null
+        ? null
+        : content['certificates']['icon'] == null
+            ? null
+            : CertificateModel.fromJson(content['certificates']);
+    /*
     } else {
       certificate = content['certificatesRegalup'] == null
           ? null
@@ -66,6 +67,7 @@ class ChallengeModel extends ContentModel {
               ? null
               : CertificateModel.fromJson(content['certificatesRegalup']);
     }
+    */
     return ChallengeModel(
       id: content['id'],
       type: content['type'],

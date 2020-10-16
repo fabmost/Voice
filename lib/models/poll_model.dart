@@ -66,12 +66,13 @@ class PollModel extends ContentModel {
         ? null
         : content['user_regalup']['user_name'];
     CertificateModel certificate;
-    if (regalup == null) {
-      certificate = content['certificates'] == null
-          ? null
-          : content['certificates']['icon'] == null
-              ? null
-              : CertificateModel.fromJson(content['certificates']);
+    //if (regalup == null) {
+    certificate = content['certificates'] == null
+        ? null
+        : content['certificates']['icon'] == null
+            ? null
+            : CertificateModel.fromJson(content['certificates']);
+    /*
     } else {
       certificate = content['certificatesRegalup'] == null
           ? null
@@ -79,6 +80,7 @@ class PollModel extends ContentModel {
               ? null
               : CertificateModel.fromJson(content['certificatesRegalup']);
     }
+    */
     return PollModel(
       id: content['id'],
       type: content['type'],

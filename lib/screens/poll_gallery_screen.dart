@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -49,7 +50,7 @@ class _PhotoGalleryScreenState extends State<PollGalleryScreen> {
             builder: (ctx, i) {
               final tag = '${widget.galleryItems[i]}${widget.reference}';
               return PhotoViewGalleryPageOptions(
-                imageProvider: NetworkImage(widget.galleryItems[i]),
+                imageProvider: CachedNetworkImageProvider(widget.galleryItems[i]),
                 initialScale: PhotoViewComputedScale.contained,
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 1.2,

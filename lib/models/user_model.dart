@@ -57,7 +57,9 @@ class UserModel {
       hash: content['user_hash'],
       name: TextMixin.fixString(content['name']),
       lastName: TextMixin.fixString(content['last_name']),
-      cover: content['cover'] ?? '',
+      cover: content['cover'] == null
+          ? null
+          : content['cover'].isEmpty ? null : content['cover'],
       country: content['country_code'],
       tiktok: content['tiktok'],
       facebook: content['facebook'],

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'description.dart';
 import 'cause_meter.dart';
 import 'cause_button.dart';
@@ -271,16 +272,7 @@ class UserCauseTile extends StatelessWidget with ShareContent {
               child: _userTile(context),
             ),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            TitleContent(title),
             const SizedBox(height: 16),
             _challengeGoal(context),
             if (goal != null && goal > 0) CauseMeter(id),

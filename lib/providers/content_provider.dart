@@ -76,8 +76,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-          case 'promo_p':
-          case 'regalup_promo_p':
+            //case 'promo_p':
+            //case 'regalup_promo_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -198,6 +198,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
+            //case 'promo_p':
+            //case 'regalup_promo_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -1949,6 +1951,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
         type: model.type,
         userName: model.userName,
         isNew: false,
+        createdAt: model.createdAt,
       );
       notifyListeners();
     }

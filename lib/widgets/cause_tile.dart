@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'description.dart';
 import 'cause_meter.dart';
 import 'menu_content.dart';
@@ -231,16 +232,7 @@ class CauseTile extends StatelessWidget with ShareContent {
               ),
             ),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            TitleContent(title),
             const SizedBox(height: 16),
             _challengeGoal(context),
             if (goal != null && goal > 0) CauseMeter(id),
@@ -298,12 +290,10 @@ class CauseTile extends StatelessWidget with ShareContent {
                     onPressed: _share,
                   ),
                   Expanded(child: SizedBox(height: 1)),
-                  Consumer<ContentProvider>(
-                    builder: (context, value, child) {
-                      CauseModel mCause = value.getCausesList[id];
-                      return Text(likes == 0 ? '' : '${mCause.likes} Votos');
-                    }
-                  ),
+                  Consumer<ContentProvider>(builder: (context, value, child) {
+                    CauseModel mCause = value.getCausesList[id];
+                    return Text(likes == 0 ? '' : '${mCause.likes} Votos');
+                  }),
                   SizedBox(width: 16),
                 ],
               ),
