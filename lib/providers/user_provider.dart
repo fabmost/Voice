@@ -99,6 +99,7 @@ class UserProvider with ChangeNotifier, TextMixin {
     tiktok,
     facebook,
     instagram,
+    twitter,
     youtube,
     bio,
     gender,
@@ -141,6 +142,10 @@ class UserProvider with ChangeNotifier, TextMixin {
     if (instagram != null) {
       parameters['instagram'] = instagram;
       if (_currentUser != null) _currentUser.instagram = instagram;
+    }
+    if (twitter != null) {
+      parameters['twitter'] = twitter;
+      if (_currentUser != null) _currentUser.twitter = twitter;
     }
     if (youtube != null) {
       parameters['youtube'] = youtube;

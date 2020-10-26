@@ -12,13 +12,14 @@ class CommentContent extends StatelessWidget {
 
   CommentContent({this.id, this.type});
 
-  void _toComments(context) {
+  void _toComments(context, owner) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CommentsScreen(
           id: id,
           type: type,
+          owner: owner,
         ),
       ),
     );
@@ -41,7 +42,7 @@ class CommentContent extends StatelessWidget {
             break;
         }
         return FlatButton.icon(
-          onPressed: () => _toComments(context),
+          onPressed: () => _toComments(context, _content.user.userName),
           icon: Icon(GalupFont.message),
           label: Text(_content.comments == 0 ? '' : '${_content.comments}'),
         );

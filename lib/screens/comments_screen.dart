@@ -7,8 +7,13 @@ import '../widgets/likes_list.dart';
 class CommentsScreen extends StatelessWidget {
   final String id;
   final String type;
+  final String owner;
 
-  CommentsScreen({this.id, this.type});
+  CommentsScreen({
+    this.id,
+    this.type,
+    @required this.owner,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +38,7 @@ class CommentsScreen extends StatelessWidget {
             CommentsList(
               id: id,
               type: type,
+              owner: owner,
             ),
             LikesList(
               id: id,

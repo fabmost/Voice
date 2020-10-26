@@ -131,6 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           if ((provider.getUserModel.tiktok ?? '').isNotEmpty ||
               (provider.getUserModel.facebook ?? '').isNotEmpty ||
               (provider.getUserModel.instagram ?? '').isNotEmpty ||
+              (provider.getUserModel.twitter ?? '').isNotEmpty ||
               (provider.getUserModel.youtube ?? '').isNotEmpty) {
             hasSocialMedia = true;
             containerHeight += 60;

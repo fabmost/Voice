@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'description.dart';
 import 'challenge_meter.dart';
 import 'poll_video.dart';
@@ -141,16 +142,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
           ),
         ),
         SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            challengeModel.title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        TitleContent(challengeModel.title),
         SizedBox(height: 16),
         _challengeGoal(context),
         if (challengeModel.goal > 0) ChallengeMeter(challengeModel.id),

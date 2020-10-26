@@ -91,7 +91,7 @@ class PollModel extends ContentModel {
       creator: regalup,
       certificate: certificate,
       title: TextMixin.fixString(content['body']),
-      description: TextMixin.fixString(content['description']),
+      description: content['description'] == null ? '' : TextMixin.fixString(content['description']),
       createdAt:
           DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       votes: content['votes'],

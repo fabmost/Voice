@@ -55,6 +55,7 @@ class _HomeListState extends State<HomeList> {
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
+      videoFunction: null,
     );
   }
 
@@ -147,6 +148,7 @@ class _HomeListState extends State<HomeList> {
       answers: content.answers,
       resources: content.resources,
       regalupName: content.creator,
+      videoFunction: null,
     );
   }
 

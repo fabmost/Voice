@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +13,7 @@ import '../custom/my_special_text_span_builder.dart';
 import '../screens/view_profile_screen.dart';
 import '../screens/search_results_screen.dart';
 import '../providers/user_provider.dart';
+import '../providers/content_provider.dart';
 
 class ResponseTile extends StatelessWidget {
   final String contentId;
@@ -27,6 +30,7 @@ class ResponseTile extends StatelessWidget {
   final bool hasDown;
   final certificate;
   final Function toReply;
+  final Function removeFunction;
 
   final RegExp regex = new RegExp(
       r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&//=]*)");
@@ -46,6 +50,7 @@ class ResponseTile extends StatelessWidget {
     this.hasDown,
     @required this.certificate,
     this.toReply,
+    @required this.removeFunction,
   });
 
   void _toProfile(context, user) {
@@ -74,6 +79,88 @@ class ResponseTile extends StatelessWidget {
     } else {
       throw 'Could not launch $newUrl';
     }
+  }
+
+  void _options(context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          color: Colors.transparent,
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                onTap: () => _deleteAlert(context),
+                leading: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+                title: Text(
+                  Translations.of(context).text('button_delete'),
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteAlert(context) {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        content: Text('¿Seguro que deseas borrar este comentario?'),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              Translations.of(context).text('button_delete'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              _deleteContent(ct);
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteContent(context) async {
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .deleteComment(
+      id: id,
+      contentId: contentId,
+      type: type,
+    );
+    if (result) {
+      //Navigator.of(context).pop();
+      removeFunction(id);
+    }
+  }
+
+  Widget _menuButton(context) {
+    return Transform.rotate(
+      angle: 270 * pi / 180,
+      child: IconButton(
+        icon: Icon(Icons.chevron_left),
+        onPressed: () => _options(context),
+      ),
+    );
   }
 
   @override
@@ -136,6 +223,10 @@ class ResponseTile extends StatelessWidget {
               }
             },
           ),
+          trailing: Provider.of<UserProvider>(context, listen: false).getUser ==
+                  userName
+              ? _menuButton(context)
+              : null,
         ),
         CommentOptions(
             id: id,

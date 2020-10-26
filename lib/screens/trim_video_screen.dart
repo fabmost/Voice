@@ -23,6 +23,11 @@ class _TrimmerViewState extends State<TrimmerView> {
   bool _isPlaying = false;
   bool _progressVisibility = false;
 
+  //final _compressor = FlutterVideoCompress();
+  //iOs
+  dynamic _subscription;
+  double _progress = 0;
+
   void _alertError() {
     showDialog(
       context: context,
@@ -77,18 +82,32 @@ class _TrimmerViewState extends State<TrimmerView> {
       outputFormat: FileFormat.mp4,
       storageDir: StorageDir.temporaryDirectory,
     );
-    final info = await FlutterVideoCompress().compressVideo(
+    final info = await _compressor.compressVideo(
       _path,
       quality: VideoQuality.MediumQuality,
       deleteOrigin: true,
     );
     */
 
-    setState(() {
-      _progressVisibility = false;
-    });
-
     return info.path;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _subscription = VideoCompress.compressProgress$.subscribe((progress) {
+      print(progress);
+      setState(() {
+        _progress = progress;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription.unsubscribe();
   }
 
   @override
@@ -108,8 +127,22 @@ class _TrimmerViewState extends State<TrimmerView> {
               children: <Widget>[
                 Visibility(
                   visible: _progressVisibility,
-                  child: LinearProgressIndicator(
-                    backgroundColor: Colors.red,
+                  child: Stack(
+                    children: [
+                      LinearProgressIndicator(
+                        backgroundColor: Colors.red,
+                        value: _progress / 100,
+                        minHeight: 12,
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text('${_progress.toStringAsFixed(0)}%',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            )),
+                      ),
+                    ],
                   ),
                 ),
                 RaisedButton(

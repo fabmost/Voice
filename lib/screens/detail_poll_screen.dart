@@ -74,6 +74,12 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
     });
   }
 
+  void _removeContent(id) {
+    setState(() {
+      _commentsList.removeWhere((element) => element.id == id);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -125,6 +131,8 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
                           downs: doc.dislikes,
                           hasDown: doc.hasDislike,
                           certificate: doc.certificate,
+                          removeFunction: _removeContent,
+                          owner: _pollModel.user.userName,
                         );
                       },
                     ),

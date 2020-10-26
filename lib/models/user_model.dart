@@ -14,6 +14,7 @@ class UserModel {
   String tiktok;
   String facebook;
   String instagram;
+  String twitter;
   String youtube;
   String biography;
   String gender;
@@ -36,6 +37,7 @@ class UserModel {
     this.tiktok,
     this.facebook,
     this.instagram,
+    this.twitter,
     this.youtube,
     this.biography,
     this.gender,
@@ -64,6 +66,7 @@ class UserModel {
       tiktok: content['tiktok'],
       facebook: content['facebook'],
       instagram: content['instagram'],
+      twitter: content['twitter'],
       youtube: content['youtube'],
       biography: content['biography'] == null
           ? null

@@ -84,6 +84,12 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
     );
   }
 
+  void _removeContent(id) {
+    setState(() {
+      _commentsList.removeWhere((element) => element.id == id);
+    });
+  }
+
   void _replyComment(userName) {
     _newState.currentState.getFocus(userName);
   }
@@ -141,6 +147,7 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
                         hasDown: doc.hasDislike,
                         certificate: doc.certificate,
                         toReply: _replyComment,
+                        removeFunction: _removeContent,
                       );
                     },
                   ),

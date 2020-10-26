@@ -58,6 +58,7 @@ class CustomSearchDelegate extends SearchDelegate {
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
+      videoFunction: null,
     );
   }
 

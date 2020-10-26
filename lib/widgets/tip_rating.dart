@@ -75,11 +75,21 @@ class _TipRatingState extends State<TipRating> with AlertMixin {
             child: _isLoading
                 ? Center(child: CircularProgressIndicator())
                 : RaisedButton(
-                    onPressed: _saveRate,
+                    onPressed: _rating > 0 ? _saveRate : null,
                     textColor: Colors.white,
-                    child: Text('Guardar'),
+                    child: Text(Translations.of(context).text('button_save')),
                   ),
           ),
+          Container(
+            width: double.infinity,
+            height: 42,
+            child: FlatButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(Translations.of(context).text('button_cancel')),
+            ),
+          )
         ],
       ),
     );

@@ -76,8 +76,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-            //case 'promo_p':
-            //case 'regalup_promo_p':
+          //case 'promo_p':
+          //case 'regalup_promo_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -198,8 +198,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-            //case 'promo_p':
-            //case 'regalup_promo_p':
+          //case 'promo_p':
+          //case 'regalup_promo_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -1696,6 +1696,115 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deleteComment({id, contentId, type}) async {
+    var url = '${API.baseURL}/deleteComment';
+    final token = await _getToken();
+    Map parameters = {'id': id};
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+
+      switch (type) {
+        case 'P':
+          PollModel oldPoll = _polls[contentId];
+          final content = PollModel(
+            id: oldPoll.id,
+            type: oldPoll.type,
+            user: oldPoll.user,
+            title: oldPoll.title,
+            createdAt: oldPoll.createdAt,
+            votes: oldPoll.votes,
+            likes: oldPoll.likes,
+            regalups: oldPoll.regalups,
+            comments: oldPoll.comments - 1,
+            hasVoted: oldPoll.hasVoted,
+            hasLiked: oldPoll.hasLiked,
+            hasRegalup: oldPoll.hasRegalup,
+            hasSaved: oldPoll.hasSaved,
+            answers: oldPoll.answers,
+            resources: oldPoll.resources,
+            body: oldPoll.body,
+            certificate: oldPoll.certificate,
+            creator: oldPoll.creator,
+            description: oldPoll.description,
+            company: oldPoll.company,
+            message: oldPoll.message,
+            prize: oldPoll.prize,
+            promoUrl: oldPoll.promoUrl,
+            thumbnail: oldPoll.thumbnail,
+          );
+          _polls[content.id] = content;
+          break;
+        case 'C':
+          ChallengeModel oldChallenge = _challenges[contentId];
+          final content = ChallengeModel(
+            id: oldChallenge.id,
+            type: oldChallenge.type,
+            user: oldChallenge.user,
+            title: oldChallenge.title,
+            createdAt: oldChallenge.createdAt,
+            likes: oldChallenge.likes,
+            regalups: oldChallenge.regalups,
+            comments: oldChallenge.comments - 1,
+            hasLiked: oldChallenge.hasLiked,
+            hasRegalup: oldChallenge.hasRegalup,
+            hasSaved: oldChallenge.hasSaved,
+            resources: oldChallenge.resources,
+            certificate: oldChallenge.certificate,
+            creator: oldChallenge.creator,
+            description: oldChallenge.description,
+            goal: oldChallenge.goal,
+            parameter: oldChallenge.parameter,
+          );
+          _challenges[content.id] = content;
+          break;
+        case 'TIP':
+          TipModel oldTip = _tips[contentId];
+          final content = TipModel(
+            id: oldTip.id,
+            type: oldTip.type,
+            user: oldTip.user,
+            title: oldTip.title,
+            createdAt: oldTip.createdAt,
+            likes: oldTip.likes,
+            regalups: oldTip.regalups,
+            comments: oldTip.comments - 1,
+            hasLiked: oldTip.hasLiked,
+            hasRegalup: oldTip.hasRegalup,
+            hasSaved: oldTip.hasSaved,
+            resources: oldTip.resources,
+            certificate: oldTip.certificate,
+            creator: oldTip.creator,
+            description: oldTip.description,
+            body: oldTip.body,
+            hasRated: oldTip.hasRated,
+            total: oldTip.total,
+          );
+          _tips[content.id] = content;
+          break;
+      }
+      notifyListeners();
       return true;
     }
     return false;

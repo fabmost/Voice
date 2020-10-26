@@ -9,20 +9,62 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<GalleryScreen> {
+  List<AssetPathEntity> _albums = [];
   List<Widget> _mediaList = [];
   int currentPage = 0;
   int lastPage;
+  int _selected = 0;
+
   @override
   void initState() {
     super.initState();
     _fetchNewMedia();
   }
 
+  Widget _albumDropDown() {
+    int pos = -1;
+    return DropdownButtonHideUnderline(
+      child: DropdownButton(
+        value: _selected,
+        icon: Icon(Icons.arrow_drop_down),
+        iconSize: 32,
+        iconEnabledColor: Colors.white,
+        items: _albums.map((value) {
+          pos++;
+          return DropdownMenuItem(
+            value: pos,
+            child: Text(value.name),
+          );
+        }).toList(),
+        selectedItemBuilder: (BuildContext context) {
+          return _albums.map((value) {
+            return Container(
+              alignment: Alignment.center,
+              child: Text(
+                value.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }).toList();
+        },
+        onChanged: (value) {
+          setState(() {
+            currentPage = 0;
+            _mediaList.clear();
+            _selected = value;
+            _fetchNewMedia();
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Galería'),
+        title: _albums.isEmpty ? Text('Galería') : _albumDropDown(),
       ),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scroll) {
@@ -54,11 +96,10 @@ class _MyHomePageState extends State<GalleryScreen> {
     if (result) {
       // success
       //load the album list
-      List<AssetPathEntity> albums =
-          await PhotoManager.getAssetPathList(onlyAll: true);
-      print(albums);
+      if (_albums.isEmpty)
+        _albums = await PhotoManager.getAssetPathList(onlyAll: false);
       List<AssetEntity> media =
-          await albums[0].getAssetListPaged(currentPage, 60);
+          await _albums[_selected].getAssetListPaged(currentPage, 60);
       print(media);
       List<Widget> temp = [];
       for (var asset in media) {

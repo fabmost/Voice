@@ -61,7 +61,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     HomeScreen(
       //key: PageStorageKey('Page1'),
       _homeController,
-      //stopVideo: _playVideo,
+      _playVideo,
     ),
     SearchScreen(
       key: PageStorageKey('Page2'),

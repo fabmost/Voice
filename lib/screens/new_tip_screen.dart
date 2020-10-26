@@ -175,7 +175,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
     if (_titleController.text.isNotEmpty &&
         _imageFile != null &&
         category != null) {
-      _saveTip();
+      _validationAlert();
       return;
     }
     showDialog(
@@ -188,6 +188,32 @@ class _NewTipScreenState extends State<NewTipScreen> {
               Navigator.of(context).pop();
             },
             child: Text('Ok'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _validationAlert() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_validation')),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_check')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _saveTip();
+            },
+            child: Text(Translations.of(context).text('button_publish')),
           )
         ],
       ),
@@ -555,8 +581,8 @@ class _NewTipScreenState extends State<NewTipScreen> {
                       child: RaisedButton(
                         color: Color(0xFF00B2E3),
                         textColor: Colors.white,
-                        child:
-                            Text(Translations.of(context).text('button_save')),
+                        child: Text(
+                            Translations.of(context).text('button_publish')),
                         onPressed: () => _validate(),
                       ),
                     ),

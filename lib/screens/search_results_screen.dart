@@ -51,6 +51,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       answers: content.answers,
       certificate: content.certificate,
       resources: content.resources,
+      videoFunction: null,
     );
   }
 

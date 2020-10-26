@@ -352,7 +352,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
         _secondController.text.isNotEmpty &&
         category != null) {
       if (!moreOptions || (moreOptions && _thirdController.text.isNotEmpty)) {
-        _savePoll();
+        _validationAlert();
         return;
       }
     }
@@ -366,6 +366,32 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
               Navigator.of(context).pop();
             },
             child: Text('Ok'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _validationAlert() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_validation')),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_check')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _savePoll();
+            },
+            child: Text(Translations.of(context).text('button_publish')),
           )
         ],
       ),
@@ -964,8 +990,8 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
                       height: 42,
                       child: RaisedButton(
                         textColor: Colors.white,
-                        child:
-                            Text(Translations.of(context).text('button_save')),
+                        child: Text(
+                            Translations.of(context).text('button_publish')),
                         onPressed: () => _validate(),
                       ),
                     ),

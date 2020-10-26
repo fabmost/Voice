@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 import 'poll_tile.dart';
 import 'poll_promo_tile.dart';
@@ -26,6 +27,14 @@ class _PollListState extends State<PollList> {
   int _currentPageNumber = 0;
   bool _isLoading = false;
   bool _hasMore = true;
+  VideoPlayerController _controller;
+
+  void _playVideo(VideoPlayerController controller) {
+    if(_controller != null){
+      _controller.pause();
+    }
+    _controller = controller;
+  }
 
   Widget _pollWidget(PollModel content) {
     return PollTile(
@@ -47,6 +56,7 @@ class _PollListState extends State<PollList> {
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
+      videoFunction: _playVideo,
     );
   }
 
@@ -71,6 +81,7 @@ class _PollListState extends State<PollList> {
       answers: content.answers,
       resources: content.resources,
       regalupName: content.creator,
+      videoFunction: _playVideo,
     );
   }
 

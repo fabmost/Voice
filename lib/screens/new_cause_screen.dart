@@ -164,7 +164,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
 
   void _validate() {
     if (_titleController.text.isNotEmpty && _imageFile != null && goal > 0) {
-      _saveChallenge();
+      _validationAlert();
       return;
     }
     showDialog(
@@ -177,6 +177,32 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
               Navigator.of(context).pop();
             },
             child: Text('Ok'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _validationAlert() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_validation')),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_check')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _saveCause();
+            },
+            child: Text(Translations.of(context).text('button_publish')),
           )
         ],
       ),
@@ -256,7 +282,7 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
     );
   }
 
-  void _saveChallenge() async {
+  void _saveCause() async {
     FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
@@ -572,8 +598,8 @@ class _NewCauseScreenState extends State<NewCauseScreen> {
                       child: RaisedButton(
                         color: Colors.black,
                         textColor: Colors.white,
-                        child:
-                            Text(Translations.of(context).text('button_save')),
+                        child: Text(
+                            Translations.of(context).text('button_publish')),
                         onPressed: () => _validate(),
                       ),
                     ),

@@ -10,6 +10,7 @@ import '../custom/galup_font_icons.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
 import '../models/cause_model.dart';
+import '../widgets/title_content.dart';
 import '../widgets/description.dart';
 import '../widgets/cause_meter.dart';
 import '../widgets/menu_content.dart';
@@ -217,16 +218,7 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
                   children: <Widget>[
                     Container(color: color, child: _userTile(context)),
                     SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        _causeModel.title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    TitleContent(_causeModel.title),
                     const SizedBox(height: 16),
                     _challengeGoal(context),
                     if (_causeModel.goal != null && _causeModel.goal > 0)

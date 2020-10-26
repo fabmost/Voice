@@ -39,7 +39,7 @@ class AlertPromo extends StatelessWidget {
               left: padding,
               right: padding,
             ),
-            decoration: new BoxDecoration(
+            decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.rectangle,
               borderRadius: BorderRadius.circular(padding),

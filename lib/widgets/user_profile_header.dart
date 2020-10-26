@@ -183,6 +183,20 @@ class UserProfileHeader extends StatelessWidget {
                       ),
                     ),
                   SizedBox(width: 8),
+                  if ((user.twitter ?? '').isNotEmpty)
+                    GestureDetector(
+                      onTap: () => _launchURL(
+                          'https://www.twitter.com/${user.twitter.replaceAll('@', '')}'),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black,
+                        child: Icon(
+                          GalupFont.twitter,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  SizedBox(width: 8),
                   if ((user.youtube ?? '').isNotEmpty)
                     GestureDetector(
                       onTap: () => _launchURL(

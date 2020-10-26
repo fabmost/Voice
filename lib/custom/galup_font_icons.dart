@@ -16,6 +16,10 @@
 ///         Author:    MFG Labs
 ///         License:   SIL (http://scripts.sil.org/OFL)
 ///         Homepage:  http://www.mfglabs.com/
+/// * Font Awesome 4, Copyright (C) 2016 by Dave Gandy
+///         Author:    Dave Gandy
+///         License:   SIL ()
+///         Homepage:  http://fortawesome.github.com/Font-Awesome/
 ///
 import 'package:flutter/widgets.dart';
 
@@ -52,5 +56,8 @@ class GalupFont {
   static const IconData tik_tok = IconData(0xe818, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData cause = IconData(0xe819, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData challenge = IconData(0xe81a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData encuesta_cerrada = IconData(0xe81b, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData encuesta_patrocinada = IconData(0xe81c, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData info_circled_alt = IconData(0xf086, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData twitter = IconData(0xf099, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

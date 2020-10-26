@@ -20,8 +20,9 @@ enum LoadMoreStatus { LOADING, STABLE }
 
 class HomeScreen extends StatefulWidget {
   final ScrollController scrollController;
+  final Function videoFunction;
 
-  HomeScreen(this.scrollController);
+  HomeScreen(this.scrollController, this.videoFunction);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -57,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen>
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
+      videoFunction: widget.videoFunction,
     );
   }
 
@@ -149,6 +151,7 @@ class _HomeScreenState extends State<HomeScreen>
       answers: content.answers,
       resources: content.resources,
       regalupName: content.creator,
+      videoFunction: null,
     );
   }
 
@@ -295,14 +298,17 @@ class _HomeScreenState extends State<HomeScreen>
     return;
   }
 
-  void _moreUsers() async {
-    final usersResult =
-        await Provider.of<ContentProvider>(context, listen: false)
-            .getTopUsers(1);
-    _requestMoreUsers = true;
-    setState(() {
-      mUsers.addAll(usersResult);
-    });
+  void _moreUsers(page) async {
+    if (page < 3) {
+      final usersResult =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .getTopUsers(page);
+      _requestMoreUsers = true;
+      setState(() {
+        mUsers.addAll(usersResult);
+      });
+      _moreUsers(page++);
+    }
   }
 
   Widget _usersCarrousel() {
@@ -314,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen>
       );
     }
     if (!_requestMoreUsers) {
-      _moreUsers();
+      _moreUsers(1);
     }
     return Container(
       height: 220,

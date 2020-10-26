@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
 import 'like_content.dart';
@@ -150,13 +151,7 @@ class HeaderTip extends StatelessWidget with ShareContent {
               ),
               const SizedBox(width: 5),
               Flexible(
-                child: Text(
-                  tipModel.title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: TitleContent(tipModel.title, false),
               ),
             ],
           ),

@@ -12,14 +12,16 @@ enum LoadMoreStatus { LOADING, STABLE }
 class CommentsList extends StatefulWidget {
   final String id;
   final String type;
+  final String owner;
 
-  CommentsList({this.id, this.type});
+  CommentsList({this.id, this.type, this.owner});
 
   @override
   _CommentsListState createState() => _CommentsListState();
 }
 
-class _CommentsListState extends State<CommentsList> with AutomaticKeepAliveClientMixin<CommentsList>{
+class _CommentsListState extends State<CommentsList>
+    with AutomaticKeepAliveClientMixin<CommentsList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
   List<CommentModel> _list = [];
@@ -88,6 +90,12 @@ class _CommentsListState extends State<CommentsList> with AutomaticKeepAliveClie
     });
   }
 
+  void _removeContent(id) {
+    setState(() {
+      _list.removeWhere((element) => element.id == id);
+    });
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -144,6 +152,8 @@ class _CommentsListState extends State<CommentsList> with AutomaticKeepAliveClie
                                 downs: _list[i].dislikes,
                                 hasDown: _list[i].hasDislike,
                                 certificate: _list[i].certificate,
+                                removeFunction: _removeContent,
+                                owner: widget.owner,
                               );
                             }),
                       ),

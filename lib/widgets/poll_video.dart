@@ -30,6 +30,19 @@ class _PollVideoState extends State<PollVideo> {
   @override
   void initState() {
     super.initState();
+    _isLoading = true;
+    _controller = VideoPlayerController.network(widget.videoUrl);
+    _controller.initialize().then((value) {
+      setState(() {
+        _isLoading = false;
+      });
+      _chewieController = ChewieController(
+        videoPlayerController: _controller,
+        aspectRatio: _controller.value.aspectRatio,
+        autoPlay: false,
+        looping: false,
+      );
+    });
   }
 
   @override
@@ -55,7 +68,7 @@ class _PollVideoState extends State<PollVideo> {
           _chewieController = ChewieController(
             videoPlayerController: _controller,
             aspectRatio: _controller.value.aspectRatio,
-            autoPlay: true,
+            //autoPlay: true,
             looping: false,
           );
         });
@@ -66,11 +79,12 @@ class _PollVideoState extends State<PollVideo> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (_controller == null) {
+        if (!_controller.value.initialized) {
           _startVideo();
         } else {
           setState(() {
-            //_isPlaying = !_controller.value.isPlaying;
+            _isPlaying = true;
+            if (widget._playVideo != null) widget._playVideo(_controller);
             _controller.value.isPlaying
                 ? _controller.pause()
                 : _controller.play();
@@ -78,47 +92,56 @@ class _PollVideoState extends State<PollVideo> {
         }
       },
       child: Container(
-        color: Colors.black,
-        child: AspectRatio(
-          aspectRatio: (16 / 9),
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              (_controller != null && _controller.value.initialized)
-                  ? AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller))
-                  : PollVideoThumb(
+        color: Theme.of(context).primaryColor,
+        child: _controller.value.initialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio < 1
+                    ? 1
+                    : _controller.value.aspectRatio,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: VideoPlayer(_controller)),
+                    if (!_isPlaying)
+                      CircleAvatar(
+                        backgroundColor: Colors.white,
+                        radius: 18,
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: Colors.black,
+                          size: 32,
+                        ),
+                      ),
+                    if (_chewieController != null &&
+                        _controller != null &&
+                        _controller.value.initialized)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Chewie(
+                          controller: _chewieController,
+                        ),
+                      ),
+                  ],
+                ),
+              )
+            : AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  children: [
+                    PollVideoThumb(
                       id: widget.id,
                       type: widget.type,
                       videoUrl: widget.videoUrl,
                     ),
-              if (!_isPlaying)
-                CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 18,
-                  child: Icon(
-                    Icons.play_arrow,
-                    color: Colors.black,
-                    size: 32,
-                  ),
+                    if (_isLoading)
+                      Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                  ],
                 ),
-              if (_isLoading)
-                Center(
-                  child: CircularProgressIndicator(),
-                ),
-              if (_chewieController != null &&
-                  _controller != null &&
-                  _controller.value.initialized)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Chewie(
-                    controller: _chewieController,
-                  ),
-                ),
-            ],
-          ),
-        ),
+              ),
       ),
     );
   }

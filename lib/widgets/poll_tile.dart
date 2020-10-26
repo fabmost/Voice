@@ -40,6 +40,7 @@ class PollTile extends StatelessWidget with ShareContent {
   final List resources;
   final String regalupName;
   final certificate;
+  final videoFunction;
 
   PollTile({
     @required this.reference,
@@ -61,6 +62,7 @@ class PollTile extends StatelessWidget with ShareContent {
     @required this.resources,
     @required this.certificate,
     this.regalupName,
+    @required this.videoFunction,
   });
 
   final Color color = Color(0xFFF8F8FF);
@@ -78,7 +80,7 @@ class PollTile extends StatelessWidget with ShareContent {
 
   Widget _handleResources() {
     if (resources[0].type == 'V')
-      return PollVideo(id, 'P', resources[0].url, null);
+      return PollVideo(id, 'P', resources[0].url, videoFunction);
     List urls = resources.map((e) => e.url).toList();
     return PollImages(urls, reference);
   }

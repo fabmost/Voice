@@ -219,7 +219,7 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
         _imageFile != null &&
         goal > 0 &&
         category != null) {
-      _saveChallenge();
+      _validationAlert();
       return;
     }
     showDialog(
@@ -232,6 +232,32 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
               Navigator.of(context).pop();
             },
             child: Text('Ok'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _validationAlert() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Translations.of(context).text('dialog_validation')),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            textColor: Colors.red,
+            child: Text(Translations.of(context).text('button_check')),
+          ),
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _saveChallenge();
+            },
+            child: Text(Translations.of(context).text('button_publish')),
           )
         ],
       ),
@@ -658,8 +684,8 @@ class _NewChallengeScreenState extends State<NewChallengeScreen> {
                       child: RaisedButton(
                         color: Color(0xFFA4175D),
                         textColor: Colors.white,
-                        child:
-                            Text(Translations.of(context).text('button_save')),
+                        child: Text(
+                            Translations.of(context).text('button_publish')),
                         onPressed: () => _validate(),
                       ),
                     ),

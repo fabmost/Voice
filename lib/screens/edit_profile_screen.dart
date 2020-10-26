@@ -38,6 +38,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _tiktokController = TextEditingController();
   TextEditingController _facebookController = TextEditingController();
   TextEditingController _instagramController = TextEditingController();
+  TextEditingController _twitterController = TextEditingController();
   TextEditingController _youtubeController = TextEditingController();
   FocusNode _userFocus = FocusNode();
   FocusNode _birthFocus = FocusNode();
@@ -47,6 +48,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   FocusNode _tiktokFocus = FocusNode();
   FocusNode _facebookFocus = FocusNode();
   FocusNode _instagramFocus = FocusNode();
+  FocusNode _twitterFocus = FocusNode();
 
   String userId;
   bool _loadingView = false;
@@ -192,6 +194,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  void _editingTwitter() {
+    if (_twitterFocus.hasFocus && _twitterController.text.isEmpty) {
+      _twitterController.text = '@';
+    } else if (!_twitterFocus.hasFocus &&
+        _twitterController.text.length == 1 &&
+        _twitterController.text.contains('@')) {
+      _twitterController.text = '';
+    }
+  }
+
   void _validate(ctx) async {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
@@ -232,6 +244,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             userData.instagram != _instagramController.text
                 ? _instagramController.text
                 : null;
+        final String editTwitter = userData.twitter != _twitterController.text
+            ? _twitterController.text
+            : null;
 
         Map result =
             await Provider.of<UserProvider>(context, listen: false).editProfile(
@@ -241,6 +256,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           tiktok: editTiktok,
           facebook: editFacebook,
           instagram: editInstagram,
+          twitter: editTwitter,
           birth: editBirth,
           gender: editGender,
           country: editCountry,
@@ -326,6 +342,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (user.instagram != null) {
         _instagramController.text = user.instagram;
       }
+      if (user.twitter != null) {
+        _twitterController.text = user.twitter;
+      }
       if (user.youtube != null) {
         _youtubeController.text = user.youtube;
       }
@@ -361,6 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _tiktokFocus.addListener(_editingTiktok);
     _facebookFocus.addListener(_editingFacebook);
     _instagramFocus.addListener(_editingInstagram);
+    _twitterFocus.addListener(_editingTwitter);
   }
 
   @override
@@ -511,6 +531,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ],
                         decoration: InputDecoration(
                           labelText: 'Instagram',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          suffixIcon: _infoButton(keyInsta,
+                              'Introduce tu username, ejemplo @miusuario'),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _twitterController,
+                        focusNode: _twitterFocus,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp("[@_.a-zA-Z0-9]")),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Twitter',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
                           suffixIcon: _infoButton(keyInsta,
                               'Introduce tu username, ejemplo @miusuario'),

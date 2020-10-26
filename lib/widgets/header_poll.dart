@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
+import 'title_content.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
@@ -136,16 +137,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
           ),
         ),
         SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            pollModel.title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        TitleContent(pollModel.title),
         if (pollModel.resources.isNotEmpty) SizedBox(height: 16),
         if (pollModel.resources.isNotEmpty) _handleResources(),
         //if (images.isNotEmpty) PollImages(images, reference),

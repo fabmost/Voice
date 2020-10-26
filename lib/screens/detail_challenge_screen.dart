@@ -73,6 +73,12 @@ class _DetailChallengeScreenState extends State<DetailChallengeScreen> {
     });
   }
 
+  void _removeContent(id) {
+    setState(() {
+      _commentsList.removeWhere((element) => element.id == id);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -124,6 +130,8 @@ class _DetailChallengeScreenState extends State<DetailChallengeScreen> {
                           downs: doc.dislikes,
                           hasDown: doc.hasDislike,
                           certificate: doc.certificate,
+                          removeFunction: _removeContent,
+                          owner: _challengeModel.user.userName,
                         );
                       },
                     ),
