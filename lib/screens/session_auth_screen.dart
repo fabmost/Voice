@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'countries_screen.dart';
+import 'sign_up_icon_screen.dart';
 import '../api.dart';
 import '../translations.dart';
 import '../providers/auth_provider.dart';
@@ -195,7 +196,7 @@ class _AuthScreenState extends State<SessionAuthScreen> {
             country: editCountry,
           );
         }
-        Navigator.of(context).pop();
+        Navigator.of(context).popAndPushNamed(SignUpIconScreen.routeName);
       } else {
         var message = result['message'] ?? 'Ocurrió un error';
         _scaffoldKey.currentState.showSnackBar(

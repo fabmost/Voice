@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../translations.dart';
 import '../widgets/header_poll.dart';
+import '../widgets/header_private_poll.dart';
 import '../widgets/comment_tile.dart';
 import '../widgets/new_comment.dart';
 import '../models/poll_model.dart';
@@ -104,6 +105,8 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
                           _commentsList.isEmpty ? 2 : _commentsList.length + 1,
                       itemBuilder: (context, i) {
                         if (i == 0) {
+                          if (_pollModel.type == 'private_p')
+                            return HeaderPrivatePoll(_pollModel);
                           return HeaderPoll(_pollModel);
                         }
                         if (_commentsList.isEmpty) {

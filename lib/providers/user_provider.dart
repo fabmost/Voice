@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import '../api.dart';
 import '../models/user_model.dart';
+import '../models/group_model.dart';
 import '../mixins/text_mixin.dart';
 
 class UserProvider with ChangeNotifier, TextMixin {
@@ -16,12 +17,14 @@ class UserProvider with ChangeNotifier, TextMixin {
   final _storage = FlutterSecureStorage();
   UserModel _currentUser;
   Map<String, UserModel> _users = {};
+  List<GroupModel> _groups = [];
 
   UserProvider(this._myUser);
 
   String get getUser => _myUser;
   UserModel get getUserModel => _currentUser;
   Map<String, UserModel> get getUsers => {..._users};
+  List<GroupModel> get getGroupsList => [..._groups];
 
   Future<UserModel> userProfile() async {
     var url = '${API.baseURL}/profile/$_myUser';
@@ -424,6 +427,200 @@ class UserProvider with ChangeNotifier, TextMixin {
       return getAutocomplete(query);
     }
     return {'users': [], 'hashtags': []};
+  }
+
+  Future<void> newGroup({title, members}) async {
+    var url = '${API.baseURL}/registerGroup';
+    final token = await _getToken();
+    Map parameters = {
+      'title': title,
+      'users': members,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+
+      final GroupModel newGroup = GroupModel(
+        id: dataMap['id'],
+        title: title,
+        members: members.length,
+      );
+      _groups.add(newGroup);
+      notifyListeners();
+      return;
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return;
+    }
+    return null;
+  }
+
+  Future<void> editGroup({id, title, members}) async {
+    var url = '${API.baseURL}/editGroup';
+    final token = await _getToken();
+    Map parameters = {
+      'id': id,
+      'title': title,
+      'users': members,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+
+      final int groupId = _groups.indexWhere((element) => element.id == id);
+      final GroupModel newGroup = GroupModel(
+        id: id,
+        title: title,
+        members: members.length,
+      );
+      _groups[groupId] = newGroup;
+
+      notifyListeners();
+      return;
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return;
+    }
+    return null;
+  }
+
+  Future<List<GroupModel>> getGroups(page) async {
+    var url = '${API.baseURL}/groups/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      List<GroupModel> mGroups = GroupModel.listFromJson(dataMap['groups']);
+      if (page == 0) {
+        _groups = mGroups;
+      }else{
+        _groups.addAll(mGroups);
+      }
+      notifyListeners();
+      return mGroups;
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getGroups(page);
+    }
+    return [];
+  }
+
+  Future<List<UserModel>> getMembers(id, page) async {
+    var url = '${API.baseURL}/groupMembers/$id/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      List<UserModel> mUsers = UserModel.listFromJson(dataMap['users']);
+
+      return mUsers;
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getMembers(id, page);
+    }
+    return [];
+  }
+
+  Future<bool> deleteGroup(id) async {
+    var url = '${API.baseURL}/deleteGroup';
+    final token = await _getToken();
+    Map parameters = {'id': id};
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+
+      _groups.removeWhere((element) => element.id == id);
+      notifyListeners();
+
+      return true;
+    }
+    return false;
   }
 
   Future<String> _getToken() {

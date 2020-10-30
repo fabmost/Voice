@@ -8,12 +8,17 @@ import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
 import '../mixins/share_mixin.dart';
 import '../screens/saved_screen.dart';
+import '../screens/groups_screen.dart';
 
 class AppDrawer extends StatelessWidget with ShareContent {
   final String termsUrl = 'https://galup.app/terminos-y-condiciones';
 
   void _toSaved(context) {
     Navigator.of(context).pushNamed(SavedScreen.routeName);
+  }
+
+  void _toGroups(context) {
+    Navigator.of(context).pushNamed(GroupsScreen.routeName);
   }
 
   void _shareProfile(context) async {
@@ -30,7 +35,7 @@ class AppDrawer extends StatelessWidget with ShareContent {
   }
 
   void _signOut(context) async {
-    Provider.of<AuthProvider>(context, listen: false).signOut();
+    await Provider.of<AuthProvider>(context, listen: false).signOut();
   }
 
   @override
@@ -40,12 +45,17 @@ class AppDrawer extends StatelessWidget with ShareContent {
         children: <Widget>[
           SizedBox(height: 52),
           ListTile(
-            onTap: ()=> _toSaved(context),
+            onTap: () => _toSaved(context),
             leading: Icon(GalupFont.saved),
             title: Text(Translations.of(context).text('title_saved')),
           ),
           ListTile(
-            onTap: ()=> _shareProfile(context),
+            onTap: () => _toGroups(context),
+            leading: Icon(Icons.group),
+            title: Text(Translations.of(context).text('title_groups')),
+          ),
+          ListTile(
+            onTap: () => _shareProfile(context),
             leading: Icon(Icons.share),
             title: Text(Translations.of(context).text('button_share_profile')),
           ),

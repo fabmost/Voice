@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import 'poll_tile.dart';
+import 'private_poll_tile.dart';
 import 'challenge_tile.dart';
 import 'tip_tile.dart';
 import 'cause_tile.dart';
@@ -33,7 +34,7 @@ class _SavedListState extends State<SavedList> {
   VideoPlayerController _controller;
 
   void _playVideo(VideoPlayerController controller) {
-    if(_controller != null){
+    if (_controller != null) {
       _controller.pause();
     }
     _controller = controller;
@@ -60,6 +61,31 @@ class _SavedListState extends State<SavedList> {
       answers: content.answers,
       resources: content.resources,
       videoFunction: _playVideo,
+    );
+  }
+
+  Widget _privatepollWidget(PollModel content) {
+    return PrivatePollTile(
+      reference: 'saved',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      videoFunction: _playVideo,
+      groups: content.groups
     );
   }
 
@@ -232,6 +258,8 @@ class _SavedListState extends State<SavedList> {
                   switch (doc.type) {
                     case 'poll':
                       return _pollWidget(doc);
+                    case 'private_p':
+                      return _privatepollWidget(doc);
                     case 'challenge':
                       return _challengeWidget(doc);
                     case 'Tips':

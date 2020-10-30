@@ -23,6 +23,7 @@ class _TrimmerViewState extends State<TrimmerView> {
   bool _isPlaying = false;
   bool _progressVisibility = false;
 
+  //Android
   //final _compressor = FlutterVideoCompress();
   //iOs
   dynamic _subscription;
@@ -96,6 +97,7 @@ class _TrimmerViewState extends State<TrimmerView> {
   void initState() {
     super.initState();
 
+    //iOs
     _subscription = VideoCompress.compressProgress$.subscribe((progress) {
       print(progress);
       setState(() {
@@ -134,6 +136,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                         value: _progress / 100,
                         minHeight: 12,
                       ),
+                      //iOs
                       Align(
                         alignment: Alignment.center,
                         child: Text('${_progress.toStringAsFixed(0)}%',

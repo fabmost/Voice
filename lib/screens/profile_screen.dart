@@ -10,10 +10,9 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../widgets/user_profile_header.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/private_poll_user_list.dart';
 import '../widgets/poll_user_list.dart';
-import '../widgets/challenge_user_list.dart';
 import '../widgets/tip_user_list.dart';
-import '../widgets/cause_user_list.dart';
 import '../providers/user_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -138,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           }
 
           return DefaultTabController(
-            length: 4,
+            length: 3,
             child: NestedScrollView(
               controller: _scrollController,
               headerSliverBuilder: (ctx, isScrolled) {
@@ -173,20 +172,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
+                            icon: Icon(GalupFont.encuesta_cerrada),
+                            text: 'Encuestas\nCerradas',
+                          ),
+                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.challenge),
-                            text: 'Retos',
-                          ),
-                          Tab(
                             icon: Icon(GalupFont.tips),
                             text: 'Tips',
-                          ),
-                          Tab(
-                            icon: Icon(GalupFont.cause),
-                            text: 'Causas',
                           ),
                         ],
                       ),
@@ -201,20 +196,17 @@ class _ProfileScreenState extends State<ProfileScreen>
         },
         child: TabBarView(
           children: [
-            PollUserList(
+            PrivatePollUserList(
               _scrollController,
               _playVideo,
             ),
-            ChallengeUserList(
+            PollUserList(
               _scrollController,
               _playVideo,
             ),
             TipUserList(
               _scrollController,
               _playVideo,
-            ),
-            CauseUserList(
-              _scrollController,
             ),
           ],
         ),

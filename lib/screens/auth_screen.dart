@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'menu_screen.dart';
 import 'login_screen.dart';
 import 'countries_screen.dart';
+import 'sign_up_icon_screen.dart';
 import '../api.dart';
 import '../translations.dart';
 import '../providers/auth_provider.dart';
@@ -172,6 +173,7 @@ class _AuthScreenState extends State<AuthScreen> {
         }
         Navigator.of(context).pushNamedAndRemoveUntil(
             MenuScreen.routeName, (Route<dynamic> route) => false);
+        Navigator.of(context).pushNamed(SignUpIconScreen.routeName);
       } else {
         var message = result['message'] ?? 'Ocurrió un error';
         _scaffoldKey.currentState.showSnackBar(

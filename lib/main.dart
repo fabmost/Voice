@@ -31,13 +31,19 @@ import 'screens/user_name_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/session_login_screen.dart';
 import 'screens/session_auth_screen.dart';
+import 'screens/sign_up_icon_screen.dart';
+import 'screens/groups_screen.dart';
 
 import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
+import 'screens/new_private_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
 import 'screens/new_tip_screen.dart';
 import 'screens/new_cause_screen.dart';
 import 'screens/new_content_category_screen.dart';
+import 'screens/new_content_groups_screen.dart';
+import 'screens/new_group_screen.dart';
+import 'screens/edit_group_screen.dart';
 
 import 'screens/verify_type_screen.dart';
 import 'screens/verify_category_screen.dart';
@@ -157,11 +163,13 @@ class App extends StatelessWidget {
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
+            NewPrivatePollScreen.routeName: (ctx) => NewPrivatePollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
             NewTipScreen.routeName: (ctx) => NewTipScreen(),
             NewCauseScreen.routeName: (ctx) => NewCauseScreen(),
             NewContentCategoryScreen.routeName: (ctx) =>
                 NewContentCategoryScreen(),
+            NewContentGroupsScreen.routeName: (ctx) => NewContentGroupsScreen(),
             DetailPollScreen.routeName: (ctx) => DetailPollScreen(),
             DetailChallengeScreen.routeName: (ctx) => DetailChallengeScreen(),
             DetailTipScreen.routeName: (ctx) => DetailTipScreen(),
@@ -174,7 +182,11 @@ class App extends StatelessWidget {
             UserNameScreen.routeName: (ctx) => UserNameScreen(),
             CategoryScreen.routeName: (ctx) => CategoryScreen(),
             SessionAuthScreen.routeName: (ctx) => SessionAuthScreen(),
+            SignUpIconScreen.routeName: (ctx) => SignUpIconScreen(),
             GalleryScreen.routeName: (ctx) => GalleryScreen(),
+            GroupsScreen.routeName: (ctx) => GroupsScreen(),
+            NewGroupScreen.routeName: (ctx) => NewGroupScreen(),
+            EditGroupScreen.routeName: (ctx) => EditGroupScreen(),
           },
         ),
       ),

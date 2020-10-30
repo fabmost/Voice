@@ -28,9 +28,8 @@ import 'search_screen.dart';
 import 'messages_screen.dart';
 import 'profile_screen.dart';
 import 'new_poll_screen.dart';
-import 'new_challenge_screen.dart';
+import 'new_private_poll_screen.dart';
 import 'new_tip_screen.dart';
-import 'new_cause_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
 import 'detail_poll_screen.dart';
@@ -139,6 +138,15 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     Navigator.of(context).pushNamed(NewPollScreen.routeName);
   }
 
+  void _newPrivatePoll() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      _anonymousAlert();
+      return;
+    }
+    Navigator.of(context).pushNamed(NewPrivatePollScreen.routeName);
+  }
+
+  /*
   void _newChallenge() async {
     if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
@@ -146,6 +154,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }
     Navigator.of(context).pushNamed(NewChallengeScreen.routeName);
   }
+  */
 
   void _newTip() async {
     if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
@@ -155,6 +164,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     Navigator.of(context).pushNamed(NewTipScreen.routeName);
   }
 
+  /*
   void _newCause() async {
     if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
@@ -162,6 +172,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }
     Navigator.of(context).pushNamed(NewCauseScreen.routeName);
   }
+  */
 
   void _anonymousAlert() {
     showDialog(
@@ -204,15 +215,15 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
     items = [
       FabMenuItem(
+        icon: Icon(GalupFont.encuesta_cerrada),
+        label: 'Encuesta cerrada',
+        ontap: _newPrivatePoll,
+        color: Colors.black,
+      ),
+      FabMenuItem(
         icon: Icon(GalupFont.survey),
         label: 'Encuesta',
         ontap: _newPoll,
-      ),
-      FabMenuItem(
-        icon: Icon(GalupFont.challenge),
-        label: 'Reto',
-        ontap: _newChallenge,
-        color: Color(0xFFA4175D),
       ),
       FabMenuItem(
         icon: Icon(GalupFont.tips),
@@ -220,12 +231,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         ontap: _newTip,
         color: Color(0xFF00B2E3),
       ),
-      FabMenuItem(
-        icon: Icon(GalupFont.cause),
-        label: 'Causa',
-        ontap: _newCause,
-        color: Colors.black,
-      )
+
       /*
       FabMenuItem(
         icon: Icon(GalupFont.survey),

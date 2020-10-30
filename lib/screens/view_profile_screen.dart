@@ -7,10 +7,9 @@ import 'chat_screen.dart';
 
 import '../providers/user_provider.dart';
 import '../widgets/profile_header.dart';
+import '../widgets/private_poll_list.dart';
 import '../widgets/poll_list.dart';
-import '../widgets/challenge_list.dart';
 import '../widgets/tip_list.dart';
-import '../widgets/cause_list.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
@@ -156,7 +155,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
             containerHeight += 60;
           }
           return DefaultTabController(
-            length: 4,
+            length: 3,
             child: NestedScrollView(
               controller: _scrollController,
               headerSliverBuilder: (ctx, isScrolled) {
@@ -194,20 +193,16 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
+                            icon: Icon(GalupFont.encuesta_cerrada),
+                            text: 'Encuestas\nCerradas',
+                          ),
+                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.challenge),
-                            text: 'Retos',
-                          ),
-                          Tab(
                             icon: Icon(GalupFont.tips),
                             text: 'Tips',
-                          ),
-                          Tab(
-                            icon: Icon(GalupFont.cause),
-                            text: 'Causas',
                           ),
                         ],
                       ),
@@ -218,10 +213,9 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
               },
               body: TabBarView(
                 children: [
+                  PrivatePollList(user.userName, _scrollController),
                   PollList(user.userName, _scrollController),
-                  ChallengeList(user.userName, _scrollController),
                   TipList(user.userName, _scrollController, null),
-                  CauseList(user.userName, _scrollController),
                 ],
               ),
             ),

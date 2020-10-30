@@ -4,6 +4,7 @@ import 'content_model.dart';
 import 'resource_model.dart';
 import 'poll_answer_model.dart';
 import 'user_model.dart';
+import 'group_model.dart';
 import 'certificate_model.dart';
 import '../mixins/text_mixin.dart';
 
@@ -18,6 +19,7 @@ class PollModel extends ContentModel {
   final String promoUrl;
   final String message;
   final String prize;
+  final List<GroupModel> groups;
 
   PollModel({
     id,
@@ -44,6 +46,7 @@ class PollModel extends ContentModel {
     this.promoUrl,
     this.message,
     this.prize,
+    this.groups,
   }) : super(
           id: id,
           type: type,
@@ -91,7 +94,9 @@ class PollModel extends ContentModel {
       creator: regalup,
       certificate: certificate,
       title: TextMixin.fixString(content['body']),
-      description: content['description'] == null ? '' : TextMixin.fixString(content['description']),
+      description: content['description'] == null
+          ? ''
+          : TextMixin.fixString(content['description']),
       createdAt:
           DateFormat('yyyy-MM-DD HH:mm:ss').parse(content['datetime'], true),
       votes: content['votes'],
@@ -108,6 +113,7 @@ class PollModel extends ContentModel {
       message: content['message'],
       prize: content['reward'],
       promoUrl: content['logo'],
+      groups: content['groups'] == null ? null : GroupModel.listFromJson(content['groups']),
     );
   }
 }

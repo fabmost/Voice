@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/poll_tile.dart';
+import '../widgets/private_poll_tile.dart';
 import '../widgets/poll_promo_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
@@ -59,6 +60,31 @@ class _HomeScreenState extends State<HomeScreen>
       answers: content.answers,
       resources: content.resources,
       videoFunction: widget.videoFunction,
+    );
+  }
+
+  Widget _privatepollWidget(PollModel content) {
+    return PrivatePollTile(
+      reference: 'home',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      videoFunction: widget.videoFunction,
+      groups: content.groups,
     );
   }
 
@@ -463,7 +489,9 @@ class _HomeScreenState extends State<HomeScreen>
             final doc = (i > 6) ? mList[i - 2] : mList[i - 1];
             switch (doc.type) {
               case 'poll':
-                return _pollWidget(doc);
+              return _pollWidget(doc);
+              case 'private_p':
+                return _privatepollWidget(doc);
               case 'challenge':
                 return _challengeWidget(doc);
               case 'Tips':

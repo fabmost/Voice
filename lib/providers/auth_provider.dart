@@ -33,20 +33,20 @@ class AuthProvider with ChangeNotifier, TextMixin {
     _token = await _storage.read(key: API.sessionToken) ?? null;
     _userName = await _storage.read(key: API.userName) ?? null;
     _hasAccount = prefs.getBool('hasAccounts') ?? false;
-    if (_token == null) {
-      return false;
+    if (_token != null && _userName != null) {
+      notifyListeners();
+      return true;
     }
-    notifyListeners();
-    return true;
+    return false;
   }
 
   Future<void> signOut() async {
     await setFCM('logout');
     final prefs = await SharedPreferences.getInstance();
-    _storage.delete(key: API.sessionToken);
-    _storage.delete(key: API.userHash);
-    _storage.delete(key: API.userName);
-    prefs.setBool('hasAccounts', true);
+    await _storage.delete(key: API.sessionToken);
+    await _storage.delete(key: API.userHash);
+    await _storage.delete(key: API.userName);
+    await prefs.setBool('hasAccounts', true);
     _token = null;
     _userName = null;
     _hasAccount = true;
