@@ -21,27 +21,29 @@ import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../custom/suggestion_textfield.dart';
 
-class NewPrivatePollScreen extends StatefulWidget {
-  static const routeName = '/new-private-poll';
+class NewSecretPollScreen extends StatefulWidget {
+  static const routeName = '/new-secret-poll';
 
   @override
   _NewPollScreenState createState() => _NewPollScreenState();
 }
 
-class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
+class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
   bool _isLoading = false;
   bool _isVideo = false;
   TextEditingController _titleController = TextEditingController();
   TextEditingController _firstController = TextEditingController();
   TextEditingController _secondController = TextEditingController();
   TextEditingController _thirdController = TextEditingController();
+  TextEditingController _fourthController = TextEditingController();
+  TextEditingController _fifthController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
 
   final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
-  bool moreOptions = false;
-  File _option1, _option2, _option3;
+  int moreOptions = 0;
+  File _option1, _option2, _option3, _option4, _option5;
   List<File> pollImages = [];
   List<GroupModel> _groups = [];
   File _videoFile;
@@ -325,10 +327,16 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
     }
   }
 
-  void _addOption() {
+  void _addOption(bool add) {
     setState(() {
-      moreOptions = !moreOptions;
+      if (add)
+        moreOptions++;
+      else
+        moreOptions--;
     });
+    if (moreOptions == 2) _fifthController.clear();
+    if (moreOptions == 1) _fourthController.clear();
+    if (moreOptions == 0) _thirdController.clear();
   }
 
   void _selectCategory() {
@@ -349,10 +357,13 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
         _firstController.text.isNotEmpty &&
         _secondController.text.isNotEmpty &&
         _groups.isNotEmpty) {
-      if (!moreOptions || (moreOptions && _thirdController.text.isNotEmpty)) {
-        _validationAlert();
-        return;
-      }
+      bool pass = true;
+      if (moreOptions == 1 && _thirdController.text.isEmpty) pass = false;
+      if (moreOptions == 2 && _fourthController.text.isEmpty) pass = false;
+      if (moreOptions == 3 && _fifthController.text.isEmpty) pass = false;
+
+      if (pass) _validationAlert();
+      return;
     }
     showDialog(
       context: context,
@@ -512,7 +523,7 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
         'image': null,
       });
     }
-    if (moreOptions) {
+    if (moreOptions == 1) {
       if (_option3 != null) {
         String idResource =
             await Provider.of<ContentProvider>(context, listen: false)
@@ -528,6 +539,46 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
       } else {
         pollAnswers.add({
           'text': serverSafe(_thirdController.text),
+          'image': null,
+        });
+      }
+    }
+    if (moreOptions == 2) {
+      if (_option4 != null) {
+        String idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _option4.path,
+          'I',
+          'PA',
+        );
+        pollAnswers.add({
+          'text': serverSafe(_fourthController.text),
+          'image': idResource,
+        });
+      } else {
+        pollAnswers.add({
+          'text': serverSafe(_fourthController.text),
+          'image': null,
+        });
+      }
+    }
+    if (moreOptions == 3) {
+      if (_option5 != null) {
+        String idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _option5.path,
+          'I',
+          'PA',
+        );
+        pollAnswers.add({
+          'text': serverSafe(_fifthController.text),
+          'image': idResource,
+        });
+      } else {
+        pollAnswers.add({
+          'text': serverSafe(_fifthController.text),
           'image': null,
         });
       }
@@ -579,7 +630,7 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
     });
 
     bool result = await Provider.of<ContentProvider>(context, listen: false)
-        .newPrivatePoll(
+        .newSecretPoll(
       name: '${_titleController.text} ',
       description: '${_descriptionController.text} ',
       groups: groups,
@@ -700,7 +751,73 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
           padding: const EdgeInsets.only(top: 8),
           child: IconButton(
             icon: Icon(Icons.remove_circle_outline),
-            onPressed: _addOption,
+            onPressed: () => _addOption(false),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _fourthOption() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(child: _optionField(_fourthController, 'Opción 4')),
+        const SizedBox(width: 8),
+        InkWell(
+          onTap: () => _imageOptions(2, true),
+          child: Container(
+            width: 42,
+            height: 42,
+            margin: EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.black),
+              image: _option3 != null
+                  ? DecorationImage(image: FileImage(_option4))
+                  : null,
+            ),
+            child: Icon(Icons.camera_alt),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: IconButton(
+            icon: Icon(Icons.remove_circle_outline),
+            onPressed: () => _addOption(false),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _fifthOption() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(child: _optionField(_fifthController, 'Opción 5')),
+        const SizedBox(width: 8),
+        InkWell(
+          onTap: () => _imageOptions(2, true),
+          child: Container(
+            width: 42,
+            height: 42,
+            margin: EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.black),
+              image: _option5 != null
+                  ? DecorationImage(image: FileImage(_option5))
+                  : null,
+            ),
+            child: Icon(Icons.camera_alt),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: IconButton(
+            icon: Icon(Icons.remove_circle_outline),
+            onPressed: () => _addOption(false),
           ),
         )
       ],
@@ -766,7 +883,7 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Encuesta Cerrada',
+          'Encuesta Privada',
           style: TextStyle(
             color: Colors.black,
           ),
@@ -896,11 +1013,15 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
               _firstOption(),
               SizedBox(height: 8),
               _secondOption(),
-              if (moreOptions) SizedBox(height: 8),
-              if (moreOptions) _thirdOption(),
-              if (!moreOptions)
+              if (moreOptions > 0) SizedBox(height: 8),
+              if (moreOptions > 0) _thirdOption(),
+              if (moreOptions > 1) SizedBox(height: 8),
+              if (moreOptions > 1) _fourthOption(),
+              if (moreOptions > 2) SizedBox(height: 8),
+              if (moreOptions > 2) _fifthOption(),
+              if (moreOptions < 3)
                 FlatButton.icon(
-                  onPressed: _addOption,
+                  onPressed: () => _addOption(true),
                   icon: Icon(GalupFont.add),
                   label: Text('Agregar opción'),
                 ),
@@ -956,7 +1077,7 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
                       height: 42,
                       child: RaisedButton(
                         textColor: Colors.white,
-                        color: Colors.black,
+                        color: Color(0xFFA4175D),
                         child: Text(
                             Translations.of(context).text('button_publish')),
                         onPressed: () => _validate(),

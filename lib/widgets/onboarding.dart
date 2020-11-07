@@ -49,6 +49,7 @@ class OnBoarding extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       title,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 25,

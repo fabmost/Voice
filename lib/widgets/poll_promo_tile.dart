@@ -41,10 +41,9 @@ class PollPromoTile extends StatelessWidget with ShareContent {
   final List resources;
   final String regalupName;
   final certificate;
-  final String company;
+  final String terms;
   final String promoUrl;
   final String message;
-  final String prize;
 
   PollPromoTile({
     @required this.reference,
@@ -66,10 +65,9 @@ class PollPromoTile extends StatelessWidget with ShareContent {
     @required this.resources,
     @required this.certificate,
     this.regalupName,
-    @required this.company,
+    @required this.terms,
     @required this.promoUrl,
     @required this.message,
-    @required this.prize,
   });
 
   final Color color = Color(0xFFFDF9F5);
@@ -189,13 +187,12 @@ class PollPromoTile extends StatelessWidget with ShareContent {
               child: PollOptions(
                 id: id,
                 isMine: false,
-                company: company,
+                terms: terms,
                 message: message,
-                prize: prize,
                 promoUrl: promoUrl,
               ),
             ),
-            PromoButton(id),
+            PromoButton(id, false),
             Consumer<ContentProvider>(
               builder: (context, value, child) {
                 PollModel poll = value.getPolls[id];

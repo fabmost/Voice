@@ -3,6 +3,15 @@ import 'package:share/share.dart';
 
 class ShareContent {
   void sharePoll(id, title) async {
+    String toRemove;
+    int start = title.indexOf('[');
+    if (start != -1) {
+      int finish = title.indexOf(']');
+      toRemove = title.substring(start - 1, finish + 1);
+    }
+    final String sharedText =
+        toRemove != null ? title.replaceAll(toRemove, '') : title;
+
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://galup.page.link',
       link: Uri.parse('https://galup.app/poll/$id'),
@@ -19,9 +28,10 @@ class ShareContent {
         appStoreId: '1521345975',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-        title: title,
+        title: sharedText,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+        imageUrl: Uri.parse(
+            'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -33,6 +43,15 @@ class ShareContent {
   }
 
   void sharePromoPoll(id, title) async {
+    String toRemove;
+    int start = title.indexOf('[');
+    if (start != -1) {
+      int finish = title.indexOf(']');
+      toRemove = title.substring(start - 1, finish + 1);
+    }
+    final String sharedText =
+        toRemove != null ? title.replaceAll(toRemove, '') : title;
+
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://galup.page.link',
       link: Uri.parse('https://galup.app/promo_p/$id'),
@@ -49,9 +68,10 @@ class ShareContent {
         appStoreId: '1521345975',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-        title: title,
+        title: sharedText,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+        imageUrl: Uri.parse(
+            'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -81,7 +101,8 @@ class ShareContent {
       socialMetaTagParameters: SocialMetaTagParameters(
         title: title,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+        imageUrl: Uri.parse(
+            'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -93,6 +114,15 @@ class ShareContent {
   }
 
   void shareTip(id, title) async {
+    String toRemove;
+    int start = title.indexOf('[');
+    if (start != -1) {
+      int finish = title.indexOf(']');
+      toRemove = title.substring(start - 1, finish + 1);
+    }
+    final String sharedText =
+        toRemove != null ? title.replaceAll(toRemove, '') : title;
+
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://galup.page.link',
       link: Uri.parse('https://galup.app/tip/$id'),
@@ -109,9 +139,10 @@ class ShareContent {
         appStoreId: '1521345975',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-        title: title,
+        title: sharedText,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+        imageUrl: Uri.parse(
+            'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -141,7 +172,8 @@ class ShareContent {
       socialMetaTagParameters: SocialMetaTagParameters(
         title: title,
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+        imageUrl: Uri.parse(
+            'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 
@@ -171,7 +203,8 @@ class ShareContent {
       socialMetaTagParameters: SocialMetaTagParameters(
         title: 'Conoce este perfil',
         description: 'En Galup tu opinión cuenta',
-        imageUrl: Uri.parse('https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
+        imageUrl: Uri.parse(
+            'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b'),
       ),
     );
 

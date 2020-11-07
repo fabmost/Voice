@@ -5,9 +5,9 @@ import 'package:crypto/crypto.dart';
 class API {
   final String salt = '3=\$:ndTxmFK@LEZL~7n.';
   //Producción
-  static const baseURL = 'https://secure.galup.app/api-app-v1';
+  //static const baseURL = 'https://secure.galup.app/api-app-v1';
   //Dev
-  //static const baseURL = 'https://secure.galup.app/api-app-v1-dev';
+  static const baseURL = 'https://secure.galup.app/api-app-v1-dev';
   static const sessionToken = 'token';
   static const userHash = 'hash';
   static const userName = 'userName';

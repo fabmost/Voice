@@ -10,18 +10,20 @@ import '../providers/user_provider.dart';
 class PollOptions extends StatefulWidget {
   final String id;
   final bool isMine;
-  final String company;
+  final String terms;
   final String promoUrl;
   final String message;
-  final String prize;
+  final bool isSecret;
+  final Function function;
 
   PollOptions({
     @required this.id,
     @required this.isMine,
-    this.company,
+    this.terms,
     this.promoUrl,
     this.message,
-    this.prize,
+    this.isSecret = false,
+    this.function,
   });
 
   @override
@@ -39,20 +41,25 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin {
     setState(() {
       _isLoading = true;
     });
-    await Provider.of<ContentProvider>(context, listen: false)
-        .votePoll(widget.id, idAnswer);
+    await Provider.of<ContentProvider>(context, listen: false).votePoll(
+      widget.id,
+      idAnswer,
+    );
+
+    if(widget.isSecret){
+      widget.function();
+    }
 
     setState(() {
       _isLoading = false;
     });
 
-    if (widget.company != null) {
+    if (widget.message != null) {
       showDialog(
         context: context,
         builder: (BuildContext context) => AlertPromo(
-          business: widget.company,
+          terms: widget.terms,
           message: widget.message,
-          prize: widget.prize,
           url: widget.promoUrl,
         ),
       );

@@ -154,13 +154,12 @@ class HeaderPromoPoll extends StatelessWidget with ShareContent {
           child: PollOptions(
             id: pollModel.id,
             isMine: false,
-            company: pollModel.company,
+            terms: pollModel.terms,
             message: pollModel.message,
-            prize: pollModel.prize,
             promoUrl: pollModel.promoUrl,
           ),
         ),
-        PromoButton(pollModel.id),
+        PromoButton(pollModel.id, false),
         Consumer<ContentProvider>(
           builder: (context, value, child) {
             PollModel poll = value.getPolls[pollModel.id];

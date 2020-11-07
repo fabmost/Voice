@@ -1,25 +1,22 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
-import 'influencer_badge.dart';
 import 'title_content.dart';
-import 'description.dart';
-import 'poll_options.dart';
-import 'poll_video.dart';
 import 'poll_images.dart';
-import 'menu_content.dart';
-import 'like_content.dart';
+import 'poll_video.dart';
+import 'poll_options.dart';
 import 'comment_content.dart';
+import 'like_content.dart';
 import '../translations.dart';
-import '../custom/galup_font_icons.dart';
-import '../screens/view_profile_screen.dart';
-import '../providers/user_provider.dart';
-import '../providers/content_provider.dart';
 import '../models/poll_model.dart';
+import '../models/group_model.dart';
+import '../mixins/share_mixin.dart';
+import '../providers/content_provider.dart';
+import '../screens/analytics_screen.dart';
 
-class PrivatePollTile extends StatelessWidget {
-  final String reference;
+class UserSecretPollTile extends StatelessWidget with ShareContent {
   final String id;
   final String userName;
   final String userImage;
@@ -33,16 +30,14 @@ class PrivatePollTile extends StatelessWidget {
   final bool hasVoted;
   final bool hasLiked;
   final bool hasRegalup;
-  final bool hasSaved;
   final List answers;
   final List resources;
-  final String regalupName;
-  final certificate;
-  final videoFunction;
-  final List groups;
+  final Function removeFunction;
+  final List<GroupModel> groups;
 
-  PrivatePollTile({
-    @required this.reference,
+  final Color color = Color(0xFFFFF5FB);
+
+  UserSecretPollTile({
     @required this.id,
     @required this.title,
     @required this.description,
@@ -56,22 +51,23 @@ class PrivatePollTile extends StatelessWidget {
     @required this.hasVoted,
     @required this.hasLiked,
     @required this.hasRegalup,
-    @required this.hasSaved,
     @required this.answers,
     @required this.resources,
-    @required this.certificate,
-    this.regalupName,
-    @required this.videoFunction,
+    @required this.removeFunction,
     @required this.groups,
   });
 
-  final Color color = Color(0xFFF0F0F0);
-
-  void _toProfile(context) {
-    if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userName);
-    }
+  void _toAnalytics(context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnalyticsScreen(
+          pollId: id,
+          title: title,
+          answers: answers,
+        ),
+      ),
+    );
   }
 
   void _showGroups(context) {
@@ -118,25 +114,96 @@ class PrivatePollTile extends StatelessWidget {
     );
   }
 
+  void _deleteAlert(context) {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        content: Text('¿Seguro que deseas borrar esta encuesta?'),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              Translations.of(context).text('button_delete'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              _deleteContent(ct);
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteContent(context) async {
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .deleteContent(id: id, type: 'P');
+    if (result) {
+      //Navigator.of(context).pop();
+      removeFunction(id);
+    }
+  }
+
+  void _options(context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          color: Colors.transparent,
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                onTap: () => _deleteAlert(context),
+                leading: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+                title: Text(
+                  Translations.of(context).text('button_delete'),
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _handleResources() {
     if (resources[0].type == 'V')
-      return PollVideo(id, 'P', resources[0].url, videoFunction);
+      return PollVideo(id, 'P', resources[0].url, null);
     List urls = resources.map((e) => e.url).toList();
-    return PollImages(urls, reference);
+    return PollImages(
+      urls,
+      'user',
+      isClickable: false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final now = new DateTime.now().toUtc();
-    final difference = now.difference(date);
-    final newDate = now.subtract(difference).toLocal();
+    //final now = new DateTime.now();
+    //final difference = now.difference(date);
 
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.black, width: 0.5),
+          side: BorderSide(color: Color(0xFFA4175D), width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -144,68 +211,18 @@ class PrivatePollTile extends StatelessWidget {
           children: <Widget>[
             Container(
               color: color,
-              child: Column(
-                children: [
-                  if (regalupName != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        top: 16,
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(
-                            GalupFont.repost,
-                            color: Colors.grey,
-                            size: 12,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            '$regalupName Regalup',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ListTile(
-                    onTap: () => _toProfile(context),
-                    leading: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.black,
-                      backgroundImage:
-                          userImage == null ? null : NetworkImage(userImage),
-                    ),
-                    title: Row(
-                      children: <Widget>[
-                        Flexible(
-                          child: Text(
-                            userName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        InfluencerBadge(id, certificate, 16),
-                      ],
-                    ),
-                    subtitle: Text(
-                      timeago.format(newDate,
-                          locale: Translations.of(context).currentLanguage),
-                    ),
-                    trailing: MenuContent(
-                      id: id,
-                      type: 'P',
-                      isSaved: hasSaved,
-                    ),
+              child: ListTile(
+                title: OutlineButton(
+                  onPressed: () => _toAnalytics(context),
+                  child: Text('Estadísticas'),
+                ),
+                trailing: Transform.rotate(
+                  angle: 270 * pi / 180,
+                  child: IconButton(
+                    icon: Icon(Icons.chevron_left),
+                    onPressed: () => _options(context),
                   ),
-                ],
+                ),
               ),
             ),
             SizedBox(height: 16),
@@ -221,7 +238,7 @@ class PrivatePollTile extends StatelessWidget {
               ),
               child: PollOptions(
                 id: id,
-                isMine: false,
+                isMine: true,
               ),
             ),
             Consumer<ContentProvider>(
@@ -241,10 +258,6 @@ class PrivatePollTile extends StatelessWidget {
                 return Container();
               },
             ),
-            if (description != null && description.trim().isNotEmpty)
-              Description(description),
-            if (description != null && description.trim().isNotEmpty)
-              SizedBox(height: 16),
             Container(
               color: color,
               child: Row(
@@ -261,7 +274,7 @@ class PrivatePollTile extends StatelessWidget {
                     hasLiked: hasLiked,
                   ),
                   IconButton(
-                    icon: Icon(Icons.lock_outline, size: 28),
+                    icon: Icon(Icons.lock_outline),
                     onPressed: () => _showGroups(context),
                   ),
                 ],

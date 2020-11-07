@@ -7,15 +7,16 @@ import '../providers/content_provider.dart';
 
 class PromoButton extends StatelessWidget {
   final String id;
+  final bool isMine;
 
-  PromoButton(this.id);
+  PromoButton(this.id, this.isMine);
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ContentProvider>(
       builder: (context, value, child) {
         PollModel poll = value.getPolls[id];
-        if (poll.hasVoted) {
+        if (poll.hasVoted || isMine) {
           return Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -24,9 +25,8 @@ class PromoButton extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) => AlertPromo(
-                    business: poll.company,
+                    terms: poll.terms,
                     message: poll.message,
-                    prize: poll.prize,
                     url: poll.promoUrl,
                   ),
                 );

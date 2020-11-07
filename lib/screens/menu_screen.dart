@@ -29,6 +29,8 @@ import 'messages_screen.dart';
 import 'profile_screen.dart';
 import 'new_poll_screen.dart';
 import 'new_private_poll_screen.dart';
+import 'new_secret_poll_screen.dart';
+import 'new_promo_poll_screen.dart';
 import 'new_tip_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
@@ -146,7 +148,23 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     Navigator.of(context).pushNamed(NewPrivatePollScreen.routeName);
   }
 
-  /*
+  void _newSecretPoll() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      _anonymousAlert();
+      return;
+    }
+    Navigator.of(context).pushNamed(NewSecretPollScreen.routeName);
+  }
+
+  void _newPromoPoll() async {
+    if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
+      _anonymousAlert();
+      return;
+    }
+    Navigator.of(context).pushNamed(NewPromoPollScreen.routeName);
+  }
+
+/*
   void _newChallenge() async {
     if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert();
@@ -214,6 +232,18 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     ).animate(_iconAnimationCtrl);
 
     items = [
+      FabMenuItem(
+        icon: Icon(GalupFont.encuesta_patrocinada),
+        label: 'Encuesta promocional',
+        ontap: _newPromoPoll,
+        color: Color(0xFFE56F0E),
+      ),
+      FabMenuItem(
+        icon: Icon(GalupFont.encuesta_cerrada),
+        label: 'Encuesta privada',
+        ontap: _newSecretPoll,
+        color: Color(0xFFA4175D),
+      ),
       FabMenuItem(
         icon: Icon(GalupFont.encuesta_cerrada),
         label: 'Encuesta cerrada',

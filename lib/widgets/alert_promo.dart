@@ -4,16 +4,14 @@ import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
 class AlertPromo extends StatelessWidget {
-  final String business;
+  final String terms;
   final String url;
-  final String prize;
   final String message;
 
   AlertPromo({
-    @required this.business,
+    @required this.terms,
     @required this.url,
     @required this.message,
-    @required this.prize,
   });
 
   static const double padding = 16.0;
@@ -61,7 +59,7 @@ class AlertPromo extends StatelessWidget {
                   ),
                   const SizedBox(height: 16.0),
                   Text(
-                    '¡Gracias por responder la encuesta de $business!',
+                    '¡Gracias por responder nuestra encuesta!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22.0,
@@ -93,10 +91,10 @@ class AlertPromo extends StatelessWidget {
                   ),
                   const SizedBox(height: 22),
                   Text(
-                    'Premio: $prize',
+                    'Términos y condiciones: $terms',
                     style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.grey
                     ),
                   ),
                 ],

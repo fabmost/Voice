@@ -1,24 +1,25 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
-import 'influencer_badge.dart';
 import 'title_content.dart';
 import 'description.dart';
 import 'poll_options.dart';
+import 'promo_button.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
-import 'menu_content.dart';
 import 'like_content.dart';
+import 'regalup_content.dart';
 import 'comment_content.dart';
 import '../translations.dart';
+import '../mixins/share_mixin.dart';
 import '../custom/galup_font_icons.dart';
-import '../screens/view_profile_screen.dart';
-import '../providers/user_provider.dart';
+import '../screens/analytics_screen.dart';
 import '../providers/content_provider.dart';
 import '../models/poll_model.dart';
 
-class PrivatePollTile extends StatelessWidget {
+class UserPromoPollTile extends StatelessWidget with ShareContent {
   final String reference;
   final String id;
   final String userName;
@@ -38,10 +39,12 @@ class PrivatePollTile extends StatelessWidget {
   final List resources;
   final String regalupName;
   final certificate;
-  final videoFunction;
-  final List groups;
+  final String terms;
+  final String promoUrl;
+  final String message;
+  final Function removeFunction;
 
-  PrivatePollTile({
+  UserPromoPollTile({
     @required this.reference,
     @required this.id,
     @required this.title,
@@ -61,82 +64,114 @@ class PrivatePollTile extends StatelessWidget {
     @required this.resources,
     @required this.certificate,
     this.regalupName,
-    @required this.videoFunction,
-    @required this.groups,
+    @required this.terms,
+    @required this.promoUrl,
+    @required this.message,
+    @required this.removeFunction,
   });
 
-  final Color color = Color(0xFFF0F0F0);
+  final Color color = Color(0xFFFDF9F5);
 
-  void _toProfile(context) {
-    if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
-      Navigator.of(context)
-          .pushNamed(ViewProfileScreen.routeName, arguments: userName);
-    }
-  }
-
-  void _showGroups(context) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding:
-              const EdgeInsets.only(top: 22, left: 22, right: 22, bottom: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Encuesta cerrada disponible solamente para los siguientes grupos:',
-                style: TextStyle(
-                  fontSize: 16,
-                ),
-              ),
-              for (var item in groups)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '${item.title}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                child: RaisedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  textColor: Colors.white,
-                  child: Text('Ok'),
-                ),
-              )
-            ],
-          ),
+  void _toAnalytics(context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnalyticsScreen(
+          pollId: id,
+          title: title,
+          answers: answers,
         ),
       ),
     );
   }
 
+  void _share() {
+    sharePromoPoll(id, title);
+  }
+
+  void _deleteAlert(context) {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (ct) => AlertDialog(
+        content: Text('¿Seguro que deseas borrar esta encuesta?'),
+        actions: <Widget>[
+          FlatButton(
+            textColor: Colors.black,
+            child: Text(
+              Translations.of(context).text('button_cancel'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              Navigator.of(ct).pop();
+            },
+          ),
+          FlatButton(
+            textColor: Colors.red,
+            child: Text(
+              Translations.of(context).text('button_delete'),
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              _deleteContent(ct);
+              Navigator.of(ct).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteContent(context) async {
+    final result = await Provider.of<ContentProvider>(context, listen: false)
+        .deleteContent(id: id, type: 'P');
+    if (result) {
+      //Navigator.of(context).pop();
+      removeFunction(id);
+    }
+  }
+
+  void _options(context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          color: Colors.transparent,
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                onTap: () => _deleteAlert(context),
+                leading: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+                title: Text(
+                  Translations.of(context).text('button_delete'),
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _handleResources() {
     if (resources[0].type == 'V')
-      return PollVideo(id, 'P', resources[0].url, videoFunction);
+      return PollVideo(id, 'P', resources[0].url, null);
     List urls = resources.map((e) => e.url).toList();
     return PollImages(urls, reference);
   }
 
   @override
   Widget build(BuildContext context) {
-    final now = new DateTime.now().toUtc();
-    final difference = now.difference(date);
-    final newDate = now.subtract(difference).toLocal();
-
     return Container(
       margin: const EdgeInsets.all(8),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.black, width: 0.5),
+          side: BorderSide(color: Color(0xFFE56F0E), width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -171,38 +206,16 @@ class PrivatePollTile extends StatelessWidget {
                       ),
                     ),
                   ListTile(
-                    onTap: () => _toProfile(context),
-                    leading: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.black,
-                      backgroundImage:
-                          userImage == null ? null : NetworkImage(userImage),
+                    title: OutlineButton(
+                      onPressed: () => _toAnalytics(context),
+                      child: Text('Estadísticas'),
                     ),
-                    title: Row(
-                      children: <Widget>[
-                        Flexible(
-                          child: Text(
-                            userName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        InfluencerBadge(id, certificate, 16),
-                      ],
-                    ),
-                    subtitle: Text(
-                      timeago.format(newDate,
-                          locale: Translations.of(context).currentLanguage),
-                    ),
-                    trailing: MenuContent(
-                      id: id,
-                      type: 'P',
-                      isSaved: hasSaved,
+                    trailing: Transform.rotate(
+                      angle: 270 * pi / 180,
+                      child: IconButton(
+                        icon: Icon(Icons.chevron_left),
+                        onPressed: () => _options(context),
+                      ),
                     ),
                   ),
                 ],
@@ -221,9 +234,13 @@ class PrivatePollTile extends StatelessWidget {
               ),
               child: PollOptions(
                 id: id,
-                isMine: false,
+                isMine: true,
+                terms: terms,
+                message: message,
+                promoUrl: promoUrl,
               ),
             ),
+            PromoButton(id, true),
             Consumer<ContentProvider>(
               builder: (context, value, child) {
                 PollModel poll = value.getPolls[id];
@@ -260,9 +277,15 @@ class PrivatePollTile extends StatelessWidget {
                     likes: likes,
                     hasLiked: hasLiked,
                   ),
+                  RegalupContent(
+                    id: id,
+                    type: 'P',
+                    regalups: regalups,
+                    hasRegalup: hasRegalup,
+                  ),
                   IconButton(
-                    icon: Icon(Icons.lock_outline, size: 28),
-                    onPressed: () => _showGroups(context),
+                    icon: Icon(GalupFont.share),
+                    onPressed: _share,
                   ),
                 ],
               ),

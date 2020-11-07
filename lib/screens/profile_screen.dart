@@ -10,6 +10,8 @@ import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../widgets/user_profile_header.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/secret_poll_user_list.dart';
+import '../widgets/promo_poll_user_list.dart';
 import '../widgets/private_poll_user_list.dart';
 import '../widgets/poll_user_list.dart';
 import '../widgets/tip_user_list.dart';
@@ -137,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           }
 
           return DefaultTabController(
-            length: 3,
+            length: 5,
             child: NestedScrollView(
               controller: _scrollController,
               headerSliverBuilder: (ctx, isScrolled) {
@@ -167,17 +169,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                   SliverPersistentHeader(
                     delegate: _SliverAppBarDelegate(
                       TabBar(
+                        isScrollable: true,
                         labelColor: Theme.of(context).accentColor,
                         unselectedLabelColor: Colors.grey,
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
-                            icon: Icon(GalupFont.encuesta_cerrada),
-                            text: 'Encuestas\nCerradas',
-                          ),
-                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.encuesta_patrocinada),
+                            text: 'Encuestas\nPromocionales',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.encuesta_cerrada),
+                            text: 'Encuestas\nPrivadas',
+                          ),
+                          Tab(
+                            icon: Icon(GalupFont.encuesta_cerrada),
+                            text: 'Encuestas\nCerradas',
                           ),
                           Tab(
                             icon: Icon(GalupFont.tips),
@@ -190,26 +201,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 ];
               },
-              body: child,
+              body: TabBarView(
+                children: [
+                  PollUserList(_scrollController, _playVideo),
+                  PromoPollUserList(_scrollController, _playVideo),
+                  SecretPollUserList(_scrollController, _playVideo),
+                  PrivatePollUserList(_scrollController, _playVideo),
+                  TipUserList(_scrollController, _playVideo),
+                ],
+              ),
             ),
           );
         },
-        child: TabBarView(
-          children: [
-            PrivatePollUserList(
-              _scrollController,
-              _playVideo,
-            ),
-            PollUserList(
-              _scrollController,
-              _playVideo,
-            ),
-            TipUserList(
-              _scrollController,
-              _playVideo,
-            ),
-          ],
-        ),
       ),
     );
   }

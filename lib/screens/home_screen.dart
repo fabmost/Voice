@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../widgets/poll_tile.dart';
 import '../widgets/private_poll_tile.dart';
+import '../widgets/secret_poll_tile.dart';
 import '../widgets/poll_promo_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
 import '../widgets/cause_tile.dart';
-import '../widgets/cause_card.dart';
 import '../widgets/user_card.dart';
 import '../providers/content_provider.dart';
 import '../models/user_model.dart';
@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _privatepollWidget(PollModel content) {
+  Widget _privatePollWidget(PollModel content) {
     return PrivatePollTile(
       reference: 'home',
       id: content.id,
@@ -85,6 +85,33 @@ class _HomeScreenState extends State<HomeScreen>
       resources: content.resources,
       videoFunction: widget.videoFunction,
       groups: content.groups,
+    );
+  }
+
+  Widget _secretPollWidget(int pos, PollModel content) {
+    return SecretPollTile(
+      reference: 'home',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      videoFunction: widget.videoFunction,
+      groups: content.groups,
+      pos: pos,
+      deleteFunction: _deleteContent,
     );
   }
 
@@ -272,10 +299,9 @@ class _HomeScreenState extends State<HomeScreen>
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
-      company: content.company,
+      terms: content.terms,
       message: content.message,
       promoUrl: content.promoUrl,
-      prize: content.prize,
       regalupName: content.creator,
     );
   }
@@ -333,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
       setState(() {
         mUsers.addAll(usersResult);
       });
-      _moreUsers(page++);
+      if (usersResult.length == 20) _moreUsers(page + 1);
     }
   }
 
@@ -391,33 +417,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _causesCarrousel() {
-    if (mCauses.isEmpty) {
-      return Container(
-        height: 42,
-        alignment: Alignment.center,
-        child: CircularProgressIndicator(),
-      );
-    }
-    return Container(
-      height: 192,
-      child: ListView.separated(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (context, index) => SizedBox(width: 16),
-        itemCount: mCauses.length,
-        itemBuilder: (context, i) {
-          CauseModel model = mCauses[i];
-          return CauseCard(
-            id: model.id,
-            title: model.title,
-            liked: model.hasLiked,
-          );
-        },
-      ),
-    );
-  }
-
   void _fetchData() async {
     loadMoreStatus = LoadMoreStatus.LOADING;
     final results = await Provider.of<ContentProvider>(context, listen: false)
@@ -442,6 +441,12 @@ class _HomeScreenState extends State<HomeScreen>
             .getCausesCarrousel();
     setState(() {
       mCauses = causesResult;
+    });
+  }
+
+  void _deleteContent(pos) {
+    setState(() {
+      mList.removeAt(pos);
     });
   }
 
@@ -483,15 +488,14 @@ class _HomeScreenState extends State<HomeScreen>
             if (i == 0) {
               return _usersCarrousel();
             }
-            if (i == 6) {
-              return _causesCarrousel();
-            }
-            final doc = (i > 6) ? mList[i - 2] : mList[i - 1];
+            final doc = mList[i - 1];
             switch (doc.type) {
               case 'poll':
-              return _pollWidget(doc);
+                return _pollWidget(doc);
               case 'private_p':
-                return _privatepollWidget(doc);
+                return _privatePollWidget(doc);
+              case 'secret_p':
+                return _secretPollWidget(i - 1, doc);
               case 'challenge':
                 return _challengeWidget(doc);
               case 'Tips':

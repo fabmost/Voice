@@ -8,7 +8,6 @@ import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
 import 'poll_images.dart';
-import 'menu_content.dart';
 import 'like_content.dart';
 import 'comment_content.dart';
 import '../translations.dart';
@@ -18,7 +17,7 @@ import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../models/poll_model.dart';
 
-class PrivatePollTile extends StatelessWidget {
+class SecretPollTile extends StatelessWidget {
   final String reference;
   final String id;
   final String userName;
@@ -40,8 +39,10 @@ class PrivatePollTile extends StatelessWidget {
   final certificate;
   final videoFunction;
   final List groups;
+  final int pos;
+  final Function deleteFunction;
 
-  PrivatePollTile({
+  SecretPollTile({
     @required this.reference,
     @required this.id,
     @required this.title,
@@ -63,9 +64,11 @@ class PrivatePollTile extends StatelessWidget {
     this.regalupName,
     @required this.videoFunction,
     @required this.groups,
+    @required this.pos,
+    @required this.deleteFunction,
   });
 
-  final Color color = Color(0xFFF0F0F0);
+  final Color color = Color(0xFFFFF5FB);
 
   void _toProfile(context) {
     if (Provider.of<UserProvider>(context, listen: false).getUser != userName) {
@@ -118,6 +121,10 @@ class PrivatePollTile extends StatelessWidget {
     );
   }
 
+  void _delete(){
+    deleteFunction(pos);
+  }
+
   Widget _handleResources() {
     if (resources[0].type == 'V')
       return PollVideo(id, 'P', resources[0].url, videoFunction);
@@ -136,7 +143,7 @@ class PrivatePollTile extends StatelessWidget {
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.black, width: 0.5),
+          side: BorderSide(color: Color(0xFFA4175D), width: 0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -174,7 +181,7 @@ class PrivatePollTile extends StatelessWidget {
                     onTap: () => _toProfile(context),
                     leading: CircleAvatar(
                       radius: 18,
-                      backgroundColor: Colors.black,
+                      backgroundColor: Color(0xFFA4175D),
                       backgroundImage:
                           userImage == null ? null : NetworkImage(userImage),
                     ),
@@ -199,11 +206,13 @@ class PrivatePollTile extends StatelessWidget {
                       timeago.format(newDate,
                           locale: Translations.of(context).currentLanguage),
                     ),
+                    /*
                     trailing: MenuContent(
                       id: id,
                       type: 'P',
                       isSaved: hasSaved,
                     ),
+                    */
                   ),
                 ],
               ),
@@ -222,6 +231,8 @@ class PrivatePollTile extends StatelessWidget {
               child: PollOptions(
                 id: id,
                 isMine: false,
+                isSecret: true,
+                function: _delete,
               ),
             ),
             Consumer<ContentProvider>(

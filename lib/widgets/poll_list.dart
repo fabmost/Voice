@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import 'poll_tile.dart';
-import 'poll_promo_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
@@ -30,7 +29,7 @@ class _PollListState extends State<PollList> {
   VideoPlayerController _controller;
 
   void _playVideo(VideoPlayerController controller) {
-    if(_controller != null){
+    if (_controller != null) {
       _controller.pause();
     }
     _controller = controller;
@@ -82,34 +81,6 @@ class _PollListState extends State<PollList> {
       resources: content.resources,
       regalupName: content.creator,
       videoFunction: _playVideo,
-    );
-  }
-
-  Widget _promoPollWidget(PollModel content) {
-    return PollPromoTile(
-      reference: 'user',
-      id: content.id,
-      date: content.createdAt,
-      userName: content.user.userName,
-      userImage: content.user.icon,
-      certificate: content.certificate,
-      title: content.title,
-      description: content.description,
-      votes: content.votes,
-      likes: content.likes,
-      comments: content.comments,
-      regalups: content.regalups,
-      hasVoted: content.hasVoted,
-      hasLiked: content.hasLiked,
-      hasRegalup: content.hasRegalup,
-      hasSaved: content.hasSaved,
-      answers: content.answers,
-      resources: content.resources,
-      company: content.company,
-      message: content.message,
-      promoUrl: content.promoUrl,
-      prize: content.prize,
-      regalupName: content.creator,
     );
   }
 
@@ -241,9 +212,6 @@ class _PollListState extends State<PollList> {
                           return _pollWidget(_list[i]);
                         case 'regalup_p':
                           return _repostPollWidget(_list[i]);
-                        case 'promo_p':
-                        case 'regalup_promo_p':
-                          return _promoPollWidget(_list[i]);
                       }
                       return Container();
                     },

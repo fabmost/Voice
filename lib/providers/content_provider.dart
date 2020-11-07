@@ -76,9 +76,14 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-          //case 'promo_p':
-          //case 'regalup_promo_p':
           case 'private_p':
+          case 'secret_p':
+            PollModel poll = PollModel.fromJson(content);
+            contentList.add(poll);
+            _polls[poll.id] = poll;
+            break;
+          case 'promo_p':
+          case 'regalup_promo_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -199,9 +204,10 @@ class ContentProvider with ChangeNotifier, TextMixin {
         switch (content['type']) {
           case 'poll':
           case 'regalup_p':
-          //case 'promo_p':
-          //case 'regalup_promo_p':
+          case 'promo_p':
+          case 'regalup_promo_p':
           case 'private_p':
+          case 'secret_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
             _polls[poll.id] = poll;
@@ -262,7 +268,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
         Map content = element as Map;
         switch (content['type']) {
           case 'poll':
-          //case 'promo_p':
+          case 'promo_p':
           case 'private_p':
             PollModel poll = PollModel.fromJson(content);
             contentList.add(poll);
@@ -709,9 +715,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
-            company: oldPoll.company,
+            terms: oldPoll.terms,
             message: oldPoll.message,
-            prize: oldPoll.prize,
             promoUrl: oldPoll.promoUrl,
             thumbnail: oldPoll.thumbnail,
             groups: oldPoll.groups,
@@ -923,16 +928,16 @@ class ContentProvider with ChangeNotifier, TextMixin {
           certificate: oldPoll.certificate,
           creator: oldPoll.creator,
           description: oldPoll.description,
-          company: oldPoll.company,
+          terms: oldPoll.terms,
           message: oldPoll.message,
-          prize: oldPoll.prize,
           promoUrl: oldPoll.promoUrl,
           thumbnail: oldPoll.thumbnail,
           groups: oldPoll.groups,
         );
         _polls[content.id] = content;
-        notifyListeners();
       }
+      notifyListeners();
+
       await _saveToken(dataMap['session']['token']);
       return;
     }
@@ -1029,9 +1034,98 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return false;
   }
 
+  Future<bool> newPromoPoll({
+    name,
+    category,
+    resources,
+    description,
+    answers,
+    taged,
+    hashtag,
+    message,
+    terms,
+    image,
+  }) async {
+    var url = '${API.baseURL}/registerPromoPoll';
+    final token = await _getToken();
+    Map parameters = {
+      'poll': serverSafe(name),
+      'category': category,
+      'description': serverSafe(description),
+      'timelife': null,
+      'hashtag': hashtag,
+      'answers': answers,
+      'resources': resources,
+      'taged': taged,
+      'message': message,
+      'terms': terms,
+      'promo_resource': image,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      return true;
+    }
+    return false;
+  }
+
   Future<bool> newPrivatePoll(
       {name, groups, resources, description, answers, taged, hashtag}) async {
     var url = '${API.baseURL}/registerPrivatePoll';
+    final token = await _getToken();
+    Map parameters = {
+      'poll': serverSafe(name),
+      'groups': groups,
+      'description': serverSafe(description),
+      'timelife': null,
+      'hashtag': hashtag,
+      'answers': answers,
+      'resources': resources,
+      'taged': taged,
+    };
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final body = jsonEncode(parameters);
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return false;
+    }
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> newSecretPoll(
+      {name, groups, resources, description, answers, taged, hashtag}) async {
+    var url = '${API.baseURL}/registerSecretPoll';
     final token = await _getToken();
     Map parameters = {
       'poll': serverSafe(name),
@@ -1252,9 +1346,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
-            company: oldPoll.company,
+            terms: oldPoll.terms,
             message: oldPoll.message,
-            prize: oldPoll.prize,
             promoUrl: oldPoll.promoUrl,
             thumbnail: oldPoll.thumbnail,
             groups: oldPoll.groups,
@@ -1414,9 +1507,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
-            company: oldPoll.company,
+            terms: oldPoll.terms,
             message: oldPoll.message,
-            prize: oldPoll.prize,
             promoUrl: oldPoll.promoUrl,
             thumbnail: oldPoll.thumbnail,
           );
@@ -1629,9 +1721,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
           certificate: oldPoll.certificate,
           creator: oldPoll.creator,
           description: oldPoll.description,
-          company: oldPoll.company,
+          terms: oldPoll.terms,
           message: oldPoll.message,
-          prize: oldPoll.prize,
           promoUrl: oldPoll.promoUrl,
           thumbnail: oldPoll.thumbnail,
         );
@@ -1793,9 +1884,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
             certificate: oldPoll.certificate,
             creator: oldPoll.creator,
             description: oldPoll.description,
-            company: oldPoll.company,
+            terms: oldPoll.terms,
             message: oldPoll.message,
-            prize: oldPoll.prize,
             promoUrl: oldPoll.promoUrl,
             thumbnail: oldPoll.thumbnail,
           );
@@ -1916,9 +2006,8 @@ class ContentProvider with ChangeNotifier, TextMixin {
           certificate: oldPoll.certificate,
           creator: oldPoll.creator,
           description: oldPoll.description,
-          company: oldPoll.company,
+          terms: oldPoll.terms,
           message: oldPoll.message,
-          prize: oldPoll.prize,
           promoUrl: oldPoll.promoUrl,
           thumbnail: mFile,
         );

@@ -15,10 +15,9 @@ class PollModel extends ContentModel {
   final bool hasVoted;
   final List<PollAnswerModel> answers;
   final List<ResourceModel> resources;
-  final String company;
+  final String terms;
   final String promoUrl;
   final String message;
-  final String prize;
   final List<GroupModel> groups;
 
   PollModel({
@@ -42,10 +41,9 @@ class PollModel extends ContentModel {
     this.hasVoted,
     this.answers,
     this.resources,
-    this.company,
+    this.terms,
     this.promoUrl,
     this.message,
-    this.prize,
     this.groups,
   }) : super(
           id: id,
@@ -109,9 +107,8 @@ class PollModel extends ContentModel {
       hasSaved: content['is_save'],
       answers: PollAnswerModel.listFromJson(content['answer']),
       resources: ResourceModel.listFromJson(content['resource']),
-      company: content['company'],
+      terms: content['terms'],
       message: content['message'],
-      prize: content['reward'],
       promoUrl: content['logo'],
       groups: content['groups'] == null ? null : GroupModel.listFromJson(content['groups']),
     );

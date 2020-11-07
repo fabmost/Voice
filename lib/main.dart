@@ -37,6 +37,8 @@ import 'screens/groups_screen.dart';
 import 'screens/gallery_screen.dart';
 import 'screens/new_poll_screen.dart';
 import 'screens/new_private_poll_screen.dart';
+import 'screens/new_promo_poll_screen.dart';
+import 'screens/new_secret_poll_screen.dart';
 import 'screens/new_challenge_screen.dart';
 import 'screens/new_tip_screen.dart';
 import 'screens/new_cause_screen.dart';
@@ -163,7 +165,9 @@ class App extends StatelessWidget {
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
             ChatScreen.routeName: (ctx) => ChatScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
+            NewPromoPollScreen.routeName: (ctx) => NewPromoPollScreen(),
             NewPrivatePollScreen.routeName: (ctx) => NewPrivatePollScreen(),
+            NewSecretPollScreen.routeName: (ctx) => NewSecretPollScreen(),
             NewChallengeScreen.routeName: (ctx) => NewChallengeScreen(),
             NewTipScreen.routeName: (ctx) => NewTipScreen(),
             NewCauseScreen.routeName: (ctx) => NewCauseScreen(),

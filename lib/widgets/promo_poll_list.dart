@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
 
-import 'private_poll_tile.dart';
+import 'poll_promo_tile.dart';
 import '../custom/galup_font_icons.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
@@ -10,34 +9,26 @@ import '../providers/content_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
-class PrivatePollList extends StatefulWidget {
+class PromoPollList extends StatefulWidget {
   final String userId;
   final ScrollController scrollController;
 
-  PrivatePollList(this.userId, this.scrollController);
+  PromoPollList(this.userId, this.scrollController);
 
   @override
   _PollListState createState() => _PollListState();
 }
 
-class _PollListState extends State<PrivatePollList> {
+class _PollListState extends State<PromoPollList> {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<ContentModel> _list = [];
   int _currentPageNumber = 0;
   bool _isLoading = false;
   bool _hasMore = true;
-  VideoPlayerController _controller;
-
-  void _playVideo(VideoPlayerController controller) {
-    if (_controller != null) {
-      _controller.pause();
-    }
-    _controller = controller;
-  }
-
-  Widget _pollWidget(PollModel content) {
-    return PrivatePollTile(
-      reference: 'list',
+  
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'user',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -55,8 +46,10 @@ class _PollListState extends State<PrivatePollList> {
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
-      videoFunction: _playVideo,
-      groups: content.groups,
+      terms: content.terms,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      regalupName: content.creator,
     );
   }
 
@@ -73,7 +66,7 @@ class _PollListState extends State<PrivatePollList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'PP')
+              .getUserTimeline(widget.userId, _currentPageNumber, 'POP')
               .then((newObjects) {
             setState(() {
               if (newObjects.isEmpty) {
@@ -98,7 +91,7 @@ class _PollListState extends State<PrivatePollList> {
       _isLoading = true;
     });
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'PP');
+        .getUserTimeline(widget.userId, _currentPageNumber, 'POP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -117,7 +110,7 @@ class _PollListState extends State<PrivatePollList> {
     _currentPageNumber = 0;
 
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'PP');
+        .getUserTimeline(widget.userId, _currentPageNumber, 'POP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -184,8 +177,9 @@ class _PollListState extends State<PrivatePollList> {
                           child: CircularProgressIndicator(),
                         );
                       switch (_list[i].type) {
-                        case 'private_p':
-                          return _pollWidget(_list[i]);
+                        case 'promo_p':
+                        case 'regalup_promo_p':
+                          return _promoPollWidget(_list[i]);
                       }
                       return Container();
                     },

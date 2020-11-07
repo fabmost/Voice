@@ -32,7 +32,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
   VideoPlayerController _controller;
 
   void _playVideo(VideoPlayerController controller) {
-    if(_controller != null){
+    if (_controller != null) {
       _controller.pause();
     }
     _controller = controller;
@@ -40,10 +40,12 @@ class _PollUserListState extends State<PrivatePollUserList> {
 
   Widget _sharedPollWidget(PollModel content) {
     return PrivatePollTile(
+      reference: 'list',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
       userImage: content.user.icon,
+      certificate: content.certificate,
       title: content.title,
       description: content.description,
       votes: content.votes,
@@ -53,6 +55,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
       hasVoted: content.hasVoted,
       hasLiked: content.hasLiked,
       hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
       videoFunction: _playVideo,
@@ -95,9 +98,8 @@ class _PollUserListState extends State<PrivatePollUserList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(userId, _currentPageNumber, 'P')
+              .getUserTimeline(userId, _currentPageNumber, 'PP')
               .then((newContent) {
-            newContent.removeWhere((element) => element.type != 'private_p');
             setState(() {
               if (newContent.isEmpty) {
                 _hasMore = false;
@@ -129,8 +131,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
     userId = Provider.of<UserProvider>(context, listen: false).getUser;
     List<ContentModel> results =
         await Provider.of<ContentProvider>(context, listen: false)
-            .getUserTimeline(userId, _currentPageNumber, 'P');
-    results.removeWhere((element) => element.type != 'private_p');
+            .getUserTimeline(userId, _currentPageNumber, 'PP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -149,8 +150,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
     _currentPageNumber = 0;
 
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(userId, _currentPageNumber, 'P');
-    results.removeWhere((element) => element.type != 'private_p');
+        .getUserTimeline(userId, _currentPageNumber, 'PP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;

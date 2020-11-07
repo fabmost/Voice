@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_trimmer/file_formats.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
-//import 'package:video_trimmer/storage_dir.dart';
+//import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_trimmer/storage_dir.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 import 'package:video_trimmer/video_viewer.dart';
@@ -24,10 +24,12 @@ class _TrimmerViewState extends State<TrimmerView> {
   bool _progressVisibility = false;
 
   //Android
-  //final _compressor = FlutterVideoCompress();
+  final _compressor = FlutterVideoCompress();
   //iOs
+  /*
   dynamic _subscription;
   double _progress = 0;
+  */
 
   void _alertError() {
     showDialog(
@@ -59,6 +61,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     });
 
     //iOs
+    /*
     final _path = await widget._trimmer.saveTrimmedVideo(
       startValue: _startValue,
       endValue: _endValue,
@@ -74,9 +77,9 @@ class _TrimmerViewState extends State<TrimmerView> {
       //duration: duration,
       deleteOrigin: true,
     );
+    */
 
     //Android
-    /*
     final _path = await widget._trimmer.saveTrimmedVideo(
       startValue: _startValue,
       endValue: _endValue,
@@ -88,7 +91,6 @@ class _TrimmerViewState extends State<TrimmerView> {
       quality: VideoQuality.MediumQuality,
       deleteOrigin: true,
     );
-    */
 
     return info.path;
   }
@@ -98,18 +100,20 @@ class _TrimmerViewState extends State<TrimmerView> {
     super.initState();
 
     //iOs
+    /*
     _subscription = VideoCompress.compressProgress$.subscribe((progress) {
       print(progress);
       setState(() {
         _progress = progress;
       });
     });
+    */
   }
 
   @override
   void dispose() {
     super.dispose();
-    _subscription.unsubscribe();
+    //_subscription.unsubscribe();
   }
 
   @override
@@ -133,10 +137,11 @@ class _TrimmerViewState extends State<TrimmerView> {
                     children: [
                       LinearProgressIndicator(
                         backgroundColor: Colors.red,
-                        value: _progress / 100,
+                        //value: _progress / 100,
                         minHeight: 12,
                       ),
                       //iOs
+                      /*
                       Align(
                         alignment: Alignment.center,
                         child: Text('${_progress.toStringAsFixed(0)}%',
@@ -145,6 +150,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                               color: Colors.white,
                             )),
                       ),
+                      */
                     ],
                   ),
                 ),

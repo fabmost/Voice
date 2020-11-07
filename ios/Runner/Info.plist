@@ -41,6 +41,8 @@
 		<string>https://voiceinc.page.link/tip</string>
 		<string>https://voiceinc.page.link/profile</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

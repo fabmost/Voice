@@ -7,6 +7,7 @@ import 'chat_screen.dart';
 
 import '../providers/user_provider.dart';
 import '../widgets/profile_header.dart';
+import '../widgets/promo_poll_list.dart';
 import '../widgets/private_poll_list.dart';
 import '../widgets/poll_list.dart';
 import '../widgets/tip_list.dart';
@@ -99,7 +100,6 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
   }
 
   void _blockContent(context, userId) async {
-    
     Navigator.of(context).pop();
   }
 
@@ -155,7 +155,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
             containerHeight += 60;
           }
           return DefaultTabController(
-            length: 3,
+            length: 4,
             child: NestedScrollView(
               controller: _scrollController,
               headerSliverBuilder: (ctx, isScrolled) {
@@ -188,17 +188,22 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                   SliverPersistentHeader(
                     delegate: _SliverAppBarDelegate(
                       TabBar(
+                        isScrollable: true,
                         labelColor: Theme.of(context).accentColor,
                         unselectedLabelColor: Colors.grey,
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
+                            icon: Icon(GalupFont.survey),
+                            text: 'Encuestas',
+                          ),
+                          Tab(
                             icon: Icon(GalupFont.encuesta_cerrada),
                             text: 'Encuestas\nCerradas',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.survey),
-                            text: 'Encuestas',
+                            icon: Icon(GalupFont.encuesta_cerrada),
+                            text: 'Encuestas\nPromocionales',
                           ),
                           Tab(
                             icon: Icon(GalupFont.tips),
@@ -213,8 +218,9 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
               },
               body: TabBarView(
                 children: [
-                  PrivatePollList(user.userName, _scrollController),
                   PollList(user.userName, _scrollController),
+                  PrivatePollList(user.userName, _scrollController),
+                  PromoPollList(user.userName, _scrollController),
                   TipList(user.userName, _scrollController, null),
                 ],
               ),

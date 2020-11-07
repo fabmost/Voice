@@ -1,43 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
 
-import 'private_poll_tile.dart';
+import 'user_promo_poll_tile.dart';
 import '../custom/galup_font_icons.dart';
+import '../providers/content_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
-import '../providers/content_provider.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
-class PrivatePollList extends StatefulWidget {
-  final String userId;
+class PromoPollUserList extends StatefulWidget {
   final ScrollController scrollController;
+  final Function setVideo;
 
-  PrivatePollList(this.userId, this.scrollController);
+  PromoPollUserList(this.scrollController, this.setVideo);
 
   @override
-  _PollListState createState() => _PollListState();
+  _PollUserListState createState() => _PollUserListState();
 }
 
-class _PollListState extends State<PrivatePollList> {
+class _PollUserListState extends State<PromoPollUserList> {
+  String userId;
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<ContentModel> _list = [];
-  int _currentPageNumber = 0;
+  int _currentPageNumber;
   bool _isLoading = false;
   bool _hasMore = true;
-  VideoPlayerController _controller;
-
-  void _playVideo(VideoPlayerController controller) {
-    if (_controller != null) {
-      _controller.pause();
-    }
-    _controller = controller;
-  }
 
   Widget _pollWidget(PollModel content) {
-    return PrivatePollTile(
-      reference: 'list',
+    return UserPromoPollTile(
+      reference: 'user',
       id: content.id,
       date: content.createdAt,
       userName: content.user.userName,
@@ -55,8 +48,11 @@ class _PollListState extends State<PrivatePollList> {
       hasSaved: content.hasSaved,
       answers: content.answers,
       resources: content.resources,
-      videoFunction: _playVideo,
-      groups: content.groups,
+      terms: content.terms,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      regalupName: content.creator,
+      removeFunction: _removeContent,
     );
   }
 
@@ -73,16 +69,16 @@ class _PollListState extends State<PrivatePollList> {
           _currentPageNumber++;
           loadMoreStatus = LoadMoreStatus.LOADING;
           Provider.of<ContentProvider>(context, listen: false)
-              .getUserTimeline(widget.userId, _currentPageNumber, 'PP')
-              .then((newObjects) {
+              .getUserTimeline(userId, _currentPageNumber, 'POP')
+              .then((newContent) {
             setState(() {
-              if (newObjects.isEmpty) {
+              if (newContent.isEmpty) {
                 _hasMore = false;
               } else {
-                if (newObjects.length < 10) {
+                if (newContent.length < 10) {
                   _hasMore = false;
                 }
-                _list.addAll(newObjects);
+                _list.addAll(newContent);
               }
             });
             loadMoreStatus = LoadMoreStatus.STABLE;
@@ -93,12 +89,19 @@ class _PollListState extends State<PrivatePollList> {
     return true;
   }
 
+  void _removeContent(id) {
+    setState(() {
+      _list.removeWhere((element) => element.id == id);
+    });
+  }
+
   void _getData() async {
     setState(() {
       _isLoading = true;
     });
+    userId = Provider.of<UserProvider>(context, listen: false).getUser;
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'PP');
+        .getUserTimeline(userId, _currentPageNumber, 'POP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -117,7 +120,7 @@ class _PollListState extends State<PrivatePollList> {
     _currentPageNumber = 0;
 
     List results = await Provider.of<ContentProvider>(context, listen: false)
-        .getUserTimeline(widget.userId, _currentPageNumber, 'PP');
+        .getUserTimeline(userId, _currentPageNumber, 'POP');
     setState(() {
       if (results.isEmpty) {
         _hasMore = false;
@@ -134,12 +137,14 @@ class _PollListState extends State<PrivatePollList> {
 
   @override
   void initState() {
+    _currentPageNumber = 0;
     _getData();
     super.initState();
   }
 
   @override
   void dispose() {
+    //scrollController.dispose();
     super.dispose();
   }
 
@@ -159,12 +164,15 @@ class _PollListState extends State<PrivatePollList> {
                       size: 32,
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Este usuario no ha realizado encuestas',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF8E8EAB),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 22),
+                      child: Text(
+                        'Realiza o regalupea encuestas para verlas aquí',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF8E8EAB),
+                        ),
                       ),
                     ),
                   ],
@@ -184,7 +192,8 @@ class _PollListState extends State<PrivatePollList> {
                           child: CircularProgressIndicator(),
                         );
                       switch (_list[i].type) {
-                        case 'private_p':
+                        case 'promo_p':
+                        case 'regalup_promo_p':
                           return _pollWidget(_list[i]);
                       }
                       return Container();

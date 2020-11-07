@@ -41,6 +41,11 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
     });
     final users = await Provider.of<UserProvider>(context, listen: false)
         .getAutocomplete(_searchController.text);
+    _added.forEach((element) {
+      users['users'].removeWhere((entry) {
+        return entry.userName == element.userName;
+      });
+    });
     setState(() {
       _searchList = users['users'];
     });
@@ -117,9 +122,26 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
     return ListTile(
       onTap: () {
         if (_added.length < 10) {
+          FocusScope.of(context).unfocus();
           setState(() {
-            if (!_added.contains(user)) _added.add(user);
+            _searchController.text = '';
+            _added.add(user);
           });
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('No puedes agregar más de 10 miembros al grupo'),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Ok'),
+                )
+              ],
+            ),
+          );
         }
       },
       leading: CircleAvatar(
@@ -170,61 +192,48 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
               left: 16,
               right: 16,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    border: InputBorder.none,
-                    hintText: Translations.of(context).text('hint_group'),
-                  ),
-                  maxLength: 50,
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 16),
-                if (_added.isNotEmpty) Text('Miembros (máx. 10)'),
-                Wrap(
-                  children: chipWidgets.toList(),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    hintText: Translations.of(context).text('hint_search'),
-                    prefixIcon: Icon(Icons.search),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      borderSide:
-                          BorderSide(color: Color(0xFFBBBBBB), width: 2),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      counterText: '',
+                      border: InputBorder.none,
+                      hintText: Translations.of(context).text('hint_group'),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      borderSide:
-                          BorderSide(color: Color(0xFFBBBBBB), width: 2),
+                    maxLength: 50,
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_added.isNotEmpty) Text('Miembros (máx. 10)'),
+                  Wrap(
+                    children: chipWidgets.toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      counterText: '',
+                      hintText: Translations.of(context).text('hint_search'),
+                      prefixIcon: Icon(Icons.search),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                        borderSide:
+                            BorderSide(color: Color(0xFFBBBBBB), width: 2),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                        borderSide:
+                            BorderSide(color: Color(0xFFBBBBBB), width: 2),
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: _searchList.length,
-                    separatorBuilder: (context, index) => Divider(),
-                    itemBuilder: (context, i) {
-                      final doc = _searchList[i];
-                      /*
-                      if (_added.firstWhere(
-                              (element) => element.userName == doc.userName,
-                              orElse: null) !=
-                          null) {
-                        return Container();
-                      }*/
-                      return _userTile(doc);
-                    },
-                  ),
-                )
-              ],
+                  for (var i in _searchList) _userTile(i),
+                  const SizedBox(height: 58),
+                ],
+              ),
             ),
           ),
           Align(

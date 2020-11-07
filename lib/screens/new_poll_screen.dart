@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
-import 'package:video_compress/video_compress.dart';
-//import 'package:flutter_video_compress/flutter_video_compress.dart';
+//import 'package:video_compress/video_compress.dart';
+import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -288,8 +288,8 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       }),
     ).then((value) async {
       if (value != null) {
-        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-        final mFile = await VideoCompress.getFileThumbnail(
+        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        //final mFile = await VideoCompress.getFileThumbnail(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -335,6 +335,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   }
 
   void _selectCategory() {
+    FocusScope.of(context).unfocus();
     Navigator.of(context)
         .pushNamed(NewContentCategoryScreen.routeName)
         .then((value) {
@@ -779,6 +780,12 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        title: Text(
+          'Encuesta',
+          style: TextStyle(
+            color: Colors.black,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(
             Icons.close,
