@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'home_stories_screen.dart';
 import '../widgets/poll_tile.dart';
 import '../widgets/private_poll_tile.dart';
 import '../widgets/secret_poll_tile.dart';
 import '../widgets/poll_promo_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
-import '../widgets/cause_tile.dart';
+import '../widgets/story_tile.dart';
 import '../widgets/user_card.dart';
 import '../providers/content_provider.dart';
 import '../models/user_model.dart';
+import '../models/resource_model.dart';
+import '../models/story_model.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
 import '../models/tip_model.dart';
-import '../models/cause_model.dart';
 
 enum LoadMoreStatus { LOADING, STABLE }
 
@@ -33,7 +35,31 @@ class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<UserModel> mUsers = [];
-  List<CauseModel> mCauses = [];
+  List<StoryModel> mStories = [
+    StoryModel(
+      user: UserModel(
+        userName: 'Usuario Prueba',
+        icon:
+            'https://cactusthemes.com/blog/wp-content/uploads/2018/01/tt_avatar_small.jpg',
+      ),
+      story: ResourceModel(
+        type: 'I',
+        url:
+            'https://i.pinimg.com/originals/80/d8/98/80d89883f4de6fc53712b781dcac0eaf.jpg',
+      ),
+    ),
+    StoryModel(
+      user: UserModel(
+        userName: 'Otro usuario',
+        icon:
+            'https://cactusthemes.com/blog/wp-content/uploads/2018/01/tt_avatar_small.jpg',
+      ),
+      story: ResourceModel(
+        type: 'V',
+        url: 'https://i.vimeocdn.com/video/20963649_1280x720.jpg',
+      ),
+    )
+  ];
   List<ContentModel> mList = [];
   int currentPageNumber;
   bool _hasMore = true;
@@ -159,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+/*
   Widget _causeWidget(CauseModel content) {
     return CauseTile(
       reference: 'home',
@@ -181,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen>
       hasSaved: content.hasSaved,
       resources: content.resources,
     );
-  }
+  }*/
 
   Widget _repostPollWidget(PollModel content) {
     return PollTile(
@@ -254,6 +281,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+/*
   Widget _repostCauseWidget(content) {
     return CauseTile(
       reference: 'home_${content.creator}',
@@ -277,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen>
       resources: content.resources,
       regalupName: content.creator,
     );
-  }
+  }*/
 
   Widget _promoPollWidget(PollModel content) {
     return PollPromoTile(
@@ -417,6 +445,57 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _storiesCarrousel() {
+    if (mStories.isEmpty) {
+      return Container(
+        height: 42,
+        alignment: Alignment.center,
+        child: CircularProgressIndicator(),
+      );
+    }
+    return Container(
+      height: 370,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: Text(
+                'Historias Galup',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.separated(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              separatorBuilder: (context, index) => SizedBox(width: 16),
+              itemCount: mStories.length,
+              itemBuilder: (context, i) {
+                StoryModel model = mStories[i];
+                return StoryTile(
+                  userName: model.user.userName,
+                  story: model.story,
+                  toStories: _toStories,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
   void _fetchData() async {
     loadMoreStatus = LoadMoreStatus.LOADING;
     final results = await Provider.of<ContentProvider>(context, listen: false)
@@ -436,11 +515,11 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {
       mUsers = usersResult;
     });
-    final causesResult =
+    final storiesResult =
         await Provider.of<ContentProvider>(context, listen: false)
-            .getCausesCarrousel();
+            .getTopStories(0);
     setState(() {
-      mCauses = causesResult;
+      mStories = storiesResult;
     });
   }
 
@@ -448,6 +527,15 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {
       mList.removeAt(pos);
     });
+  }
+
+  void _toStories(url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeStoriesScreen(mStories, url),
+      ),
+    );
   }
 
   @override
@@ -488,7 +576,10 @@ class _HomeScreenState extends State<HomeScreen>
             if (i == 0) {
               return _usersCarrousel();
             }
-            final doc = mList[i - 1];
+            if (i == 6) {
+              return _storiesCarrousel();
+            }
+            final doc = (i > 6) ? mList[i - 2] : mList[i - 1];
             switch (doc.type) {
               case 'poll':
                 return _pollWidget(doc);
@@ -500,14 +591,10 @@ class _HomeScreenState extends State<HomeScreen>
                 return _challengeWidget(doc);
               case 'Tips':
                 return _tipWidget(doc);
-              case 'causes':
-                return _causeWidget(doc);
               case 'regalup_p':
                 return _repostPollWidget(doc);
               case 'regalup_c':
                 return _repostChallengeWidget(doc);
-              case 'regalup_ca':
-                return _repostCauseWidget(doc);
               case 'regalup_ti':
                 return _repostTipWidget(doc);
               case 'promo_p':

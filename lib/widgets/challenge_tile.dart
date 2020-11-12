@@ -70,7 +70,7 @@ class ChallengeTile extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    shareChallenge(id, title);
+    shareChallenge(id, title, null);
   }
 
   Widget _challengeGoal(context) {

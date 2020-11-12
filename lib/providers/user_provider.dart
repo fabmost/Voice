@@ -109,6 +109,7 @@ class UserProvider with ChangeNotifier, TextMixin {
     icon,
     cover,
     birth,
+    stories,
   }) async {
     var url = '${API.baseURL}/editProfile';
     final token = await _getToken();
@@ -174,6 +175,10 @@ class UserProvider with ChangeNotifier, TextMixin {
     if (birth != null) {
       parameters['birhtday'] = birth;
       if (_currentUser != null) _currentUser.birthday = birth;
+    }
+    if (stories != null) {
+      parameters['histories'] = stories;
+      //if (_currentUser != null) _currentUser.birthday = birth;
     }
 
     await FlutterUserAgent.init();

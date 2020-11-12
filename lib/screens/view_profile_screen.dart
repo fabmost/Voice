@@ -28,7 +28,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
         .pushNamed(ChatScreen.routeName, arguments: {'userId': userId});
   }
 
-  void _menu(context, userId) {
+  void _menu(context, userId, image) {
     showDialog(
       context: context,
       builder: (ctx) {
@@ -39,7 +39,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                 Translations.of(context).text('button_share_profile'),
                 style: TextStyle(fontSize: 16),
               ),
-              onPressed: () => shareProfile(userId),
+              onPressed: () => shareProfile(userId, image),
             ),
             SimpleDialogOption(
               child: Text(
@@ -170,7 +170,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                       ),
                       IconButton(
                         icon: Icon(Icons.more_vert),
-                        onPressed: () => _menu(context, profileId),
+                        onPressed: () => _menu(context, profileId, user.icon)
                       ),
                     ],
                   ),
@@ -199,11 +199,11 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                           ),
                           Tab(
                             icon: Icon(GalupFont.encuesta_cerrada),
-                            text: 'Encuestas\nCerradas',
+                            text: 'Encuestas\nGrupales',
                           ),
                           Tab(
                             icon: Icon(GalupFont.encuesta_cerrada),
-                            text: 'Encuestas\nPromocionales',
+                            text: 'Encuestas\nPublicitarias',
                           ),
                           Tab(
                             icon: Icon(GalupFont.tips),

@@ -1,4 +1,3 @@
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -23,7 +22,7 @@ class PollVideo extends StatefulWidget {
 
 class _PollVideoState extends State<PollVideo> {
   VideoPlayerController _controller;
-  ChewieController _chewieController;
+  //ChewieController _chewieController;
   bool _isPlaying = false;
   bool _isLoading = false;
 
@@ -36,12 +35,14 @@ class _PollVideoState extends State<PollVideo> {
       setState(() {
         _isLoading = false;
       });
+      /*
       _chewieController = ChewieController(
         videoPlayerController: _controller,
         aspectRatio: _controller.value.aspectRatio,
         autoPlay: false,
         looping: false,
       );
+      */
     });
   }
 
@@ -49,7 +50,7 @@ class _PollVideoState extends State<PollVideo> {
   void dispose() {
     super.dispose();
     if (_controller != null) _controller.dispose();
-    if (_chewieController != null) _chewieController.dispose();
+    //if (_chewieController != null) _chewieController.dispose();
   }
 
   void _startVideo() {
@@ -65,12 +66,14 @@ class _PollVideoState extends State<PollVideo> {
           _isLoading = false;
           _isPlaying = true;
           _controller.play();
+          /*
           _chewieController = ChewieController(
             videoPlayerController: _controller,
             aspectRatio: _controller.value.aspectRatio,
             //autoPlay: true,
             looping: false,
           );
+          */
         });
       });
   }
@@ -114,6 +117,7 @@ class _PollVideoState extends State<PollVideo> {
                           size: 32,
                         ),
                       ),
+                    /*
                     if (_chewieController != null &&
                         _controller != null &&
                         _controller.value.initialized)
@@ -123,6 +127,7 @@ class _PollVideoState extends State<PollVideo> {
                           controller: _chewieController,
                         ),
                       ),
+                      */
                   ],
                 ),
               )

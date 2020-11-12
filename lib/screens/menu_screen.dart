@@ -234,19 +234,19 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     items = [
       FabMenuItem(
         icon: Icon(GalupFont.encuesta_patrocinada),
-        label: 'Encuesta promocional',
+        label: 'Encuesta publicitaria',
         ontap: _newPromoPoll,
         color: Color(0xFFE56F0E),
       ),
       FabMenuItem(
         icon: Icon(GalupFont.encuesta_cerrada),
-        label: 'Encuesta privada',
+        label: 'Encuesta laboral',
         ontap: _newSecretPoll,
         color: Color(0xFFA4175D),
       ),
       FabMenuItem(
         icon: Icon(GalupFont.encuesta_cerrada),
-        label: 'Encuesta cerrada',
+        label: 'Encuesta grupal',
         ontap: _newPrivatePoll,
         color: Colors.black,
       ),

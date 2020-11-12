@@ -75,7 +75,13 @@ class PollTile extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    sharePoll(id, title);
+    String image;
+    if (userImage != null && userImage.isNotEmpty) {
+      image = userImage;
+    } else if (resources.isNotEmpty) {
+      image = resources[0].url;
+    }
+    sharePoll(id, title, image);
   }
 
   Widget _handleResources() {

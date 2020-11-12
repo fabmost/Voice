@@ -72,7 +72,7 @@ class UserChallengeTile extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    shareChallenge(id, title);
+    shareChallenge(id, title, null);
   }
 
   void _deleteAlert(context) {

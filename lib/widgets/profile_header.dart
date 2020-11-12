@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'profile_cover.dart';
 import 'user_followers.dart';
 import 'influencer_badge.dart';
 import '../custom/galup_font_icons.dart';
@@ -48,23 +49,7 @@ class ProfileHeader extends StatelessWidget {
             height: containerHeight + 60,
             child: Stack(
               children: <Widget>[
-                GestureDetector(
-                  onTap: user.cover == null
-                      ? null
-                      : () => _openImage(context, user.cover),
-                  child: Container(
-                    width: double.infinity,
-                    height: containerHeight,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFECECEC),
-                      image: user.cover == null
-                          ? null
-                          : DecorationImage(
-                              image: CachedNetworkImageProvider(user.cover),
-                              fit: BoxFit.cover),
-                    ),
-                  ),
-                ),
+                ProfileCover(user.stories),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: GestureDetector(

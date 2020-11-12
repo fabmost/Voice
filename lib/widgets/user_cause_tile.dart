@@ -112,7 +112,7 @@ class UserCauseTile extends StatelessWidget with ShareContent {
   }
 
   void _share() async {
-    shareCause(id, title);
+    shareCause(id, title, null);
   }
 
   void _deleteAlert(context) {

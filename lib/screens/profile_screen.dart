@@ -180,15 +180,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                           Tab(
                             icon: Icon(GalupFont.encuesta_patrocinada),
-                            text: 'Encuestas\nPromocionales',
+                            text: 'Encuestas\nPublicitarias',
                           ),
                           Tab(
                             icon: Icon(GalupFont.encuesta_cerrada),
-                            text: 'Encuestas\nPrivadas',
+                            text: 'Encuestas\nLaborales',
                           ),
                           Tab(
                             icon: Icon(GalupFont.encuesta_cerrada),
-                            text: 'Encuestas\nCerradas',
+                            text: 'Encuestas\nGrupales',
                           ),
                           Tab(
                             icon: Icon(GalupFont.tips),

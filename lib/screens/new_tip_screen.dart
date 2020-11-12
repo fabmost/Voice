@@ -172,9 +172,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
   }
 
   void _validate() {
-    if (_titleController.text.isNotEmpty &&
-        _imageFile != null &&
-        category != null) {
+    if (_titleController.text.isNotEmpty && category != null) {
       _validationAlert();
       return;
     }
@@ -299,20 +297,22 @@ class _NewTipScreenState extends State<NewTipScreen> {
       _isLoading = true;
     });
     String idResource;
-    if (_isVideo) {
-      idResource = await Provider.of<ContentProvider>(context, listen: false)
-          .uploadResource(
-        _videoFile.path,
-        'V',
-        'TIP',
-      );
-    } else {
-      idResource = await Provider.of<ContentProvider>(context, listen: false)
-          .uploadResource(
-        _imageFile.path,
-        'I',
-        'TIP',
-      );
+    if (_imageFile != null || _videoFile != null) {
+      if (_isVideo) {
+        idResource = await Provider.of<ContentProvider>(context, listen: false)
+            .uploadResource(
+          _videoFile.path,
+          'V',
+          'TIP',
+        );
+      } else {
+        idResource = await Provider.of<ContentProvider>(context, listen: false)
+            .uploadResource(
+          _imageFile.path,
+          'I',
+          'TIP',
+        );
+      }
     }
 
     List<Map> hashes = [];
@@ -363,7 +363,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
       name: _titleController.text,
       description: '${_descriptionController.text} ',
       category: category.id,
-      resource: {'id': idResource},
+      resource: idResource,
       hashtag: hashes,
       taged: tags,
     );
@@ -436,7 +436,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Tips',
+          'Tip',
           style: TextStyle(
             color: Colors.black,
           ),

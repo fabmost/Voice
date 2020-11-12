@@ -76,7 +76,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    shareChallenge(challengeModel.id, challengeModel.title);
+    shareChallenge(challengeModel.id, challengeModel.title, null);
   }
 
   Widget _challengeGoal(context) {

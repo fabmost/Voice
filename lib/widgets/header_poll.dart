@@ -77,7 +77,13 @@ class HeaderPoll extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    sharePoll(pollModel.id, pollModel.title);
+    String image;
+    if (pollModel.user.icon != null && pollModel.user.icon.isNotEmpty) {
+      image = pollModel.user.icon;
+    } else if (pollModel.resources.isNotEmpty) {
+      image = pollModel.resources[0].url;
+    }
+    sharePoll(pollModel.id, pollModel.title, image);
   }
 
   Widget _handleResources() {

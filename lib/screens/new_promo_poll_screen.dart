@@ -1,22 +1,20 @@
 import 'dart:io';
 
-import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 //import 'package:video_compress/video_compress.dart';
 import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
+import 'new_promo_info_screen.dart';
 import '../translations.dart';
 import '../models/category_model.dart';
 import '../mixins/text_mixin.dart';
-import '../providers/content_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../custom/suggestion_textfield.dart';
@@ -38,8 +36,6 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
   TextEditingController _fourthController = TextEditingController();
   TextEditingController _fifthController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
-  TextEditingController _messageController = TextEditingController();
-  TextEditingController _termsController = TextEditingController();
 
   final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
@@ -50,7 +46,6 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
   CategoryModel category;
   File _videoFile;
   File _videoThumb;
-  File _promoImage;
 
   final double size = 82;
 
@@ -108,36 +103,6 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
                     color: Colors.red,
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _promoImageOptions() {
-    FocusScope.of(context).requestFocus(FocusNode());
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return new Container(
-          color: Colors.transparent,
-          child: new Wrap(
-            children: <Widget>[
-              ListTile(
-                onTap: () => _openCamera(-1, true),
-                leading: Icon(
-                  Icons.camera_alt,
-                ),
-                title: Text("Foto"),
-              ),
-              ListTile(
-                onTap: () => _openGallery(-1, true),
-                leading: Icon(
-                  Icons.image,
-                ),
-                title: Text("Galería"),
               ),
             ],
           ),
@@ -343,9 +308,6 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
     if (cropped != null) {
       setState(() {
         switch (file) {
-          case -1:
-            _promoImage = cropped;
-            break;
           case 0:
             _option1 = cropped;
             break;
@@ -392,9 +354,6 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
     if (_titleController.text.isNotEmpty &&
         _firstController.text.isNotEmpty &&
         _secondController.text.isNotEmpty &&
-        _messageController.text.isNotEmpty &&
-        _termsController.text.isNotEmpty &&
-        _promoImage != null &&
         category != null) {
       bool pass = true;
       if (moreOptions == 1 && _thirdController.text.isEmpty) pass = false;
@@ -437,259 +396,43 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
           FlatButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _savePoll();
+              _nextStep();
             },
-            child: Text(Translations.of(context).text('button_publish')),
+            child: Text(Translations.of(context).text('button_next')),
           )
         ],
       ),
     );
   }
 
-  void _showAlert() async {
-    await showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                'Tu encuesta se ha creado correctamente',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                child: RaisedButton(
-                  textColor: Colors.white,
-                  child: Text('Ok'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-            ],
-          ),
+  void _nextStep() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NewPromoInfoScreen(
+          poll: _titleController.text,
+          category: category.id,
+          description: _descriptionController.text,
+          optionsCount: moreOptions + 2,
+          options: [
+            _firstController.text,
+            _secondController.text,
+            _thirdController.text,
+            _fourthController.text,
+            _fifthController.text,
+          ],
+          optionImages: [
+            _option1 != null ? _option1.path : null,
+            _option2 != null ? _option2.path : null,
+            _option3 != null ? _option3.path : null,
+            _option4 != null ? _option4.path : null,
+            _option5 != null ? _option5.path : null,
+          ],
+          pollImages: pollImages,
+          videoFile: _videoFile != null ? _videoFile.path : null,
         ),
       ),
     );
-    Navigator.of(context).pop();
-  }
-
-  void _showError() async {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                'Ocurrió un error al guardar tu encuesta',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                child: RaisedButton(
-                  textColor: Colors.white,
-                  child: Text('Ok'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _savePoll() async {
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _isLoading = true;
-    });
-    var pollAnswers = [];
-    if (_option1 != null) {
-      String idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        _option1.path,
-        'I',
-        'PA',
-      );
-
-      pollAnswers.add({
-        'text': serverSafe(_firstController.text),
-        'image': idResource,
-      });
-    } else {
-      pollAnswers.add({
-        'text': serverSafe(_firstController.text),
-        'image': null,
-      });
-    }
-    if (_option2 != null) {
-      String idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        _option2.path,
-        'I',
-        'PA',
-      );
-      pollAnswers.add({
-        'text': serverSafe(_secondController.text),
-        'image': idResource,
-      });
-    } else {
-      pollAnswers.add({
-        'text': serverSafe(_secondController.text),
-        'image': null,
-      });
-    }
-    if (moreOptions == 1) {
-      if (_option3 != null) {
-        String idResource =
-            await Provider.of<ContentProvider>(context, listen: false)
-                .uploadResource(
-          _option3.path,
-          'I',
-          'PA',
-        );
-        pollAnswers.add({
-          'text': serverSafe(_thirdController.text),
-          'image': idResource,
-        });
-      } else {
-        pollAnswers.add({
-          'text': serverSafe(_thirdController.text),
-          'image': null,
-        });
-      }
-    }
-    if (moreOptions == 2) {
-      if (_option4 != null) {
-        String idResource =
-            await Provider.of<ContentProvider>(context, listen: false)
-                .uploadResource(
-          _option4.path,
-          'I',
-          'PA',
-        );
-        pollAnswers.add({
-          'text': serverSafe(_fourthController.text),
-          'image': idResource,
-        });
-      } else {
-        pollAnswers.add({
-          'text': serverSafe(_fourthController.text),
-          'image': null,
-        });
-      }
-    }
-    if (moreOptions == 3) {
-      if (_option5 != null) {
-        String idResource =
-            await Provider.of<ContentProvider>(context, listen: false)
-                .uploadResource(
-          _option5.path,
-          'I',
-          'PA',
-        );
-        pollAnswers.add({
-          'text': serverSafe(_fifthController.text),
-          'image': idResource,
-        });
-      } else {
-        pollAnswers.add({
-          'text': serverSafe(_fifthController.text),
-          'image': null,
-        });
-      }
-    }
-
-    List<Map> images = [];
-    for (int i = 0; i < pollImages.length; i++) {
-      final element = pollImages[i];
-      String idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        element.path,
-        'I',
-        'P',
-      );
-      images.add({"id": idResource});
-    }
-    if (_videoFile != null) {
-      final idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        _videoFile.path,
-        'V',
-        'P',
-      );
-      images.add({"id": idResource});
-    }
-
-    String idPromoResource =
-        await Provider.of<ContentProvider>(context, listen: false)
-            .uploadResource(
-      _promoImage.path,
-      'I',
-      'P',
-    );
-
-    List<Map> hashes = [];
-    RegExp exp = new RegExp(r"\B#\S\S+");
-    exp.allMatches(_titleController.text).forEach((match) {
-      if (!hashes.contains(match.group(0))) {
-        hashes.add({'text': removeDiacritics(match.group(0).toLowerCase())});
-      }
-    });
-    exp.allMatches(_descriptionController.text).forEach((match) {
-      if (!hashes.contains(match.group(0))) {
-        String hashString = match.group(0).toLowerCase();
-        String serverString = removeDiacritics(hashString);
-        hashes.add({'text': serverString});
-      }
-    });
-
-    bool result =
-        await Provider.of<ContentProvider>(context, listen: false).newPromoPoll(
-      name: '${_titleController.text} ',
-      description: '${_descriptionController.text} ',
-      category: category.id,
-      resources: images,
-      answers: pollAnswers,
-      hashtag: hashes,
-      taged: [],
-      message: _messageController.text,
-      terms: _termsController.text,
-      image: idPromoResource,
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-    if (result)
-      _showAlert();
-    else
-      _showError();
   }
 
   Widget _title(text) {
@@ -901,7 +644,7 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Encuesta Promocional',
+          'Encuesta Publicitaria',
           style: TextStyle(
             color: Colors.black,
           ),
@@ -1081,40 +824,8 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
                 },
                 onSuggestionSelected: (suggestion) {},
                 autoFlipDirection: true,
-              ),
-              SizedBox(height: 16),
-              _title(Translations.of(context).text('label_media_challenge')),
-              SizedBox(height: 16),
-              Align(
-                alignment: Alignment.center,
-                child: InkWell(
-                  onTap: _promoImageOptions,
-                  child: Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.black),
-                      image: _promoImage != null
-                          ? DecorationImage(
-                              image: FileImage(_promoImage),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                    child: Icon(Icons.camera_alt),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _messageController,
-              ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _termsController,
-              ),
-              SizedBox(height: 16),
+              ),              
+              SizedBox(height: 32),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : Container(
@@ -1123,8 +834,8 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
                       child: RaisedButton(
                         textColor: Colors.white,
                         color: Color(0xFFE56F0E),
-                        child: Text(
-                            Translations.of(context).text('button_publish')),
+                        child:
+                            Text(Translations.of(context).text('button_next')),
                         onPressed: () => _validate(),
                       ),
                     ),

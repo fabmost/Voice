@@ -523,7 +523,7 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
         'image': null,
       });
     }
-    if (moreOptions == 1) {
+    if (moreOptions >= 1) {
       if (_option3 != null) {
         String idResource =
             await Provider.of<ContentProvider>(context, listen: false)
@@ -543,7 +543,7 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
         });
       }
     }
-    if (moreOptions == 2) {
+    if (moreOptions >= 2) {
       if (_option4 != null) {
         String idResource =
             await Provider.of<ContentProvider>(context, listen: false)
@@ -883,7 +883,7 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Encuesta Privada',
+          'Encuesta Laboral',
           style: TextStyle(
             color: Colors.black,
           ),

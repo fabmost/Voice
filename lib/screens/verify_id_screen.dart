@@ -102,9 +102,8 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
       _isLoading = true;
     });
 
-    String idResource =
-        await Provider.of<ContentProvider>(context, listen: false)
-            .uploadResourceGetUrl(
+    Map idResource = await Provider.of<ContentProvider>(context, listen: false)
+        .uploadResourceGetUrl(
       _imageFile.path,
       'I',
       'U',
@@ -113,7 +112,7 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
     await Provider.of<UserProvider>(context, listen: false).verifyUser(
       type: type,
       idCategory: category,
-      idResource: idResource,
+      idResource: idResource['url'],
     );
 
     _showAlert();
@@ -133,8 +132,7 @@ class _VerifyIdScreenState extends State<VerifyIdScreen> {
           FlatButton(
             child: Text('Ok'),
             onPressed: () {
-              Navigator.of(context)
-                  .popUntil(ModalRoute.withName('/'));
+              Navigator.of(context).popUntil(ModalRoute.withName('/'));
             },
           )
         ],

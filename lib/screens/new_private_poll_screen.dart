@@ -766,7 +766,7 @@ class _NewPollScreenState extends State<NewPrivatePollScreen> with TextMixin {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Encuesta Cerrada',
+          'Encuesta Grupal',
           style: TextStyle(
             color: Colors.black,
           ),

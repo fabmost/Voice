@@ -8,8 +8,6 @@ import 'package:flutter_user_agent/flutter_user_agent.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-import 'package:voice_inc/models/poll_answer_model.dart';
-import 'package:voice_inc/models/user_model.dart';
 
 import '../api.dart';
 import '../mixins/text_mixin.dart';
@@ -19,6 +17,9 @@ import '../models/challenge_model.dart';
 import '../models/tip_model.dart';
 import '../models/cause_model.dart';
 import '../models/comment_model.dart';
+import '../models/poll_answer_model.dart';
+import '../models/user_model.dart';
+import '../models/story_model.dart';
 import '../models/notification_model.dart';
 
 class ContentProvider with ChangeNotifier, TextMixin {
@@ -389,6 +390,42 @@ class ContentProvider with ChangeNotifier, TextMixin {
     if (dataMap['action'] == 4) {
       await _renewToken();
       return getTopUsers(page);
+    }
+    return [];
+  }
+
+  Future<List<StoryModel>> getTopStories(page) async {
+    var url = '${API.baseURL}/usersHistories/$page';
+    final token = await _getToken();
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+    );
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return [];
+    }
+
+    if (dataMap['status'] == 'success') {
+      await _saveToken(dataMap['session']['token']);
+      List<StoryModel> userList = [];
+
+      userList.addAll(StoryModel.listFromJson(dataMap['users']));
+
+      return userList;
+    }
+    if (dataMap['action'] == 4) {
+      await _renewToken();
+      return getTopStories(page);
     }
     return [];
   }
@@ -1216,12 +1253,19 @@ class ContentProvider with ChangeNotifier, TextMixin {
     Map parameters = {
       'title': serverSafe(name),
       'category': category,
-      'resources': [resource],
       'description': serverSafe(description),
       'timelife': null,
       'taged': taged,
       'hashtag': hashtag,
     };
+
+    if (resource != null)
+      parameters['resources'] = [
+        {'id': resource}
+      ];
+    else
+      parameters['resources'] = [];
+
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
     final body = jsonEncode(parameters);
@@ -1776,7 +1820,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return null;
   }
 
-  Future<String> uploadResourceGetUrl(String filePath, type, content) async {
+  Future<Map> uploadResourceGetUrl(String filePath, type, content) async {
     var url = '${API.baseURL}/uploadResource';
     final token = await _getToken();
 
@@ -1804,7 +1848,56 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     if (dataMap['status'] == 'success') {
       _saveToken(dataMap['session']['token']);
-      return dataMap['url'];
+      return {
+        'id': dataMap['id_resource'],
+        'url': dataMap['url'],
+      };
+    }
+    return null;
+  }
+
+  Future<Map> uploadVideo({
+    String filePath,
+    type,
+    content,
+    thumbId,
+    duration,
+    ratio,
+  }) async {
+    var url = '${API.baseURL}/uploadVideo';
+    final token = await _getToken();
+
+    final imageUploadRequest = http.MultipartRequest('POST', Uri.parse(url));
+    final file = await http.MultipartFile.fromPath('upload', filePath);
+
+    imageUploadRequest.fields['type'] = type;
+    imageUploadRequest.fields['content'] = content;
+    imageUploadRequest.fields['video_thumb'] = thumbId;
+    imageUploadRequest.fields['duration'] = duration.toString();
+    imageUploadRequest.fields['ratio'] = ratio.toString();
+    imageUploadRequest.files.add(file);
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    imageUploadRequest.headers.addAll({
+      'Content-Type': 'multipart/form-data',
+      'Accept': '*/*',
+      HttpHeaders.userAgentHeader: webViewUserAgent,
+      HttpHeaders.authorizationHeader: 'Bearer $token'
+    });
+    final response =
+        await http.Response.fromStream(await imageUploadRequest.send());
+
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return {
+        'id': dataMap['id_resource'],
+        'url': dataMap['url'],
+      };
     }
     return null;
   }

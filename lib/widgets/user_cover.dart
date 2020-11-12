@@ -108,20 +108,19 @@ class _UserCoverState extends State<UserCover> {
     setState(() {
       _isLoading = true;
     });
-    String idResource =
-        await Provider.of<ContentProvider>(context, listen: false)
-            .uploadResourceGetUrl(
+    Map idResource = await Provider.of<ContentProvider>(context, listen: false)
+        .uploadResourceGetUrl(
       file.path,
       'I',
       'U',
     );
 
     await Provider.of<UserProvider>(context, listen: false)
-        .editProfile(cover: idResource);
+        .editProfile(cover: idResource['url']);
 
     setState(() {
       _isLoading = false;
-      _url = idResource;
+      _url = idResource['url'];
     });
   }
 

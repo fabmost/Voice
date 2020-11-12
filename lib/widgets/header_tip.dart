@@ -79,7 +79,13 @@ class HeaderTip extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    shareTip(tipModel.id, tipModel.title);
+    String image;
+    if (tipModel.user.icon != null && tipModel.user.icon.isNotEmpty) {
+      image = tipModel.user.icon;
+    } else if (tipModel.resources.isNotEmpty) {
+      image = tipModel.resources[0].url;
+    }
+    shareTip(tipModel.id, tipModel.title, image);
   }
 
   Widget _challengeGoal(context) {

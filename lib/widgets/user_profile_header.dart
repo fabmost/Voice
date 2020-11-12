@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'user_icon.dart';
-import 'user_cover.dart';
+import 'user_profile_cover.dart';
 import 'influencer_badge.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
@@ -83,7 +83,7 @@ class UserProfileHeader extends StatelessWidget {
               height: containerHeight + 60,
               child: Stack(
                 children: <Widget>[
-                  UserCover(user.cover),
+                  UserProfileCover(user.stories),
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(

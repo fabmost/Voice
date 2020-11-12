@@ -76,7 +76,13 @@ class UserTipTile extends StatelessWidget with ShareContent {
   }
 
   void _share() {
-    shareTip(id, title);
+    String image;
+    if (userImage != null && userImage.isNotEmpty) {
+      image = userImage;
+    } else if (resources.isNotEmpty) {
+      image = resources[0].url;
+    }
+    shareTip(id, title, image);
   }
 
   void _deleteAlert(context) {

@@ -83,7 +83,7 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
   }
 
   void _share() {
-    widget.shareCause(_causeModel.id, _causeModel.title);
+    widget.shareCause(_causeModel.id, _causeModel.title, null);
   }
 
   void _noExists() {

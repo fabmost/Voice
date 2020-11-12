@@ -1,6 +1,7 @@
 import 'package:voice_inc/mixins/text_mixin.dart';
 
 import 'certificate_model.dart';
+import 'resource_model.dart';
 
 class UserModel {
   String userName;
@@ -25,6 +26,7 @@ class UserModel {
   String idAnswer;
   CertificateModel certificate;
   int validated;
+  List<ResourceModel> stories;
 
   UserModel({
     this.userName,
@@ -48,6 +50,7 @@ class UserModel {
     this.idAnswer,
     this.certificate,
     this.validated,
+    this.stories,
   });
 
   static UserModel fromJson(Map content) {
@@ -82,6 +85,9 @@ class UserModel {
       validated: content['certificates']['status'] == null
           ? 0
           : int.parse(content['certificates']['status']),
+      stories: content['histories'] == null
+          ? []
+          : ResourceModel.listFromJson(content['histories']),
     );
   }
 

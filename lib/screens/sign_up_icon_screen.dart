@@ -90,7 +90,7 @@ class _SignUpIconScreenState extends State<SignUpIconScreen> {
     setState(() {
       _isLoading = true;
     });
-    String idResource =
+    Map idResource =
         await Provider.of<ContentProvider>(context, listen: false)
             .uploadResourceGetUrl(
       file.path,
@@ -99,7 +99,7 @@ class _SignUpIconScreenState extends State<SignUpIconScreen> {
     );
 
     await Provider.of<UserProvider>(context, listen: false)
-        .editProfile(icon: idResource);
+        .editProfile(icon: idResource['url']);
 
     setState(() {
       _isLoading = false;

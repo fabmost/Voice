@@ -107,7 +107,7 @@ class _UserIconState extends State<UserIcon> {
     setState(() {
       _isLoading = true;
     });
-    String idResource =
+    Map idResource =
         await Provider.of<ContentProvider>(context, listen: false)
             .uploadResourceGetUrl(
       file.path,
@@ -116,11 +116,11 @@ class _UserIconState extends State<UserIcon> {
     );
 
     await Provider.of<UserProvider>(context, listen: false)
-        .editProfile(icon: idResource);
+        .editProfile(icon: idResource['url']);
 
     setState(() {
       _isLoading = false;
-      _url = idResource;
+      _url = idResource['url'];
     });
   }
 
