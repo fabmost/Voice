@@ -16,6 +16,8 @@ class NewPromoInfoScreen extends StatefulWidget {
   final List pollImages;
   final String videoFile;
   final int optionsCount;
+  final String audio;
+  final int duration;
 
   NewPromoInfoScreen({
     this.poll,
@@ -26,6 +28,8 @@ class NewPromoInfoScreen extends StatefulWidget {
     this.optionImages,
     this.pollImages,
     this.videoFile,
+    this.audio,
+    this.duration,
   });
 
   @override
@@ -175,6 +179,8 @@ class _NewPromoInfoScreenState extends State<NewPromoInfoScreen> {
           promoImage: _promoImage.path,
           message: _messageController.text,
           terms: _termsController.text,
+          audio: widget.audio,
+          duration: widget.duration,
         ),
       ),
     );

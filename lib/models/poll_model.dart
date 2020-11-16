@@ -19,6 +19,7 @@ class PollModel extends ContentModel {
   final String promoUrl;
   final String message;
   final List<GroupModel> groups;
+  final ResourceModel audio;
 
   PollModel({
     id,
@@ -45,6 +46,7 @@ class PollModel extends ContentModel {
     this.promoUrl,
     this.message,
     this.groups,
+    this.audio,
   }) : super(
           id: id,
           type: type,
@@ -110,7 +112,12 @@ class PollModel extends ContentModel {
       terms: content['terms'],
       message: content['message'],
       promoUrl: content['logo'],
-      groups: content['groups'] == null ? null : GroupModel.listFromJson(content['groups']),
+      groups: content['groups'] == null
+          ? null
+          : GroupModel.listFromJson(content['groups']),
+      audio: content['audio'] == null
+          ? null
+          : ResourceModel.objectFromJson(content['audio']),
     );
   }
 }

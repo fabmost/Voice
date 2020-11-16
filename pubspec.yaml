@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.8.7+95
+version: 1.8.9+97
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -73,10 +73,14 @@ dependencies:
   cached_network_image: ^2.3.2+1
   story_view: ^0.12.3
   after_layout: ^1.0.7+2
+  material_segmented_control: ^2.1.0
+  permission_handler: ^5.0.1+1
+  flutter_sound_lite: ^6.4.2+1
+  flutter_beep: ^0.2.0
 
   # Cambiar cuando compilas para producción
-  #video_compress: ^2.1.0
-  flutter_video_compress: ^0.3.7+8
+  video_compress: ^2.1.0
+  #flutter_video_compress: ^0.3.7+8
 
 
 dev_dependencies:
@@ -116,6 +120,7 @@ flutter:
     - assets/onboarding_4.png
     - assets/onboarding_5.png
   #   - images/a_dot_ham.jpeg
+    - assets/videos/grupal.mp4
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

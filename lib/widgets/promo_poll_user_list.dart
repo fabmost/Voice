@@ -53,6 +53,7 @@ class _PollUserListState extends State<PromoPollUserList> {
       promoUrl: content.promoUrl,
       regalupName: content.creator,
       removeFunction: _removeContent,
+      audio: content.audio,
     );
   }
 

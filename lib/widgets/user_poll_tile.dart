@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'title_content.dart';
+import 'poll_audio.dart';
 import 'poll_images.dart';
 import 'poll_video.dart';
 import 'poll_options.dart';
@@ -12,6 +13,7 @@ import 'like_content.dart';
 import 'regalup_content.dart';
 import '../translations.dart';
 import '../models/poll_model.dart';
+import '../models/resource_model.dart';
 import '../custom/galup_font_icons.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/content_provider.dart';
@@ -34,6 +36,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
   final List answers;
   final List resources;
   final Function removeFunction;
+  final ResourceModel audio;
 
   final Color color = Color(0xFFF8F8FF);
 
@@ -54,6 +57,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
     @required this.answers,
     @required this.resources,
     @required this.removeFunction,
+    @required this.audio,
   });
 
   void _toAnalytics(context) {
@@ -191,7 +195,7 @@ class UserPollTile extends StatelessWidget with ShareContent {
               ),
             ),
             SizedBox(height: 16),
-            TitleContent(title),
+            audio == null ? TitleContent(title) : PollAudio(audio),
             if (resources.isNotEmpty) SizedBox(height: 16),
             if (resources.isNotEmpty) _handleResources(),
             Padding(

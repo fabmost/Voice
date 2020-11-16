@@ -53,7 +53,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Galup usa tu cámara para permitirte tomar tu foto de perfil o tomar fotos para tus encuestas y retos</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Galup usa tu micrófono para poder grabar videos que mejoren la apariencia de tus encuestas y retos</string>
+	<string>Galup usa tu micrófono para que puedas grabar tus encuestas</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Galup usa tus imágenes para permitirte agregar tu foto de perfil o agregar imágenes a tus encuestas y retos</string>
 	<key>UILaunchStoryboardName</key>

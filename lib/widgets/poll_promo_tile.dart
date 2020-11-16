@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'title_content.dart';
+import 'poll_audio.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'promo_button.dart';
@@ -20,6 +21,7 @@ import '../screens/view_profile_screen.dart';
 import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../models/poll_model.dart';
+import '../models/resource_model.dart';
 
 class PollPromoTile extends StatelessWidget with ShareContent {
   final String reference;
@@ -44,6 +46,7 @@ class PollPromoTile extends StatelessWidget with ShareContent {
   final String terms;
   final String promoUrl;
   final String message;
+  final ResourceModel audio;
 
   PollPromoTile({
     @required this.reference,
@@ -68,6 +71,7 @@ class PollPromoTile extends StatelessWidget with ShareContent {
     @required this.terms,
     @required this.promoUrl,
     @required this.message,
+    @required this.audio,
   });
 
   final Color color = Color(0xFFFDF9F5);
@@ -170,17 +174,29 @@ class PollPromoTile extends StatelessWidget with ShareContent {
                       timeago.format(newDate,
                           locale: Translations.of(context).currentLanguage),
                     ),
-                    trailing: MenuContent(
-                      id: id,
-                      type: 'P',
-                      isSaved: hasSaved,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        MenuContent(
+                          id: id,
+                          type: 'P',
+                          isSaved: hasSaved,
+                        ),
+                        CircleAvatar(
+                          backgroundColor: Color(0xFFE56F0E),
+                          child: Icon(
+                            GalupFont.encuesta_patrocinada,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 16),
-            TitleContent(title),
+            audio == null ? TitleContent(title) : PollAudio(audio),
             if (resources.isNotEmpty) SizedBox(height: 16),
             if (resources.isNotEmpty) _handleResources(),
             Padding(

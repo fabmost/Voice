@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'title_content.dart';
+import 'poll_audio.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'promo_button.dart';
@@ -18,6 +19,7 @@ import '../custom/galup_font_icons.dart';
 import '../screens/analytics_screen.dart';
 import '../providers/content_provider.dart';
 import '../models/poll_model.dart';
+import '../models/resource_model.dart';
 
 class UserPromoPollTile extends StatelessWidget with ShareContent {
   final String reference;
@@ -43,6 +45,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
   final String promoUrl;
   final String message;
   final Function removeFunction;
+  final ResourceModel audio;
 
   UserPromoPollTile({
     @required this.reference,
@@ -68,6 +71,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
     @required this.promoUrl,
     @required this.message,
     @required this.removeFunction,
+    @required this.audio,
   });
 
   final Color color = Color(0xFFFDF9F5);
@@ -228,7 +232,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
               ),
             ),
             SizedBox(height: 16),
-            TitleContent(title),
+            audio == null ? TitleContent(title) : PollAudio(audio),
             if (resources.isNotEmpty) SizedBox(height: 16),
             if (resources.isNotEmpty) _handleResources(),
             Padding(

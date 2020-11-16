@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
-//import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:video_compress/video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -176,8 +176,8 @@ class _UserProfileCoverState extends State<UserProfileCover> {
     Map resourceMap;
     String thumbnail;
     if (isVideo) {
-      final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-      //final mFile = await VideoCompress.getFileThumbnail(
+      //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+      final mFile = await VideoCompress.getFileThumbnail(
         file.path,
         //imageFormat: ImageFormat.JPEG,
         quality: 50,

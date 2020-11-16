@@ -60,6 +60,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
       resources: content.resources,
       videoFunction: _playVideo,
       groups: content.groups,
+      audio: content.audio,
     );
   }
 
@@ -82,6 +83,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
       resources: content.resources,
       removeFunction: _removeContent,
       groups: content.groups,
+      audio: content.audio,
     );
   }
 

@@ -57,6 +57,7 @@ class _PollListState extends State<PrivatePollList> {
       resources: content.resources,
       videoFunction: _playVideo,
       groups: content.groups,
+      audio: content.audio,
     );
   }
 

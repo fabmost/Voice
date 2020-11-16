@@ -245,7 +245,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         color: Color(0xFFA4175D),
       ),
       FabMenuItem(
-        icon: Icon(GalupFont.encuesta_cerrada),
+        icon: Icon(GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1),
         label: 'Encuesta grupal',
         ontap: _newPrivatePoll,
         color: Colors.black,

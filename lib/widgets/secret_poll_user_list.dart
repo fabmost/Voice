@@ -62,6 +62,7 @@ class _PollUserListState extends State<SecretPollUserList> {
       groups: content.groups,
       pos: pos,
       deleteFunction: _deleteContent,
+      audio: content.audio,
     );
   }
 
@@ -84,6 +85,7 @@ class _PollUserListState extends State<SecretPollUserList> {
       resources: content.resources,
       removeFunction: _removeContent,
       groups: content.groups,
+      audio: content.audio,
     );
   }
 

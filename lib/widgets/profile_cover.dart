@@ -38,6 +38,7 @@ class ProfileCover extends StatelessWidget {
     final width = MediaQuery.of(context).size.width / 3;
     return Container(
       color: Colors.grey,
+      height: width * 16 / 9,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children:

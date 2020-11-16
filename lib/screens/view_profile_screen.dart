@@ -143,16 +143,16 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
           UserModel user = snapshot.data;
           bool hasSocialMedia = false;
 
-          double containerHeight = 420;
+          double containerHeight = 430;
           if (user.biography != null && user.biography.isNotEmpty) {
-            containerHeight += 66;
+            containerHeight += 26;
           }
           if ((user.tiktok ?? '').isNotEmpty ||
               (user.facebook ?? '').isNotEmpty ||
               (user.instagram ?? '').isNotEmpty ||
               (user.youtube ?? '').isNotEmpty) {
             hasSocialMedia = true;
-            containerHeight += 60;
+            containerHeight += 50;
           }
           return DefaultTabController(
             length: 4,
@@ -198,11 +198,11 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                             text: 'Encuestas',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.encuesta_cerrada),
+                            icon: Icon(GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1),
                             text: 'Encuestas\nGrupales',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.encuesta_cerrada),
+                            icon: Icon(GalupFont.encuesta_patrocinada),
                             text: 'Encuestas\nPublicitarias',
                           ),
                           Tab(

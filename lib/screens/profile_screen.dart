@@ -127,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           double containerHeight = 410;
           if (provider.getUserModel.biography != null &&
               provider.getUserModel.biography.isNotEmpty) {
-            containerHeight += 66;
+            containerHeight += 10;
           }
           if ((provider.getUserModel.tiktok ?? '').isNotEmpty ||
               (provider.getUserModel.facebook ?? '').isNotEmpty ||
@@ -135,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               (provider.getUserModel.twitter ?? '').isNotEmpty ||
               (provider.getUserModel.youtube ?? '').isNotEmpty) {
             hasSocialMedia = true;
-            containerHeight += 60;
+            containerHeight += 50;
           }
 
           return DefaultTabController(
@@ -187,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             text: 'Encuestas\nLaborales',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.encuesta_cerrada),
+                            icon: Icon(GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1),
                             text: 'Encuestas\nGrupales',
                           ),
                           Tab(

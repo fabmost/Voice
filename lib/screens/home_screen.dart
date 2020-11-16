@@ -86,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen>
       answers: content.answers,
       resources: content.resources,
       videoFunction: widget.videoFunction,
+      audio: content.audio,
     );
   }
 
@@ -111,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen>
       resources: content.resources,
       videoFunction: widget.videoFunction,
       groups: content.groups,
+      audio: content.audio,
     );
   }
 
@@ -138,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen>
       groups: content.groups,
       pos: pos,
       deleteFunction: _deleteContent,
+      audio: content.audio,
     );
   }
 
@@ -232,6 +235,7 @@ class _HomeScreenState extends State<HomeScreen>
       resources: content.resources,
       regalupName: content.creator,
       videoFunction: null,
+      audio: content.audio,
     );
   }
 
@@ -331,6 +335,7 @@ class _HomeScreenState extends State<HomeScreen>
       message: content.message,
       promoUrl: content.promoUrl,
       regalupName: content.creator,
+      audio: content.audio,
     );
   }
 

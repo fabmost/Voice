@@ -12,6 +12,7 @@ import 'like_content.dart';
 import '../translations.dart';
 import '../models/poll_model.dart';
 import '../models/group_model.dart';
+import '../models/resource_model.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/content_provider.dart';
 import '../screens/analytics_screen.dart';
@@ -34,6 +35,7 @@ class UserPrivatePollTile extends StatelessWidget with ShareContent {
   final List resources;
   final Function removeFunction;
   final List<GroupModel> groups;
+  final ResourceModel audio;
 
   final Color color = Color(0xFFF0F0F0);
 
@@ -55,6 +57,7 @@ class UserPrivatePollTile extends StatelessWidget with ShareContent {
     @required this.resources,
     @required this.removeFunction,
     @required this.groups,
+    @required this.audio,
   });
 
   void _toAnalytics(context) {

@@ -54,6 +54,7 @@ class _FilteredContentState extends State<FilteredContent>
       answers: content.answers,
       resources: content.resources,
       videoFunction: null,
+      audio: content.audio,
     );
   }
 
@@ -147,6 +148,7 @@ class _FilteredContentState extends State<FilteredContent>
       resources: content.resources,
       regalupName: content.creator,
       videoFunction: null,
+      audio: content.audio,
     );
   }
 

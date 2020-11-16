@@ -53,6 +53,7 @@ class _FilteredContentState extends State<TopContent>
       answers: content.answers,
       resources: content.resources,
       videoFunction: null,
+      audio: content.audio,
     );
   }
 

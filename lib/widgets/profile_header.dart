@@ -50,8 +50,9 @@ class ProfileHeader extends StatelessWidget {
             child: Stack(
               children: <Widget>[
                 ProfileCover(user.stories),
-                Align(
-                  alignment: Alignment.bottomCenter,
+                Positioned(
+                  left: 16,
+                  bottom: 0,
                   child: GestureDetector(
                     onTap: user.icon == null
                         ? null
@@ -73,44 +74,54 @@ class ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                '${user.name} ${user.lastName}',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+            children: [
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        '${user.name} ${user.lastName}',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      InfluencerBadge(user.userName, user.certificate, 20)
+                    ],
+                  ),
+                  Text(
+                    '@${user.userName}',
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 8),
-              InfluencerBadge(user.userName, user.certificate, 20)
+              const SizedBox(width: 8),
+              if (user.biography != null)
+                Expanded(
+                  child: AutoSizeText(
+                    user.biography,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 16),
             ],
           ),
-          Text(
-            '@${user.userName}',
-            style: TextStyle(
-              color: Theme.of(context).accentColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
           SizedBox(height: 16),
-          if (user.biography != null && user.biography.isNotEmpty)
-            Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: AutoSizeText(
-                user.biography,
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            ),
           if (user.biography != null && user.biography.isNotEmpty)
             SizedBox(height: 16),
           if (hasSocialMedia)

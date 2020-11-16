@@ -21,6 +21,8 @@ class NewPromoPreviewScreen extends StatefulWidget {
   final String promoImage;
   final String message;
   final String terms;
+  final String audio;
+  final int duration;
 
   NewPromoPreviewScreen({
     this.poll,
@@ -34,6 +36,8 @@ class NewPromoPreviewScreen extends StatefulWidget {
     this.promoImage,
     this.message,
     this.terms,
+    this.audio,
+    this.duration,
   });
 
   @override
@@ -103,6 +107,20 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
       'P',
     );
 
+    String idAudio;
+    if (widget.audio != null && widget.duration != null) {
+      Map videoMap = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadVideo(
+        filePath: widget.audio,
+        type: 'A',
+        content: 'P',
+        thumbId: 0,
+        duration: widget.duration,
+        ratio: 0,
+      );
+      idAudio = videoMap['id'];
+    }
+
     List<Map> hashes = [];
     RegExp exp = new RegExp(r"\B#\S\S+");
     exp.allMatches(widget.poll).forEach((match) {
@@ -120,7 +138,7 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
 
     bool result =
         await Provider.of<ContentProvider>(context, listen: false).newPromoPoll(
-      name: widget.poll,
+      name: idAudio == null ? widget.poll : '',
       description: widget.description,
       category: widget.category,
       resources: images,
@@ -130,6 +148,7 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
       message: widget.message,
       terms: widget.terms,
       image: idPromoResource,
+      audio: idAudio,
     );
 
     setState(() {

@@ -59,6 +59,7 @@ class CustomSearchDelegate extends SearchDelegate {
       answers: content.answers,
       resources: content.resources,
       videoFunction: null,
+      audio: content.audio,
     );
   }
 

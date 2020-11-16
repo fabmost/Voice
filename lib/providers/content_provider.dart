@@ -1034,7 +1034,14 @@ class ContentProvider with ChangeNotifier, TextMixin {
   }
 
   Future<bool> newPoll(
-      {name, category, resources, description, answers, taged, hashtag}) async {
+      {name,
+      category,
+      resources,
+      description,
+      answers,
+      taged,
+      hashtag,
+      audio}) async {
     var url = '${API.baseURL}/registerPoll';
     final token = await _getToken();
     Map parameters = {
@@ -1046,6 +1053,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'answers': answers,
       'resources': resources,
       'taged': taged,
+      'audio': audio,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1082,6 +1090,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     message,
     terms,
     image,
+    audio,
   }) async {
     var url = '${API.baseURL}/registerPromoPoll';
     final token = await _getToken();
@@ -1097,6 +1106,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'message': message,
       'terms': terms,
       'promo_resource': image,
+      'audio': audio,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1122,8 +1132,16 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return false;
   }
 
-  Future<bool> newPrivatePoll(
-      {name, groups, resources, description, answers, taged, hashtag}) async {
+  Future<bool> newPrivatePoll({
+    name,
+    groups,
+    resources,
+    description,
+    answers,
+    taged,
+    hashtag,
+    audio,
+  }) async {
     var url = '${API.baseURL}/registerPrivatePoll';
     final token = await _getToken();
     Map parameters = {
@@ -1135,6 +1153,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'answers': answers,
       'resources': resources,
       'taged': taged,
+      'audio': audio,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1160,8 +1179,16 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return false;
   }
 
-  Future<bool> newSecretPoll(
-      {name, groups, resources, description, answers, taged, hashtag}) async {
+  Future<bool> newSecretPoll({
+    name,
+    groups,
+    resources,
+    description,
+    answers,
+    taged,
+    hashtag,
+    audio,
+  }) async {
     var url = '${API.baseURL}/registerSecretPoll';
     final token = await _getToken();
     Map parameters = {
@@ -1173,6 +1200,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'answers': answers,
       'resources': resources,
       'taged': taged,
+      'audio': audio,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1872,7 +1900,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
 
     imageUploadRequest.fields['type'] = type;
     imageUploadRequest.fields['content'] = content;
-    imageUploadRequest.fields['video_thumb'] = thumbId;
+    imageUploadRequest.fields['video_thumb'] = thumbId.toString();
     imageUploadRequest.fields['duration'] = duration.toString();
     imageUploadRequest.fields['ratio'] = ratio.toString();
     imageUploadRequest.files.add(file);

@@ -61,6 +61,7 @@ class _SavedListState extends State<SavedList> {
       answers: content.answers,
       resources: content.resources,
       videoFunction: _playVideo,
+      audio: content.audio,
     );
   }
 
@@ -85,7 +86,8 @@ class _SavedListState extends State<SavedList> {
       answers: content.answers,
       resources: content.resources,
       videoFunction: _playVideo,
-      groups: content.groups
+      groups: content.groups,
+      audio: content.audio,
     );
   }
 

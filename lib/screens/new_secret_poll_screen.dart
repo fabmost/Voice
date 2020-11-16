@@ -1,11 +1,19 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
-//import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
+import 'package:flutter_beep/flutter_beep.dart';
+import 'package:flutter_sound_lite/flutter_sound.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+//import 'package:simple_permissions/simple_permissions.dart';
+import 'package:video_compress/video_compress.dart';
+//import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:material_segmented_control/material_segmented_control.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:video_trimmer/video_trimmer.dart';
@@ -39,6 +47,16 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
   TextEditingController _fifthController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
 
+  FlutterSoundPlayer playerModule = FlutterSoundPlayer();
+  FlutterSoundRecorder recorderModule = FlutterSoundRecorder();
+  StreamSubscription _recorderSubscription;
+  String _recorderTxt = '0';
+  String _audioPath;
+  Duration _recordingDuration;
+  Codec _codec = Codec.aacADTS;
+  bool _isRecording = false;
+  bool _isPlaying = false;
+
   final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
@@ -48,6 +66,7 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
   List<GroupModel> _groups = [];
   File _videoFile;
   File _videoThumb;
+  int _pollType = 0;
 
   final double size = 82;
 
@@ -287,8 +306,8 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
       }),
     ).then((value) async {
       if (value != null) {
-        final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-        //final mFile = await VideoCompress.getFileThumbnail(
+        //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+        final mFile = await VideoCompress.getFileThumbnail(
           value,
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
@@ -339,6 +358,88 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
     if (moreOptions == 0) _thirdController.clear();
   }
 
+  void _startRecording() async {
+    try {
+      // Request Microphone permission if needed
+      PermissionStatus status = await Permission.microphone.request();
+      if (status != PermissionStatus.granted) {
+        throw RecordingPermissionException("Microphone permission not granted");
+      }
+      String path = '';
+      Directory tempDir = await getTemporaryDirectory();
+      path = '${tempDir.path}/flutter_sound${_codec.index}';
+
+      await recorderModule.startRecorder(
+        toFile: path,
+        codec: _codec,
+        bitRate: 8000,
+        numChannels: 1,
+      );
+      print('startRecorder');
+
+      _recorderSubscription = recorderModule.onProgress.listen((e) {
+        if (e != null && e.duration != null) {
+          DateTime date = new DateTime.fromMillisecondsSinceEpoch(
+              e.duration.inMilliseconds,
+              isUtc: true);
+          String txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
+
+          _recordingDuration = e.duration;
+          this.setState(() {
+            _recorderTxt = txt.substring(0, 8);
+          });
+        }
+      });
+
+      FlutterBeep.beep();
+
+      this.setState(() {
+        _isRecording = true;
+        _audioPath = path;
+      });
+    } catch (err) {
+      print('startRecorder error: $err');
+      setState(() {
+        _stopRecording();
+        _isRecording = false;
+      });
+    }
+  }
+
+  void _stopRecording() async {
+    await recorderModule.stopRecorder();
+    if (_recorderSubscription != null) {
+      _recorderSubscription.cancel();
+      _recorderSubscription = null;
+    }
+    _recordingDuration = await flutterSoundHelper.duration(_audioPath);
+    setState(() {
+      _isRecording = false;
+    });
+  }
+
+  void _startPlayer() async {
+    try {
+      await playerModule.startPlayer(
+          fromURI: _audioPath,
+          codec: _codec,
+          whenFinished: () {
+            print('Play finished');
+            setState(() {
+              _isPlaying = false;
+            });
+          });
+      setState(() {
+        _isPlaying = true;
+      });
+    } catch (err) {
+      setState(() {
+        _isPlaying = false;
+      });
+      print('error: $err');
+    }
+  }
+
   void _selectCategory() {
     FocusScope.of(context).unfocus();
     Navigator.of(context)
@@ -353,7 +454,8 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
   }
 
   void _validate() {
-    if (_titleController.text.isNotEmpty &&
+    if ((_pollType == 0 && _titleController.text.isNotEmpty ||
+            _pollType == 1 && _audioPath != null) &&
         _firstController.text.isNotEmpty &&
         _secondController.text.isNotEmpty &&
         _groups.isNotEmpty) {
@@ -607,6 +709,20 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
       images.add({"id": idResource});
     }
 
+    String idAudio;
+    if (_pollType == 1) {
+      Map videoMap = await Provider.of<ContentProvider>(context, listen: false)
+          .uploadVideo(
+        filePath: _audioPath,
+        type: 'A',
+        content: 'P',
+        thumbId: 0,
+        duration: _recordingDuration.inMilliseconds,
+        ratio: 0,
+      );
+      idAudio = videoMap['id'];
+    }
+
     List<Map> hashes = [];
     RegExp exp = new RegExp(r"\B#\S\S+");
     exp.allMatches(_titleController.text).forEach((match) {
@@ -631,13 +747,14 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
 
     bool result = await Provider.of<ContentProvider>(context, listen: false)
         .newSecretPoll(
-      name: '${_titleController.text} ',
+      name: _pollType == 0 ? '${_titleController.text} ' : '',
       description: '${_descriptionController.text} ',
       groups: groups,
       resources: images,
       answers: pollAnswers,
       hashtag: hashes,
       taged: [],
+      audio: idAudio,
     );
 
     setState(() {
@@ -870,9 +987,42 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
     }
   }
 
+  Future<void> init() async {
+    await recorderModule.openAudioSession(
+      focus: AudioFocus.requestFocusAndStopOthers,
+      category: SessionCategory.playAndRecord,
+      mode: SessionMode.modeDefault,
+      device: AudioDevice.speaker,
+    );
+    await playerModule.closeAudioSession();
+    await playerModule.openAudioSession(
+      focus: AudioFocus.requestFocusAndStopOthers,
+      category: SessionCategory.playAndRecord,
+      mode: SessionMode.modeDefault,
+      device: AudioDevice.speaker,
+    );
+  }
+
   @override
   void initState() {
+    init();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    releaseFlauto();
+  }
+
+  Future<void> releaseFlauto() async {
+    try {
+      await playerModule.closeAudioSession();
+      await recorderModule.closeAudioSession();
+    } catch (e) {
+      print('Released unsuccessful');
+      print(e);
+    }
   }
 
   @override
@@ -904,109 +1054,177 @@ class _NewPollScreenState extends State<NewSecretPollScreen> with TextMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SuggestionField(
-                textFieldConfiguration: TextFieldConfiguration(
-                  spanBuilder: _mySpecialTextSpanBuilder,
-                  controller: _titleController,
-                  autofocus: true,
-                  autocorrect: true,
-                  maxLines: null,
-                  maxLength: 120,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    border: InputBorder.none,
-                    hintText: Translations.of(context).text('hint_poll_title'),
-                  ),
-                  style: TextStyle(fontSize: 22),
-                ),
-                suggestionsCallback: (pattern) {
-                  return null;
-                },
-                itemBuilder: (context, itemData) {
-                  return _userTile(context, itemData);
-                },
-                onSuggestionSelected: (suggestion) {},
-                autoFlipDirection: true,
+              _title(Translations.of(context).text('label_poll')),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 52),
+                child: MaterialSegmentedControl(
+                    children: {
+                      0: Text('Escribir'),
+                      1: Text('Grabar'),
+                    },
+                    selectionIndex: _pollType,
+                    selectedColor: Theme.of(context).primaryColor,
+                    unselectedColor: Colors.white,
+                    borderColor: Theme.of(context).primaryColor,
+                    onSegmentChosen: (index) {
+                      setState(() {
+                        _pollType = index;
+                      });
+                    }),
               ),
-              SizedBox(height: 16),
-              _title(Translations.of(context).text('label_media_poll')),
-              SizedBox(height: 16),
-              if (_isVideo)
-                Align(
-                  alignment: Alignment.center,
-                  child: InkWell(
-                    onTap: _videoOptions,
-                    child: Container(
-                      width: 180,
-                      height: 120,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.black),
-                          image: DecorationImage(
-                            image: FileImage(_videoThumb),
-                            fit: BoxFit.cover,
-                          )),
-                      child: Icon(Icons.camera_alt),
+              const SizedBox(height: 16),
+              if (_pollType == 0)
+                SuggestionField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    spanBuilder: _mySpecialTextSpanBuilder,
+                    controller: _titleController,
+                    autofocus: true,
+                    autocorrect: true,
+                    maxLines: null,
+                    maxLength: 120,
+                    decoration: InputDecoration(
+                      counterText: '',
+                      border: InputBorder.none,
+                      hintText:
+                          Translations.of(context).text('hint_poll_title'),
                     ),
+                    style: TextStyle(fontSize: 22),
                   ),
+                  suggestionsCallback: (pattern) {
+                    return null;
+                  },
+                  itemBuilder: (context, itemData) {
+                    return _userTile(context, itemData);
+                  },
+                  onSuggestionSelected: (suggestion) {},
+                  autoFlipDirection: true,
                 ),
-              if (!_isVideo)
+              if (_pollType == 1) const SizedBox(height: 16),
+              if (_pollType == 1)
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    InkWell(
-                      onTap: () => _imageOptions(0, false),
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        children: [
+                          if (!_isRecording && _audioPath != null)
+                            FlatButton.icon(
+                              onPressed: _isPlaying ? null : _startPlayer,
+                              icon: Icon(Icons.play_arrow),
+                              label: Text(''),
+                            ),
+                          Text(
+                            _recorderTxt == '0' ? '' : _recorderTxt,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onLongPress: _startRecording,
+                      onLongPressUp: _stopRecording,
                       child: Container(
-                        width: size,
-                        height: size,
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.black),
-                          image: pollImages.length > 0
-                              ? DecorationImage(image: FileImage(pollImages[0]))
-                              : null,
+                          color: Theme.of(context).primaryColor,
+                          shape: BoxShape.circle,
                         ),
+                        child: Icon(
+                          Icons.mic,
+                          size: 70,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Spacer(flex: 1),
+                  ],
+                ),
+              if (_pollType == 0) SizedBox(height: 16),
+              if (_pollType == 0)
+                _title(Translations.of(context).text('label_media_poll')),
+              if (_pollType == 0) SizedBox(height: 16),
+              if (_pollType == 0)
+                if (_isVideo)
+                  Align(
+                    alignment: Alignment.center,
+                    child: InkWell(
+                      onTap: _videoOptions,
+                      child: Container(
+                        width: 180,
+                        height: 120,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.black),
+                            image: DecorationImage(
+                              image: FileImage(_videoThumb),
+                              fit: BoxFit.cover,
+                            )),
                         child: Icon(Icons.camera_alt),
                       ),
                     ),
-                    SizedBox(width: 8),
-                    if (pollImages.length > 0)
+                  ),
+              if (_pollType == 0)
+                if (!_isVideo)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
                       InkWell(
-                        onTap: () => _imageOptions(1, false),
+                        onTap: () => _imageOptions(0, false),
                         child: Container(
                           width: size,
                           height: size,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: Colors.black),
-                            image: pollImages.length > 1
+                            image: pollImages.length > 0
                                 ? DecorationImage(
-                                    image: FileImage(pollImages[1]))
+                                    image: FileImage(pollImages[0]))
                                 : null,
                           ),
                           child: Icon(Icons.camera_alt),
                         ),
                       ),
-                    SizedBox(width: 8),
-                    if (pollImages.length > 1)
-                      InkWell(
-                        onTap: () => _imageOptions(2, false),
-                        child: Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: Colors.black),
-                            image: pollImages.length > 2
-                                ? DecorationImage(
-                                    image: FileImage(pollImages[2]))
-                                : null,
+                      SizedBox(width: 8),
+                      if (pollImages.length > 0)
+                        InkWell(
+                          onTap: () => _imageOptions(1, false),
+                          child: Container(
+                            width: size,
+                            height: size,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: Colors.black),
+                              image: pollImages.length > 1
+                                  ? DecorationImage(
+                                      image: FileImage(pollImages[1]))
+                                  : null,
+                            ),
+                            child: Icon(Icons.camera_alt),
                           ),
-                          child: Icon(Icons.camera_alt),
                         ),
-                      ),
-                  ],
-                ),
+                      SizedBox(width: 8),
+                      if (pollImages.length > 1)
+                        InkWell(
+                          onTap: () => _imageOptions(2, false),
+                          child: Container(
+                            width: size,
+                            height: size,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: Colors.black),
+                              image: pollImages.length > 2
+                                  ? DecorationImage(
+                                      image: FileImage(pollImages[2]))
+                                  : null,
+                            ),
+                            child: Icon(Icons.camera_alt),
+                          ),
+                        ),
+                    ],
+                  ),
               SizedBox(height: 16),
               _title('Respuestas'),
               SizedBox(height: 16),
