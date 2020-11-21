@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
 import '../models/resource_model.dart';
-import '../screens/trim_video_screen.dart';
+import '../screens/trim_history_screen.dart';
 import '../screens/gallery_screen.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
@@ -28,6 +28,7 @@ class UserProfileCover extends StatefulWidget {
 class _UserProfileCoverState extends State<UserProfileCover> {
   final Trimmer _trimmer = Trimmer();
   List<ResourceModel> _histories = [];
+  int _isLoading = -1;
 
   void _imageOptions(pos) {
     bool showDelete = false;
@@ -163,7 +164,7 @@ class _UserProfileCoverState extends State<UserProfileCover> {
     await _trimmer.loadVideo(videoFile: File(videoFile.path));
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) {
-        return TrimmerView(_trimmer);
+        return TrimmerHistoryView(_trimmer);
       }),
     ).then((value) async {
       if (value != null) {
@@ -175,6 +176,9 @@ class _UserProfileCoverState extends State<UserProfileCover> {
   void _newHistory(int position, File file, bool isVideo) async {
     Map resourceMap;
     String thumbnail;
+    setState(() {
+      _isLoading = position;
+    });
     if (isVideo) {
       //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
       final mFile = await VideoCompress.getFileThumbnail(
@@ -222,6 +226,10 @@ class _UserProfileCoverState extends State<UserProfileCover> {
     Map result = await Provider.of<UserProvider>(context, listen: false)
         .editProfile(stories: stories);
 
+    setState(() {
+      _isLoading = -1;
+    });
+
     if (result['result']) {
       setState(() {
         ResourceModel newStory = ResourceModel(
@@ -242,7 +250,13 @@ class _UserProfileCoverState extends State<UserProfileCover> {
   Widget _story(pos) {
     final ResourceModel res = _histories[pos];
     return CachedNetworkImage(
-        imageUrl: res.type == 'V' ? res.thumbnail : res.url);
+      imageUrl: res.type == 'V' ? res.thumbnail : res.url,
+      fit: BoxFit.fitHeight,
+    );
+  }
+
+  Widget _loader() {
+    return Center(child: CircularProgressIndicator());
   }
 
   Widget _placeholder() {
@@ -291,8 +305,10 @@ class _UserProfileCoverState extends State<UserProfileCover> {
             child: AspectRatio(
               aspectRatio: 9 / 16,
               child: GestureDetector(
-                onTap: () => _imageOptions(0),
-                child: _histories.length > 0 ? _story(0) : _placeholder(),
+                onTap: () => _isLoading == 0 ? null : _imageOptions(0),
+                child: _isLoading == 0
+                    ? _loader()
+                    : _histories.length > 0 ? _story(0) : _placeholder(),
               ),
             ),
           ),
@@ -303,8 +319,10 @@ class _UserProfileCoverState extends State<UserProfileCover> {
             child: AspectRatio(
               aspectRatio: 9 / 16,
               child: GestureDetector(
-                onTap: () => _imageOptions(1),
-                child: _histories.length > 1 ? _story(1) : _placeholder(),
+                onTap: () => _isLoading == 1 ? null : _imageOptions(1),
+                child: _isLoading == 1
+                    ? _loader()
+                    : _histories.length > 1 ? _story(1) : _placeholder(),
               ),
             ),
           ),
@@ -315,8 +333,10 @@ class _UserProfileCoverState extends State<UserProfileCover> {
             child: AspectRatio(
               aspectRatio: 9 / 16,
               child: GestureDetector(
-                onTap: () => _imageOptions(2),
-                child: _histories.length > 2 ? _story(2) : _placeholder(),
+                onTap: () => _isLoading == 2 ? null : _imageOptions(2),
+                child: _isLoading == 2
+                    ? _loader()
+                    : _histories.length > 2 ? _story(2) : _placeholder(),
               ),
             ),
           ),

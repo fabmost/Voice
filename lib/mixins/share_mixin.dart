@@ -4,6 +4,7 @@ import 'package:share/share.dart';
 class ShareContent {
   final String _shareImage =
       'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b';
+  
   void sharePoll(id, title, image) async {
     String toRemove;
     int start = title.indexOf('[');

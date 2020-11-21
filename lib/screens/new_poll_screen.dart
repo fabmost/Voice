@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
@@ -21,14 +22,18 @@ import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../widgets/video_overlay.dart';
 import '../models/category_model.dart';
 import '../mixins/text_mixin.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
+import '../providers/preferences_provider.dart';
 import '../custom/galup_font_icons.dart';
 import '../custom/my_special_text_span_builder.dart';
 import '../custom/suggestion_textfield.dart';
 import '../widgets/influencer_badge.dart';
+
+const int SAMPLE_RATE = 8000;
 
 class NewPollScreen extends StatefulWidget {
   static const routeName = '/new-poll';
@@ -50,12 +55,15 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   FlutterSoundPlayer playerModule = FlutterSoundPlayer();
   FlutterSoundRecorder recorderModule = FlutterSoundRecorder();
   StreamSubscription _recorderSubscription;
+  StreamSubscription _playerSubscription;
   String _recorderTxt = '0';
   String _audioPath;
   Duration _recordingDuration;
   Codec _codec = Codec.aacADTS;
   bool _isRecording = false;
   bool _isPlaying = false;
+  double sliderCurrentPosition = 0.0;
+  double maxDuration = 1.0;
 
   final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
@@ -352,6 +360,30 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
     });
   }
 
+  void seekToPlayer(int milliSecs) async {
+    if (playerModule.isPlaying)
+      await playerModule.seekToPlayer(Duration(milliseconds: milliSecs));
+  }
+
+  void _addListeners() {
+    cancelPlayerSubscriptions();
+    _playerSubscription = playerModule.onProgress.listen((e) {
+      if (e != null) {
+        maxDuration = e.duration.inMilliseconds.toDouble();
+        if (maxDuration <= 0) maxDuration = 0.0;
+
+        sliderCurrentPosition =
+            min(e.position.inMilliseconds.toDouble(), maxDuration);
+        if (sliderCurrentPosition < 0.0) {
+          sliderCurrentPosition = 0.0;
+        }
+        setState(() {});
+      } else {
+        print('Algo raro pasó');
+      }
+    });
+  }
+
   void _startRecording() async {
     try {
       // Request Microphone permission if needed
@@ -364,23 +396,33 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       path = '${tempDir.path}/flutter_sound${_codec.index}';
 
       await recorderModule.startRecorder(
-        toFile: path,
-        codec: _codec,
-        bitRate: 8000,
-        numChannels: 1,
-      );
-      print('startRecorder');
+          toFile: path,
+          codec: _codec,
+          bitRate: 8000,
+          numChannels: 1,
+          sampleRate: SAMPLE_RATE);
 
       _recorderSubscription = recorderModule.onProgress.listen((e) {
         if (e != null && e.duration != null) {
           DateTime date = new DateTime.fromMillisecondsSinceEpoch(
               e.duration.inMilliseconds,
               isUtc: true);
-          String txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
+          String txt = DateFormat('ss:SS', 'en_GB').format(date);
 
           _recordingDuration = e.duration;
+
+          maxDuration = 60000;
+          if (maxDuration <= 0) maxDuration = 0.0;
+
+          sliderCurrentPosition =
+              min(e.duration.inMilliseconds.toDouble(), maxDuration);
+          if (sliderCurrentPosition < 0.0) {
+            sliderCurrentPosition = 0.0;
+          }
+          setState(() {});
+
           this.setState(() {
-            _recorderTxt = txt.substring(0, 8);
+            _recorderTxt = txt.substring(0, 5);
           });
         }
       });
@@ -407,7 +449,12 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       _recorderSubscription = null;
     }
     _recordingDuration = await flutterSoundHelper.duration(_audioPath);
+    DateTime date = new DateTime.fromMillisecondsSinceEpoch(
+        _recordingDuration.inMilliseconds,
+        isUtc: true);
+    String txt = DateFormat('ss:SS', 'en_GB').format(date);
     setState(() {
+      _recorderTxt = txt.substring(0, 5);
       _isRecording = false;
     });
   }
@@ -417,12 +464,14 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       await playerModule.startPlayer(
           fromURI: _audioPath,
           codec: _codec,
+          sampleRate: SAMPLE_RATE,
           whenFinished: () {
             print('Play finished');
             setState(() {
               _isPlaying = false;
             });
           });
+      _addListeners();
       setState(() {
         _isPlaying = true;
       });
@@ -475,6 +524,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   }
 
   void _validationAlert() {
+    FocusScope.of(context).unfocus();
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -898,10 +948,30 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       mode: SessionMode.modeDefault,
       device: AudioDevice.speaker,
     );
+    await playerModule.setSubscriptionDuration(Duration(milliseconds: 10));
+  }
+
+  void _willShowTutorial() async {
+    bool show = await Provider.of<Preferences>(context, listen: false)
+        .getVideoKey('poll_video');
+    if (show) {
+      _checkTutorial(true);
+    }
+  }
+
+  void _checkTutorial(init) {
+    Future.delayed(Duration.zero, () {
+      Navigator.of(context).push(TutorialOverlay(
+        'poll_video',
+        'assets/videos/encuesta.mp4',
+        init,
+      ));
+    });
   }
 
   @override
   void initState() {
+    _willShowTutorial();
     init();
     super.initState();
   }
@@ -909,7 +979,15 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   @override
   void dispose() {
     super.dispose();
+    cancelPlayerSubscriptions();
     releaseFlauto();
+  }
+
+  void cancelPlayerSubscriptions() {
+    if (_playerSubscription != null) {
+      _playerSubscription.cancel();
+      _playerSubscription = null;
+    }
   }
 
   Future<void> releaseFlauto() async {
@@ -944,6 +1022,15 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: Colors.black,
+            ),
+            onPressed: () => _checkTutorial(false),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -1019,38 +1106,72 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
                   children: [
                     Expanded(
                       flex: 1,
-                      child: Column(
-                        children: [
-                          if (!_isRecording && _audioPath != null)
-                            FlatButton.icon(
-                              onPressed: _isPlaying ? null : _startPlayer,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Color(0xFFF8F8FF),
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: _isRecording && _audioPath == null
+                                  ? null
+                                  : _isPlaying ? null : _startPlayer,
                               icon: Icon(Icons.play_arrow),
-                              label: Text(''),
                             ),
-                          Text(
-                            _recorderTxt == '0' ? '' : _recorderTxt,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                            Expanded(
+                              child: Slider(
+                                min: 0,
+                                max: maxDuration,
+                                value: min(sliderCurrentPosition, maxDuration),
+                                onChanged: (double value) async {
+                                  seekToPlayer(value.toInt());
+                                },
+                                divisions: maxDuration == 0.0
+                                    ? 1
+                                    : maxDuration.toInt(),
+                              ),
+                            ),
+                            Text(
+                              _recorderTxt == '0' ? '00:00' : _recorderTxt,
+                              textAlign: TextAlign.center,
+                            ),
+                            if (!_isRecording && _audioPath != null)
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () {
+                                  setState(() {
+                                    _audioPath = null;
+                                    _recorderTxt = '0';
+                                    sliderCurrentPosition = 0;
+                                  });
+                                },
+                              ),
+                            const SizedBox(width: 8),
+                          ],
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 16),
                     GestureDetector(
-                      onLongPress: _startRecording,
+                      onLongPress: _audioPath != null ? null : _startRecording,
                       onLongPressUp: _stopRecording,
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
+                          color: _audioPath != null
+                              ? Colors.grey
+                              : Theme.of(context).primaryColor,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.mic,
-                          size: 70,
+                          size: 52,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                    Spacer(flex: 1),
+                    const SizedBox(width: 16),
                   ],
                 ),
               if (_pollType == 0) SizedBox(height: 16),

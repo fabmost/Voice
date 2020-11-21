@@ -16,6 +16,7 @@ import '../models/resource_model.dart';
 import '../mixins/share_mixin.dart';
 import '../providers/content_provider.dart';
 import '../screens/analytics_screen.dart';
+import '../screens/group_members_screen.dart';
 
 class UserPrivatePollTile extends StatelessWidget with ShareContent {
   final String id;
@@ -73,6 +74,14 @@ class UserPrivatePollTile extends StatelessWidget with ShareContent {
     );
   }
 
+  void _toGroup(context, id, name) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) {
+        return GroupMembersScreen(id, name);
+      }),
+    );
+  }
+
   void _showGroups(context) {
     showDialog(
       context: context,
@@ -90,12 +99,17 @@ class UserPrivatePollTile extends StatelessWidget with ShareContent {
                 ),
               ),
               for (var item in groups)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '${item.title}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                InkWell(
+                  onTap: () => _toGroup(context, item.id, item.title),
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    width: double.infinity,
+                    child: Text(
+                      '${item.title}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

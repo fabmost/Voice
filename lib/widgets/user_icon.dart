@@ -137,7 +137,7 @@ class _UserIconState extends State<UserIcon> {
         GestureDetector(
           onTap: _url == null ? null : _openImage,
           child: CircleAvatar(
-            radius: 60,
+            radius: 50,
             backgroundImage: _url == null ? null : NetworkImage(_url),
           ),
         ),

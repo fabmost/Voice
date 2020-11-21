@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'title_content.dart';
+import 'poll_audio.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
@@ -173,8 +174,8 @@ class HeaderPrivatePoll extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 16),
-        TitleContent(pollModel.title),
+        const SizedBox(height: 16),
+        pollModel.audio == null ? TitleContent(pollModel.title) : PollAudio(pollModel.audio),
         if (pollModel.resources.isNotEmpty) SizedBox(height: 16),
         if (pollModel.resources.isNotEmpty) _handleResources(),
         //if (images.isNotEmpty) PollImages(images, reference),

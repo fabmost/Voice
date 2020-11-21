@@ -79,75 +79,71 @@ class UserProfileHeader extends StatelessWidget {
         color: Colors.white,
         child: Column(
           children: <Widget>[
-            Container(
-              height: containerHeight + 60,
-              child: Stack(
-                children: <Widget>[
-                  UserProfileCover(user.stories),
-                  Positioned(
+            Stack(
+              children: <Widget>[
+                UserProfileCover(user.stories),
+                Container(
+                  margin: EdgeInsets.only(
                     left: 16,
-                    bottom: 0,
-                    child: Container(
-                      height: 122,
-                      width: 122,
-                      child: UserIcon(user.icon),
-                    ),
+                    right: 16,
+                    top: containerHeight.toDouble() - 50,
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          '${user.name} ${user.lastName}',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        InfluencerBadge(user.userName, user.certificate, 20),
-                      ],
-                    ),
-                    Text(
-                      '@${user.userName}',
-                      style: TextStyle(
-                        color: Theme.of(context).accentColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                  child: Row(
+                    children: [
+                      Container(
+                        height: 100,
+                        width: 100,
+                        child: UserIcon(user.icon),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-              if (user.biography != null)
-                Expanded(
-                  flex: 1,
-                  child: AutoSizeText(
-                    user.biography,
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 72),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  '${user.name} ${user.lastName}',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                InfluencerBadge(
+                                    user.userName, user.certificate, 20),
+                              ],
+                            ),
+                            Text(
+                              '@${user.userName}',
+                              style: TextStyle(
+                                color: Theme.of(context).accentColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            if (user.biography != null)
+                              AutoSizeText(
+                                user.biography,
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                          ],
+                        ),
+                      )
+                    ],
                   ),
                 ),
-              const SizedBox(width: 16),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             if (hasSocialMedia)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -165,7 +161,7 @@ class UserProfileHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                  SizedBox(width: 8),
+                  if ((user.tiktok ?? '').isNotEmpty) const SizedBox(width: 8),
                   if ((user.facebook ?? '').isNotEmpty)
                     GestureDetector(
                       onTap: () => _launchURL(
@@ -179,7 +175,8 @@ class UserProfileHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                  SizedBox(width: 8),
+                  if ((user.facebook ?? '').isNotEmpty)
+                    const SizedBox(width: 8),
                   if ((user.instagram ?? '').isNotEmpty)
                     GestureDetector(
                       onTap: () => _launchURL(
@@ -193,7 +190,8 @@ class UserProfileHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                  SizedBox(width: 8),
+                  if ((user.instagram ?? '').isNotEmpty)
+                    const SizedBox(width: 8),
                   if ((user.twitter ?? '').isNotEmpty)
                     GestureDetector(
                       onTap: () => _launchURL(
@@ -207,7 +205,7 @@ class UserProfileHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                  SizedBox(width: 8),
+                  if ((user.twitter ?? '').isNotEmpty) const SizedBox(width: 8),
                   if ((user.youtube ?? '').isNotEmpty)
                     GestureDetector(
                       onTap: () => _launchURL(
@@ -218,6 +216,19 @@ class UserProfileHeader extends StatelessWidget {
                           GalupFont.youtube,
                           color: Colors.white,
                           size: 20,
+                        ),
+                      ),
+                    ),
+                  if ((user.youtube ?? '').isNotEmpty) const SizedBox(width: 8),
+                  if ((user.linkedin ?? '').isNotEmpty)
+                    GestureDetector(
+                      onTap: () => _launchURL(user.linkedin),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black,
+                        child: Icon(
+                          GalupFont.linkedin,
+                          color: Colors.white,
+                          size: 32,
                         ),
                       ),
                     ),

@@ -143,13 +143,15 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
           UserModel user = snapshot.data;
           bool hasSocialMedia = false;
 
-          double containerHeight = 430;
+          double containerHeight = 410;
           if (user.biography != null && user.biography.isNotEmpty) {
             containerHeight += 26;
           }
           if ((user.tiktok ?? '').isNotEmpty ||
               (user.facebook ?? '').isNotEmpty ||
               (user.instagram ?? '').isNotEmpty ||
+              (user.twitter ?? '').isNotEmpty ||
+              (user.linkedin ?? '').isNotEmpty ||
               (user.youtube ?? '').isNotEmpty) {
             hasSocialMedia = true;
             containerHeight += 50;
@@ -169,9 +171,9 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                         onPressed: () => _toChat(context, user.hash),
                       ),
                       IconButton(
-                        icon: Icon(Icons.more_vert),
-                        onPressed: () => _menu(context, profileId, user.icon)
-                      ),
+                          icon: Icon(Icons.more_vert),
+                          onPressed: () =>
+                              _menu(context, profileId, user.icon)),
                     ],
                   ),
                   SliverPersistentHeader(
@@ -194,20 +196,21 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
+                            icon: Icon(GalupFont.tips),
+                            text: 'Tips',
+                          ),
+                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1),
+                            icon: Icon(GalupFont
+                                .icono_encuesta_grupal_mesa_de_trabajo_1),
                             text: 'Encuestas\nGrupales',
                           ),
                           Tab(
                             icon: Icon(GalupFont.encuesta_patrocinada),
                             text: 'Encuestas\nPublicitarias',
-                          ),
-                          Tab(
-                            icon: Icon(GalupFont.tips),
-                            text: 'Tips',
                           ),
                         ],
                       ),
@@ -218,10 +221,10 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
               },
               body: TabBarView(
                 children: [
+                  TipList(user.userName, _scrollController, null),
                   PollList(user.userName, _scrollController),
                   PrivatePollList(user.userName, _scrollController),
                   PromoPollList(user.userName, _scrollController),
-                  TipList(user.userName, _scrollController, null),
                 ],
               ),
             ),
@@ -266,9 +269,9 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height + 1;
+  double get minExtent => _tabBar.preferredSize.height + 9;
   @override
-  double get maxExtent => _tabBar.preferredSize.height + 1;
+  double get maxExtent => _tabBar.preferredSize.height + 9;
 
   @override
   Widget build(
@@ -283,6 +286,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
             height: 1,
             color: Colors.grey,
           ),
+          const SizedBox(height: 8),
           _tabBar,
         ],
       ),

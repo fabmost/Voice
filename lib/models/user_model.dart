@@ -17,6 +17,7 @@ class UserModel {
   String instagram;
   String twitter;
   String youtube;
+  String linkedin;
   String biography;
   String gender;
   String birthday;
@@ -41,6 +42,7 @@ class UserModel {
     this.instagram,
     this.twitter,
     this.youtube,
+    this.linkedin,
     this.biography,
     this.gender,
     this.birthday,
@@ -71,6 +73,7 @@ class UserModel {
       instagram: content['instagram'],
       twitter: content['twitter'],
       youtube: content['youtube'],
+      linkedin: content['linkedin'],
       biography: content['biography'] == null
           ? null
           : TextMixin.fixString(content['biography']),

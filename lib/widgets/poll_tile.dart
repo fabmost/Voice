@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'influencer_badge.dart';
 import 'title_content.dart';
 import 'poll_audio.dart';
+import 'content_type_icon.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
@@ -177,11 +178,11 @@ class PollTile extends StatelessWidget with ShareContent {
                           type: 'P',
                           isSaved: hasSaved,
                         ),
-                        CircleAvatar(
-                          child: Icon(
-                            GalupFont.survey,
-                          ),
-                        )
+                        ContentTypeIcon(
+                          name: 'Encuesta',
+                          icon: GalupFont.survey,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ],
                     ),
                   ),

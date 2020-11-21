@@ -50,12 +50,24 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>This permission is not needed by the app, but it is required by an underlying API. If you see this dialog, contact us.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This permission is not needed by the app, but it is required by an underlying API. If you see this dialog, contact us.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Galup usa tu cámara para permitirte tomar tu foto de perfil o tomar fotos para tus encuestas y retos</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This permission is not needed by the app, but it is required by an underlying API. If you see this dialog, contact us.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This permission is not needed by the app, but it is required by an underlying API. If you see this dialog, contact us.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Galup usa tu micrófono para que puedas grabar tus encuestas</string>
+	<key>NSMotionUsageDescription</key>
+	<string>This permission is not needed by the app, but it is required by an underlying API. If you see this dialog, contact us.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Galup usa tus imágenes para permitirte agregar tu foto de perfil o agregar imágenes a tus encuestas y retos</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This permission is not needed by the app, but it is required by an underlying API. If you see this dialog, contact us.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

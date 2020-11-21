@@ -23,9 +23,11 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final GlobalKey keyFace = GlobalKey();
+  final GlobalKey keyTw = GlobalKey();
   final GlobalKey keyTik = GlobalKey();
   final GlobalKey keyInsta = GlobalKey();
   final GlobalKey keyYt = GlobalKey();
+  final GlobalKey keyLinkedin = GlobalKey();
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
@@ -39,6 +41,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _facebookController = TextEditingController();
   TextEditingController _instagramController = TextEditingController();
   TextEditingController _twitterController = TextEditingController();
+  TextEditingController _linkedInController = TextEditingController();
   TextEditingController _youtubeController = TextEditingController();
   FocusNode _userFocus = FocusNode();
   FocusNode _birthFocus = FocusNode();
@@ -244,9 +247,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             userData.instagram != _instagramController.text
                 ? _instagramController.text
                 : null;
+        final String editYoutube = userData.youtube != _youtubeController.text
+            ? _youtubeController.text
+            : null;
         final String editTwitter = userData.twitter != _twitterController.text
             ? _twitterController.text
             : null;
+        final String editLinkedIn =
+            userData.linkedin != _linkedInController.text
+                ? _linkedInController.text
+                : null;
 
         Map result =
             await Provider.of<UserProvider>(context, listen: false).editProfile(
@@ -257,6 +267,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           facebook: editFacebook,
           instagram: editInstagram,
           twitter: editTwitter,
+          linkedIn: editLinkedIn,
+          youtube: editYoutube,
           birth: editBirth,
           gender: editGender,
           country: editCountry,
@@ -344,6 +356,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
       if (user.twitter != null) {
         _twitterController.text = user.twitter;
+      }
+      if (user.linkedin != null) {
+        _linkedInController.text = user.linkedin;
       }
       if (user.youtube != null) {
         _youtubeController.text = user.youtube;
@@ -546,8 +561,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: InputDecoration(
                           labelText: 'Twitter',
                           labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                          suffixIcon: _infoButton(keyInsta,
+                          suffixIcon: _infoButton(keyTw,
                               'Introduce tu username, ejemplo @miusuario'),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _linkedInController,
+                        decoration: InputDecoration(
+                          labelText: 'LinkedIn',
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          suffixIcon: _infoButton(keyLinkedin,
+                              'Introduce la URL de tu perfil,\nejemplo http://linkedin.com/in/tuNombre'),
                         ),
                       ),
                       TextFormField(

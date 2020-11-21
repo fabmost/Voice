@@ -14,9 +14,11 @@ import 'gallery_screen.dart';
 import 'trim_video_screen.dart';
 import 'new_content_category_screen.dart';
 import '../translations.dart';
+import '../widgets/video_overlay.dart';
 import '../models/category_model.dart';
 import '../providers/content_provider.dart';
 import '../providers/user_provider.dart';
+import '../providers/preferences_provider.dart';
 import '../widgets/influencer_badge.dart';
 import '../custom/suggestion_textfield.dart';
 import '../custom/my_special_text_span_builder.dart';
@@ -193,6 +195,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
   }
 
   void _validationAlert() {
+    FocusScope.of(context).unfocus();
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -423,8 +426,27 @@ class _NewTipScreenState extends State<NewTipScreen> {
     return results['users'];
   }
 
+  void _willShowTutorial() async {
+    bool show = await Provider.of<Preferences>(context, listen: false)
+        .getVideoKey('tip_video');
+    if (show) {
+      _checkTutorial(true);
+    }
+  }
+
+  void _checkTutorial(init) {
+    Future.delayed(Duration.zero, () {
+      Navigator.of(context).push(TutorialOverlay(
+        'tip_video',
+        'assets/videos/tip.mp4',
+        init,
+      ));
+    });
+  }
+
   @override
   void initState() {
+    _willShowTutorial();
     super.initState();
   }
 
@@ -450,6 +472,15 @@ class _NewTipScreenState extends State<NewTipScreen> {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: Colors.black,
+            ),
+            onPressed: () => _checkTutorial(false),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(

@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'title_content.dart';
+import 'content_type_icon.dart';
 import 'description.dart';
 import 'comment_content.dart';
 import 'like_content.dart';
@@ -174,15 +175,25 @@ class TipTile extends StatelessWidget with ShareContent {
                       ),
                       subtitle: Text(timeago.format(newDate,
                           locale: Translations.of(context).currentLanguage)),
-                      trailing: MenuContent(
-                        id: id,
-                        type: 'TIP',
-                        isSaved: hasSaved,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          MenuContent(
+                            id: id,
+                            type: 'TIP',
+                            isSaved: hasSaved,
+                          ),
+                          ContentTypeIcon(
+                            name: 'Tip',
+                            icon: GalupFont.tips,
+                            color: Color(0xFF00B2E3),
+                          ),
+                        ],
                       )),
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(

@@ -124,7 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           }
           bool hasSocialMedia = false;
 
-          double containerHeight = 410;
+          double containerHeight = 390;
           if (provider.getUserModel.biography != null &&
               provider.getUserModel.biography.isNotEmpty) {
             containerHeight += 10;
@@ -133,6 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               (provider.getUserModel.facebook ?? '').isNotEmpty ||
               (provider.getUserModel.instagram ?? '').isNotEmpty ||
               (provider.getUserModel.twitter ?? '').isNotEmpty ||
+              (provider.getUserModel.linkedin ?? '').isNotEmpty ||
               (provider.getUserModel.youtube ?? '').isNotEmpty) {
             hasSocialMedia = true;
             containerHeight += 50;
@@ -175,6 +176,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
+                            icon: Icon(GalupFont.tips),
+                            text: 'Tips',
+                          ),
+                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
                           ),
@@ -187,12 +192,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                             text: 'Encuestas\nLaborales',
                           ),
                           Tab(
-                            icon: Icon(GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1),
+                            icon: Icon(GalupFont
+                                .icono_encuesta_grupal_mesa_de_trabajo_1),
                             text: 'Encuestas\nGrupales',
-                          ),
-                          Tab(
-                            icon: Icon(GalupFont.tips),
-                            text: 'Tips',
                           ),
                         ],
                       ),
@@ -203,11 +205,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               },
               body: TabBarView(
                 children: [
+                  TipUserList(_scrollController, _playVideo),
                   PollUserList(_scrollController, _playVideo),
                   PromoPollUserList(_scrollController, _playVideo),
                   SecretPollUserList(_scrollController, _playVideo),
                   PrivatePollUserList(_scrollController, _playVideo),
-                  TipUserList(_scrollController, _playVideo),
                 ],
               ),
             ),
@@ -252,9 +254,9 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height + 1;
+  double get minExtent => _tabBar.preferredSize.height + 9;
   @override
-  double get maxExtent => _tabBar.preferredSize.height + 1;
+  double get maxExtent => _tabBar.preferredSize.height + 9;
 
   @override
   Widget build(
@@ -269,6 +271,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
             height: 1,
             color: Colors.grey,
           ),
+          const SizedBox(height: 8),
           _tabBar,
         ],
       ),

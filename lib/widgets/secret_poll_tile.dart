@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'influencer_badge.dart';
 import 'title_content.dart';
+import 'content_type_icon.dart';
 import 'poll_audio.dart';
 import 'description.dart';
 import 'poll_options.dart';
@@ -210,12 +211,10 @@ class SecretPollTile extends StatelessWidget {
                       timeago.format(newDate,
                           locale: Translations.of(context).currentLanguage),
                     ),
-                    trailing: CircleAvatar(
-                      backgroundColor: Color(0xFFA4175D),
-                      child: Icon(
-                        GalupFont.encuesta_cerrada,
-                        color: Colors.white,
-                      ),
+                    trailing: ContentTypeIcon(
+                      name: 'Encuesta Laboral',
+                      icon: GalupFont.encuesta_cerrada,
+                      color: Color(0xFFA4175D),
                     ),
                   ),
                 ],

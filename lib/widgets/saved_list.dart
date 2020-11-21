@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 
 import 'poll_tile.dart';
 import 'private_poll_tile.dart';
+import 'poll_promo_tile.dart';
 import 'challenge_tile.dart';
 import 'tip_tile.dart';
 import 'cause_tile.dart';
@@ -87,6 +88,34 @@ class _SavedListState extends State<SavedList> {
       resources: content.resources,
       videoFunction: _playVideo,
       groups: content.groups,
+      audio: content.audio,
+    );
+  }
+
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'user',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      terms: content.terms,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      regalupName: content.creator,
       audio: content.audio,
     );
   }
@@ -262,6 +291,8 @@ class _SavedListState extends State<SavedList> {
                       return _pollWidget(doc);
                     case 'private_p':
                       return _privatepollWidget(doc);
+                    case 'promo_p':
+                      return _promoPollWidget(doc);
                     case 'challenge':
                       return _challengeWidget(doc);
                     case 'Tips':

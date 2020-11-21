@@ -234,19 +234,19 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     items = [
       FabMenuItem(
         icon: Icon(GalupFont.encuesta_patrocinada),
-        label: 'Encuesta publicitaria',
+        label: 'Encuesta Publicitaria',
         ontap: _newPromoPoll,
         color: Color(0xFFE56F0E),
       ),
       FabMenuItem(
         icon: Icon(GalupFont.encuesta_cerrada),
-        label: 'Encuesta laboral',
+        label: 'Encuesta Laboral',
         ontap: _newSecretPoll,
         color: Color(0xFFA4175D),
       ),
       FabMenuItem(
         icon: Icon(GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1),
-        label: 'Encuesta grupal',
+        label: 'Encuesta Grupal',
         ontap: _newPrivatePoll,
         color: Colors.black,
       ),
@@ -254,6 +254,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         icon: Icon(GalupFont.survey),
         label: 'Encuesta',
         ontap: _newPoll,
+        color: Color(0xFF722282),
       ),
       FabMenuItem(
         icon: Icon(GalupFont.tips),
@@ -261,44 +262,6 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         ontap: _newTip,
         color: Color(0xFF00B2E3),
       ),
-
-      /*
-      FabMenuItem(
-        icon: Icon(GalupFont.survey),
-        label: 'Encuesta patrocinada',
-        ontap: _newCause,
-        color: Colors.black,
-      ),
-      FabMenuItem(
-        icon: Icon(GalupFont.survey),
-        label: 'Encuesta cerrada',
-        ontap: _newCause,
-        color: Colors.black,
-      ),
-      FabMenuItem(
-        icon: Icon(GalupFont.survey),
-        label: 'Encuesta',
-        ontap: _newPoll,
-      ),
-      FabMenuItem(
-        icon: Icon(GalupFont.cause),
-        label: 'Causa',
-        ontap: _newCause,
-        color: Colors.black,
-      ),
-      FabMenuItem(
-        icon: Icon(GalupFont.challenge),
-        label: 'Reto',
-        ontap: _newChallenge,
-        color: Color(0xFFA4175D),
-      ),
-      FabMenuItem(
-        icon: Icon(GalupFont.tips),
-        label: 'Tip',
-        ontap: _newTip,
-        color: Color(0xFF00B2E3),
-      ),
-      */
     ];
 
     final fm = FirebaseMessaging();

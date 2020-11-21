@@ -57,4 +57,16 @@ class Preferences with ChangeNotifier {
     _firstTime = false;
     notifyListeners();
   }
+
+  Future<bool> getVideoKey(key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(key) ?? true;
+  }
+
+  Future<void> setVideoKey(key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, false);
+    return;
+  }
+
 }

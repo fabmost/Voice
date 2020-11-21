@@ -7,6 +7,8 @@ import 'package:flutter_sound_lite/flutter_sound.dart';
 import 'poll_audio_position.dart';
 import '../models/resource_model.dart';
 
+const int SAMPLE_RATE = 8000;
+
 class PollAudio extends StatefulWidget {
   final ResourceModel audio;
 
@@ -20,25 +22,30 @@ class _PollVideoState extends State<PollAudio> {
   FlutterSoundPlayer playerModule = FlutterSoundPlayer();
   StreamSubscription _playerSubscription;
   bool _hasLoaded = false;
+  bool _isPlaying = false;
   double sliderCurrentPosition = 0.0;
   double maxDuration = 1.0;
   int _currentPosition = 0;
 
   void _play() async {
+    await init();
     try {
       await playerModule.startPlayer(
           fromURI: widget.audio.url,
           codec: Codec.aacADTS,
+          sampleRate: SAMPLE_RATE,
           whenFinished: () {
             print('Play finished');
             setState(() {
               _hasLoaded = false;
+              _isPlaying = false;
             });
           });
       _addListeners();
       setState(() {
         _currentPosition = 0;
         _hasLoaded = true;
+        _isPlaying = true;
       });
     } catch (err) {
       setState(() {});
@@ -110,66 +117,61 @@ class _PollVideoState extends State<PollAudio> {
   }
 
   Widget placeHolder() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Slider(
-              min: 0,
-              max: 100,
-              value: 0,
-              onChanged: null,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Expanded(
+          child: Slider(
+            min: 0,
+            max: 100,
+            value: 0,
+            onChanged: null,
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: Text(
+            durationToString(
+              Duration(milliseconds: widget.audio.duration),
             ),
           ),
-          SizedBox(
-            width: 40,
-            child: Text(
-              durationToString(
-                Duration(milliseconds: widget.audio.duration),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget playerWidget() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Slider(
-                min: 0,
-                max: maxDuration,
-                value: min(sliderCurrentPosition, maxDuration),
-                onChanged: (double value) async {
-                  seekToPlayer(value.toInt());
-                },
-                divisions: maxDuration == 0.0 ? 1 : maxDuration.toInt()),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Expanded(
+          child: Slider(
+            min: 0,
+            max: maxDuration,
+            value: min(sliderCurrentPosition, maxDuration),
+            onChanged: (double value) async {
+              seekToPlayer(value.toInt());
+            },
+            divisions: maxDuration == 0.0 ? 1 : maxDuration.toInt(),
           ),
-          SizedBox(
-            width: 40,
-            child: Text(
-              durationToString(
-                Duration(
-                  milliseconds: (widget.audio.duration - _currentPosition),
-                ),
+        ),
+        SizedBox(
+          width: 40,
+          child: Text(
+            durationToString(
+              Duration(
+                milliseconds: (widget.audio.duration - _currentPosition),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   @override
   void initState() {
-    init();
+    //init();
     super.initState();
   }
 
@@ -182,32 +184,29 @@ class _PollVideoState extends State<PollAudio> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(width: 16),
-        Column(
-          children: [
-            GestureDetector(
-              onTap: _hasLoaded ? _pauseResumePlayer : _play,
-              child: CircleAvatar(
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 32,
-                ),
-              ),
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Color(0xFFF8F8FF),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _hasLoaded ? _pauseResumePlayer : _play,
+            child: Icon(
+              _isPlaying ? Icons.pause : Icons.play_arrow,
+              size: 32,
             ),
-            const SizedBox(height: 5),
-            Text(
-              'Presiona\npara escuchar',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-              ),
-            )
-          ],
-        ),
-        Expanded(child: _hasLoaded ? playerWidget() : placeHolder()),
-      ],
+          ),
+          Expanded(child: _hasLoaded ? playerWidget() : placeHolder()),
+        ],
+      ),
     );
   }
 }

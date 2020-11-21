@@ -9,14 +9,14 @@ import 'package:video_trimmer/video_viewer.dart';
 
 import '../translations.dart';
 
-class TrimmerView extends StatefulWidget {
+class TrimmerHistoryView extends StatefulWidget {
   final Trimmer _trimmer;
-  TrimmerView(this._trimmer);
+  TrimmerHistoryView(this._trimmer);
   @override
   _TrimmerViewState createState() => _TrimmerViewState();
 }
 
-class _TrimmerViewState extends State<TrimmerView> {
+class _TrimmerViewState extends State<TrimmerHistoryView> {
   double _startValue = 0.0;
   double _endValue = 0.0;
 
@@ -33,7 +33,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        content: Text('Tu video debe durar menos de 60 segundos'),
+        content: Text('Tu video debe durar menos de 15 segundos'),
         actions: <Widget>[
           FlatButton(
             onPressed: () {
@@ -50,7 +50,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     int duration;
     duration = (_endValue - _startValue).toInt();
 
-    if (duration > 60000) {
+    if (duration >= 16000) {
       _alertError();
       return null;
     }
@@ -66,7 +66,6 @@ class _TrimmerViewState extends State<TrimmerView> {
       outputFormat: FileFormat.mp4,
     );
     */
-    //Android
     final _path = widget._trimmer.getVideoFile().path;
     //await VideoCompress.deleteAllCache();
     //MediaInfo _originalInfo = await VideoCompress.getMediaInfo(_path);

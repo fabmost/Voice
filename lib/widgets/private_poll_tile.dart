@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'influencer_badge.dart';
 import 'title_content.dart';
 import 'poll_audio.dart';
+import 'content_type_icon.dart';
 import 'description.dart';
 import 'poll_options.dart';
 import 'poll_video.dart';
@@ -15,6 +16,7 @@ import 'comment_content.dart';
 import '../translations.dart';
 import '../custom/galup_font_icons.dart';
 import '../screens/view_profile_screen.dart';
+import '../screens/group_members_screen.dart';
 import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../models/poll_model.dart';
@@ -78,6 +80,14 @@ class PrivatePollTile extends StatelessWidget {
     }
   }
 
+  void _toGroup(context, id, name) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) {
+        return GroupMembersScreen(id, name);
+      }),
+    );
+  }
+
   void _showGroups(context) {
     showDialog(
       context: context,
@@ -95,12 +105,17 @@ class PrivatePollTile extends StatelessWidget {
                 ),
               ),
               for (var item in groups)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '${item.title}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                InkWell(
+                  onTap: ()=> _toGroup(context, item.id, item.title),
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    width: double.infinity,
+                    child: Text(
+                      '${item.title}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -211,12 +226,11 @@ class PrivatePollTile extends StatelessWidget {
                           type: 'P',
                           isSaved: hasSaved,
                         ),
-                        CircleAvatar(
-                          backgroundColor: Colors.black,
-                          child: Icon(
-                            GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1,
-                            color: Colors.white,
-                          ),
+                        ContentTypeIcon(
+                          name: 'Encuesta Grupal',
+                          icon:
+                              GalupFont.icono_encuesta_grupal_mesa_de_trabajo_1,
+                          color: Colors.black,
                         ),
                       ],
                     ),

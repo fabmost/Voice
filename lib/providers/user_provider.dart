@@ -104,6 +104,7 @@ class UserProvider with ChangeNotifier, TextMixin {
     instagram,
     twitter,
     youtube,
+    linkedIn,
     bio,
     gender,
     icon,
@@ -154,6 +155,10 @@ class UserProvider with ChangeNotifier, TextMixin {
     if (youtube != null) {
       parameters['youtube'] = youtube;
       if (_currentUser != null) _currentUser.youtube = youtube;
+    }
+    if (linkedIn != null) {
+      parameters['linkedin'] = linkedIn;
+      if (_currentUser != null) _currentUser.linkedin = linkedIn;
     }
     if (bio != null) {
       String fixedBio = serverSafe(bio);
