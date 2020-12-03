@@ -3,9 +3,7 @@ import 'package:video_compress/video_compress.dart';
 //import 'package:flutter_video_compress/flutter_video_compress.dart';
 //import 'package:video_trimmer/storage_dir.dart';
 //import 'package:video_trimmer/file_formats.dart';
-import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
-import 'package:video_trimmer/video_viewer.dart';
 
 import '../translations.dart';
 
@@ -46,7 +44,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     );
   }
 
-  Future<String> _saveVideo() async {
+  Future<Map> _saveVideo() async {
     int duration;
     duration = (_endValue - _startValue).toInt();
 
@@ -95,14 +93,12 @@ class _TrimmerViewState extends State<TrimmerView> {
     );
     */
 
-    /*
     return {
       'path': info.path,
-      'duration': duration,
-      'ratio': info.width / info.height,
+      'duration': info.duration,
+      'ratio': info.height / info.width,
     };
-    */
-    return info.path;
+    //return info.path;
   }
 
   @override

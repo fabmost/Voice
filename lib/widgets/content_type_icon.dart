@@ -23,10 +23,12 @@ class ContentTypeIcon extends StatelessWidget {
           tooltip.ensureTooltipVisible();
         },
         child: CircleAvatar(
+          radius: 16,
           backgroundColor: color,
           child: Icon(
             icon,
             color: Colors.white,
+            size: 16,
           ),
         ),
       ),

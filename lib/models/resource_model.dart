@@ -21,12 +21,15 @@ class ResourceModel {
     content.forEach((element) {
       int duration =
           element['duration'] == null ? 0 : int.tryParse(element['duration']);
+      double ratio =
+          element['ratio'] == null ? 0 : double.tryParse(element['ratio']);
       mList.add(ResourceModel(
         id: element['id'],
         type: element['type'],
         url: element['content'],
         thumbnail: element['thumbnail'],
         duration: duration == null ? 0 : duration,
+        ratio: ratio == null ? 0 : ratio,
       ));
     });
 
@@ -36,12 +39,15 @@ class ResourceModel {
   static ResourceModel objectFromJson(Map element) {
     int duration =
         element['duration'] == null ? 0 : int.tryParse(element['duration']);
+    double ratio =
+        element['ratio'] == null ? 0 : double.tryParse(element['ratio']);
     return ResourceModel(
       id: element['id'],
       type: element['type'],
       url: element['content'],
       thumbnail: element['thumbnail'],
       duration: duration == null ? 0 : duration,
+      ratio: ratio == null ? 0 : ratio,
     );
   }
 }

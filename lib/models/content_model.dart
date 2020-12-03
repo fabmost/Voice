@@ -18,6 +18,7 @@ class ContentModel {
   final bool hasSaved;
   final CertificateModel certificate;
   final Uint8List thumbnail;
+  final String thumbnailUrl;
 
   ContentModel({
     this.id,
@@ -34,5 +35,6 @@ class ContentModel {
     this.hasSaved,
     this.certificate,
     this.thumbnail,
+    this.thumbnailUrl,
   });
 }

@@ -32,7 +32,7 @@ class TypeAheadFormField<T> extends FormField<String> {
       {Key key,
       String initialValue,
       bool getImmediateSuggestions: false,
-      bool autovalidate: false,
+      AutovalidateMode autovalidate: AutovalidateMode.disabled,
       FormFieldSetter<String> onSaved,
       FormFieldValidator<String> validator,
       ErrorBuilder errorBuilder,
@@ -64,7 +64,7 @@ class TypeAheadFormField<T> extends FormField<String> {
             key: key,
             onSaved: onSaved,
             validator: validator,
-            autovalidate: autovalidate,
+            autovalidateMode: autovalidate,
             initialValue: textFieldConfiguration.controller != null
                 ? textFieldConfiguration.controller.text
                 : (initialValue ?? ''),
@@ -499,7 +499,7 @@ class _TypeAheadFieldState<T> extends State<SuggestionField<T>>
   ScrollPosition _scrollPosition;
 
   // Keyboard detection
-  final Stream<bool> _keyboardVisibility = KeyboardVisibility.onChange;
+  final Stream<bool> _keyboardVisibility = KeyboardVisibilityController().onChange;
   StreamSubscription<bool> _keyboardVisibilitySubscription;
 
   @override

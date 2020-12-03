@@ -8,7 +8,7 @@ removeExtension(String path) {
 
 class EncodingProvider {
   static final FlutterFFmpeg _encoder = FlutterFFmpeg();
-  static final FlutterFFprobe _probe = FlutterFFprobe();
+  //static final FlutterFFprobe _probe = FlutterFFprobe();
   static final FlutterFFmpegConfig _config = FlutterFFmpegConfig();
 
   static Future<String> encodeHLS(videoPath, outDirPath) async {
@@ -43,8 +43,8 @@ class EncodingProvider {
     assert(File(videoPath).existsSync());
 
     final String outPath = '$videoPath.jpg';
-    final arguments =
-        '-y -i $videoPath -vframes 1 -an -s ${width}x${height} -ss 1 $outPath';
+    final arguments ='';
+        //'-y -i $videoPath -vframes 1 -an -s ${width}x${height} -ss 1 $outPath';
         
     final int rc = await _encoder.execute(arguments);
     assert(rc == 0);
@@ -64,7 +64,7 @@ class EncodingProvider {
   static Future<Map<dynamic, dynamic>> getMediaInformation(String path) async {
     assert(File(path).existsSync());
 
-    return await _probe.getMediaInformation(path);
+    return await null; //_probe.getMediaInformation(path);
   }
 
   static int getDuration(Map<dynamic, dynamic> info) {
@@ -73,6 +73,6 @@ class EncodingProvider {
 
   static void enableLogCallback(
       void Function(int level, String message) logCallback) {
-    _config.enableLogCallback(logCallback);
+    _config.enableLogCallback(null);
   }
 }

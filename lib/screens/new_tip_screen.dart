@@ -42,6 +42,7 @@ class _NewTipScreenState extends State<NewTipScreen> {
   File _videoFile;
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
+  Map _videoMap;
 
   CategoryModel category;
 
@@ -134,16 +135,17 @@ class _NewTipScreenState extends State<NewTipScreen> {
       }),
     ).then((value) async {
       if (value != null) {
+        _videoMap = value;
         //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
         final mFile = await VideoCompress.getFileThumbnail(
-          value,
+          _videoMap['path'],
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _isVideo = true;
           _imageFile = mFile;
-          _videoFile = File(value);
+          _videoFile = File(_videoMap['path']);
         });
       }
     });
@@ -302,12 +304,23 @@ class _NewTipScreenState extends State<NewTipScreen> {
     String idResource;
     if (_imageFile != null || _videoFile != null) {
       if (_isVideo) {
-        idResource = await Provider.of<ContentProvider>(context, listen: false)
-            .uploadResource(
-          _videoFile.path,
-          'V',
+        String thumbnailId =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _imageFile.path,
+          'I',
           'TIP',
         );
+        Map videoM = await Provider.of<ContentProvider>(context, listen: false)
+            .uploadVideo(
+          filePath: _videoFile.path,
+          type: 'V',
+          content: 'TIP',
+          thumbId: thumbnailId,
+          duration: _videoMap['duration'],
+          ratio: _videoMap['ratio'],
+        );
+        idResource = videoM['id'];
       } else {
         idResource = await Provider.of<ContentProvider>(context, listen: false)
             .uploadResource(

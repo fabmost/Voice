@@ -24,7 +24,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             '',
             style: TextStyle(color: Colors.white),
           ),
-          position: BadgePosition(top: 8, right: 12),
+          position: BadgePosition(top: 8, end: 12),
           child: IconButton(
             icon: Icon(Icons.notifications),
             onPressed: _toNotifications,

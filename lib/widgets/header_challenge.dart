@@ -85,7 +85,7 @@ class HeaderChallenge extends StatelessWidget with ShareContent {
       ResourceModel resource = challengeModel.resources[0];
 
       if (resource.type == 'V')
-        return PollVideo(challengeModel.id, 'C', resource.url, null);
+        return PollVideo(challengeModel.id, 'C', resource, null);
       if (resource.type == 'I') return PollImages([resource.url], 'detail');
     }
     return Container();

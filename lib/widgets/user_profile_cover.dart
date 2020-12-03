@@ -156,7 +156,7 @@ class _UserProfileCoverState extends State<UserProfileCover> {
       aspectRatio: CropAspectRatio(ratioX: 9, ratioY: 16),
     );
     if (cropped != null) {
-      _newHistory(pos, cropped, false);
+      _newImageHistory(pos, cropped.path);
     }
   }
 
@@ -168,50 +168,24 @@ class _UserProfileCoverState extends State<UserProfileCover> {
       }),
     ).then((value) async {
       if (value != null) {
-        _newHistory(pos, File(value), true);
+        _newVideoHistory(pos, value);
       }
     });
   }
 
-  void _newHistory(int position, File file, bool isVideo) async {
+  void _newImageHistory(int position, String file) async {
     Map resourceMap;
     String thumbnail;
     setState(() {
       _isLoading = position;
     });
-    if (isVideo) {
-      //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
-      final mFile = await VideoCompress.getFileThumbnail(
-        file.path,
-        //imageFormat: ImageFormat.JPEG,
-        quality: 50,
-      );
-      Map thumbnailMap =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResourceGetUrl(
-        mFile.path,
-        'I',
-        'U',
-      );
-      thumbnail = thumbnailMap['url'];
 
-      resourceMap = await Provider.of<ContentProvider>(context, listen: false)
-          .uploadVideo(
-        filePath: file.path,
-        type: 'V',
-        content: 'U',
-        thumbId: thumbnailMap['id'],
-        duration: 0,
-        ratio: 0,
-      );
-    } else {
-      resourceMap = await Provider.of<ContentProvider>(context, listen: false)
-          .uploadResourceGetUrl(
-        file.path,
-        'I',
-        'U',
-      );
-    }
+    resourceMap = await Provider.of<ContentProvider>(context, listen: false)
+        .uploadResourceGetUrl(
+      file,
+      'I',
+      'U',
+    );
 
     List stories = [];
     _histories.forEach((e) {
@@ -234,7 +208,72 @@ class _UserProfileCoverState extends State<UserProfileCover> {
       setState(() {
         ResourceModel newStory = ResourceModel(
           id: resourceMap['id'],
-          type: isVideo ? 'V' : 'I',
+          type: 'I',
+          thumbnail: thumbnail,
+          url: resourceMap['url'],
+        );
+        if (_histories.length > position) {
+          _histories[position] = newStory;
+        } else {
+          _histories.add(newStory);
+        }
+      });
+    }
+  }
+
+  void _newVideoHistory(int position, Map mMap) async {
+    Map resourceMap;
+    String thumbnail;
+    setState(() {
+      _isLoading = position;
+    });
+    //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
+    final mFile = await VideoCompress.getFileThumbnail(
+      mMap['path'],
+      //imageFormat: ImageFormat.JPEG,
+      quality: 50,
+    );
+    Map thumbnailMap =
+        await Provider.of<ContentProvider>(context, listen: false)
+            .uploadResourceGetUrl(
+      mFile.path,
+      'I',
+      'U',
+    );
+    thumbnail = thumbnailMap['url'];
+
+    resourceMap =
+        await Provider.of<ContentProvider>(context, listen: false).uploadVideo(
+      filePath: mMap['path'],
+      type: 'V',
+      content: 'U',
+      thumbId: thumbnailMap['id'],
+      duration: mMap['duration'],
+      ratio: mMap['ratio'],
+    );
+
+    List stories = [];
+    _histories.forEach((e) {
+      stories.add({'resource': e.id});
+    });
+    if (stories.length > position) {
+      stories[position] = {'resource': resourceMap['id']};
+    } else {
+      stories.add({'resource': resourceMap['id']});
+    }
+
+    Map result = await Provider.of<UserProvider>(context, listen: false)
+        .editProfile(stories: stories);
+
+    setState(() {
+      _isLoading = -1;
+    });
+
+    if (result['result']) {
+      setState(() {
+        ResourceModel newStory = ResourceModel(
+          id: resourceMap['id'],
+          type: 'V',
           thumbnail: thumbnail,
           url: resourceMap['url'],
         );

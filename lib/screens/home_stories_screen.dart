@@ -9,6 +9,7 @@ import '../providers/user_provider.dart';
 import '../models/story_model.dart';
 import '../models/resource_model.dart';
 import '../models/user_model.dart';
+import '../custom/custom_story_video.dart';
 
 class HomeStoriesScreen extends StatefulWidget {
   final List<StoryModel> stories;
@@ -30,8 +31,13 @@ class _StoriesScreenState extends State<HomeStoriesScreen>
   void _toProfile() {
     if (Provider.of<UserProvider>(context, listen: false).getUser !=
         _currentUser.userName) {
-      Navigator.of(context).pushNamed(ViewProfileScreen.routeName,
-          arguments: _currentUser.userName);
+      storyController.pause();
+      Navigator.of(context)
+          .pushNamed(ViewProfileScreen.routeName,
+              arguments: _currentUser.userName)
+          .then((value) {
+        storyController.play();
+      });
     }
   }
 
@@ -39,6 +45,7 @@ class _StoriesScreenState extends State<HomeStoriesScreen>
     return GestureDetector(
       onTap: _toProfile,
       child: Row(
+        mainAxisSize: MainAxisSize.max,
         children: [
           CircleAvatar(
             radius: 18,
@@ -48,12 +55,16 @@ class _StoriesScreenState extends State<HomeStoriesScreen>
                 : CachedNetworkImageProvider(_currentUser.icon),
           ),
           const SizedBox(width: 8),
-          Text(
-            _currentUser.userName,
-            style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Expanded(
+            child: Text(
+              _currentUser.userName,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -81,7 +92,7 @@ class _StoriesScreenState extends State<HomeStoriesScreen>
       }
       if (story.type == 'V') {
         storyItems.add(
-          StoryItem.pageVideo(
+          CustomStoryItem(
             story.url,
             controller: storyController,
             shown: widget.url != story.url,
@@ -131,6 +142,7 @@ class _StoriesScreenState extends State<HomeStoriesScreen>
             storyItems: storyItems,
           ),
           Container(
+            width: double.infinity,
             padding: EdgeInsets.only(
               top: 52,
               left: 16,

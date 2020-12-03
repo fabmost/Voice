@@ -16,7 +16,8 @@ class NewPromoPreviewScreen extends StatefulWidget {
   final List options;
   final List optionImages;
   final List pollImages;
-  final String videoFile;
+  final Map videoMap;
+  final String videoThumb;
   final int optionsCount;
   final String promoImage;
   final String message;
@@ -32,7 +33,8 @@ class NewPromoPreviewScreen extends StatefulWidget {
     this.options,
     this.optionImages,
     this.pollImages,
-    this.videoFile,
+    this.videoMap,
+    this.videoThumb,
     this.promoImage,
     this.message,
     this.terms,
@@ -88,15 +90,25 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
       );
       images.add({"id": idResource});
     }
-    if (widget.videoFile != null) {
-      final idResource =
+    if (widget.videoMap != null) {
+      String thumbnailId =
           await Provider.of<ContentProvider>(context, listen: false)
               .uploadResource(
-        widget.videoFile,
-        'V',
+        widget.videoThumb,
+        'I',
         'P',
       );
-      images.add({"id": idResource});
+      final idResource =
+          await Provider.of<ContentProvider>(context, listen: false)
+              .uploadVideo(
+        filePath: widget.videoMap['path'],
+        type: 'V',
+        content: 'P',
+        thumbId: thumbnailId,
+        duration: widget.videoMap['duration'],
+        ratio: widget.videoMap['ratio'],
+      );
+      images.add({"id": idResource['id']});
     }
 
     String idPromoResource =
@@ -195,7 +207,7 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
       ),
     );
     Navigator.of(context).pushNamedAndRemoveUntil(
-            MenuScreen.routeName, (Route<dynamic> route) => false);
+        MenuScreen.routeName, (Route<dynamic> route) => false);
   }
 
   void _showError() async {
@@ -333,8 +345,8 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
                       child: RaisedButton(
                         textColor: Colors.white,
                         color: Color(0xFFE56F0E),
-                        child:
-                            Text(Translations.of(context).text('button_publish')),
+                        child: Text(
+                            Translations.of(context).text('button_publish')),
                         onPressed: _savePoll,
                       ),
                     ),

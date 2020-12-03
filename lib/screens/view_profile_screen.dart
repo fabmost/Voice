@@ -196,10 +196,6 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
-                            icon: Icon(GalupFont.tips),
-                            text: 'Tips',
-                          ),
-                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
                           ),
@@ -212,6 +208,10 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                             icon: Icon(GalupFont.encuesta_patrocinada),
                             text: 'Encuestas\nPublicitarias',
                           ),
+                          Tab(
+                            icon: Icon(GalupFont.tips),
+                            text: 'Tips',
+                          ),
                         ],
                       ),
                     ),
@@ -221,10 +221,10 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
               },
               body: TabBarView(
                 children: [
-                  TipList(user.userName, _scrollController, null),
                   PollList(user.userName, _scrollController),
                   PrivatePollList(user.userName, _scrollController),
                   PromoPollList(user.userName, _scrollController),
+                  TipList(user.userName, _scrollController, null),
                 ],
               ),
             ),

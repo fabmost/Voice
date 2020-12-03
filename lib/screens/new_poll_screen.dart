@@ -9,6 +9,7 @@ import 'package:flutter_sound_lite/flutter_sound.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vibration/vibration.dart';
 import 'package:video_compress/video_compress.dart';
 //import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -64,6 +65,10 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   bool _isPlaying = false;
   double sliderCurrentPosition = 0.0;
   double maxDuration = 1.0;
+  double buttonPadding = 8;
+  double boxSize = 16;
+  double containerMargin = 8;
+  Map _videoMap;
 
   final Trimmer _trimmer = Trimmer();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
@@ -314,15 +319,16 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       }),
     ).then((value) async {
       if (value != null) {
+        _videoMap = value;
         //final mFile = await FlutterVideoCompress().getThumbnailWithFile(
         final mFile = await VideoCompress.getFileThumbnail(
-          value,
+          _videoMap['path'],
           //imageFormat: ImageFormat.JPEG,
           quality: 50,
         );
         setState(() {
           _videoThumb = mFile;
-          _videoFile = File(value);
+          _videoFile = File(_videoMap['path']);
           _isVideo = true;
         });
       }
@@ -368,7 +374,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   void _addListeners() {
     cancelPlayerSubscriptions();
     _playerSubscription = playerModule.onProgress.listen((e) {
-      if (e != null) {
+      if (e != null && e.duration != null) {
         maxDuration = e.duration.inMilliseconds.toDouble();
         if (maxDuration <= 0) maxDuration = 0.0;
 
@@ -387,6 +393,11 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   void _startRecording() async {
     try {
       // Request Microphone permission if needed
+      bool hasGranted = await Permission.microphone.isGranted;
+      if (!hasGranted) {
+        await Permission.microphone.request();
+        return;
+      }
       PermissionStatus status = await Permission.microphone.request();
       if (status != PermissionStatus.granted) {
         throw RecordingPermissionException("Microphone permission not granted");
@@ -394,6 +405,8 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       String path = '';
       Directory tempDir = await getTemporaryDirectory();
       path = '${tempDir.path}/flutter_sound${_codec.index}';
+
+      maxDuration = 60000;
 
       await recorderModule.startRecorder(
           toFile: path,
@@ -407,15 +420,17 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
           DateTime date = new DateTime.fromMillisecondsSinceEpoch(
               e.duration.inMilliseconds,
               isUtc: true);
-          String txt = DateFormat('ss:SS', 'en_GB').format(date);
+          String txt = DateFormat('mm:ss', 'en_GB').format(date);
 
           _recordingDuration = e.duration;
 
-          maxDuration = 60000;
           if (maxDuration <= 0) maxDuration = 0.0;
+          if (_recordingDuration.inMilliseconds >= maxDuration) {
+            _stopRecording();
+            return;
+          }
 
-          sliderCurrentPosition =
-              min(e.duration.inMilliseconds.toDouble(), maxDuration);
+          sliderCurrentPosition = e.duration.inMilliseconds.toDouble();
           if (sliderCurrentPosition < 0.0) {
             sliderCurrentPosition = 0.0;
           }
@@ -424,14 +439,22 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
           this.setState(() {
             _recorderTxt = txt.substring(0, 5);
           });
+        } else {
+          print('Algo raro pasó');
         }
       });
 
       FlutterBeep.beep();
+      if (await Vibration.hasVibrator()) {
+        Vibration.vibrate(duration: 300);
+      }
 
       this.setState(() {
         _isRecording = true;
         _audioPath = path;
+        buttonPadding = 16;
+        boxSize = 8;
+        containerMargin = 0;
       });
     } catch (err) {
       print('startRecorder error: $err');
@@ -452,10 +475,13 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
     DateTime date = new DateTime.fromMillisecondsSinceEpoch(
         _recordingDuration.inMilliseconds,
         isUtc: true);
-    String txt = DateFormat('ss:SS', 'en_GB').format(date);
+    String txt = DateFormat('mm:ss', 'en_GB').format(date);
     setState(() {
       _recorderTxt = txt.substring(0, 5);
       _isRecording = false;
+      buttonPadding = 8;
+      boxSize = 16;
+      containerMargin = 8;
     });
   }
 
@@ -687,30 +713,9 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       }
     }
 
-    List<Map> images = [];
-    for (int i = 0; i < pollImages.length; i++) {
-      final element = pollImages[i];
-      String idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        element.path,
-        'I',
-        'P',
-      );
-      images.add({"id": idResource});
-    }
-    if (_videoFile != null) {
-      final idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        _videoFile.path,
-        'V',
-        'P',
-      );
-      images.add({"id": idResource});
-    }
-
     String idAudio;
+    List<Map> images = [];
+
     if (_pollType == 1) {
       Map videoMap = await Provider.of<ContentProvider>(context, listen: false)
           .uploadVideo(
@@ -722,6 +727,38 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
         ratio: 0,
       );
       idAudio = videoMap['id'];
+    } else {
+      for (int i = 0; i < pollImages.length; i++) {
+        final element = pollImages[i];
+        String idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          element.path,
+          'I',
+          'P',
+        );
+        images.add({"id": idResource});
+      }
+      if (_videoFile != null) {
+        String thumbnailId =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _videoThumb.path,
+          'I',
+          'P',
+        );
+        final idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadVideo(
+          filePath: _videoFile.path,
+          type: 'V',
+          content: 'P',
+          thumbId: thumbnailId,
+          duration: _videoMap['duration'],
+          ratio: _videoMap['ratio'],
+        );
+        images.add({"id": idResource['id']});
+      }
     }
 
     List<Map> hashes = [];
@@ -948,6 +985,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       mode: SessionMode.modeDefault,
       device: AudioDevice.speaker,
     );
+    await recorderModule.setSubscriptionDuration(Duration(milliseconds: 10));
     await playerModule.setSubscriptionDuration(Duration(milliseconds: 10));
   }
 
@@ -1101,78 +1139,93 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
                 ),
               if (_pollType == 1) const SizedBox(height: 16),
               if (_pollType == 1)
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Color(0xFFF8F8FF),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: _isRecording && _audioPath == null
-                                  ? null
-                                  : _isPlaying ? null : _startPlayer,
-                              icon: Icon(Icons.play_arrow),
-                            ),
-                            Expanded(
-                              child: Slider(
-                                min: 0,
-                                max: maxDuration,
-                                value: min(sliderCurrentPosition, maxDuration),
-                                onChanged: (double value) async {
-                                  seekToPlayer(value.toInt());
-                                },
-                                divisions: maxDuration == 0.0
-                                    ? 1
-                                    : maxDuration.toInt(),
-                              ),
-                            ),
-                            Text(
-                              _recorderTxt == '0' ? '00:00' : _recorderTxt,
-                              textAlign: TextAlign.center,
-                            ),
-                            if (!_isRecording && _audioPath != null)
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 8,
+                    top: containerMargin,
+                    bottom: containerMargin,
+                    right: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Color(0xFFF8F8FF),
+                          ),
+                          child: Row(
+                            children: [
                               IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: () {
-                                  setState(() {
-                                    _audioPath = null;
-                                    _recorderTxt = '0';
-                                    sliderCurrentPosition = 0;
-                                  });
-                                },
+                                onPressed: _isRecording && _audioPath == null
+                                    ? null
+                                    : _isPlaying ? null : _startPlayer,
+                                icon: Icon(Icons.play_arrow),
                               ),
-                            const SizedBox(width: 8),
-                          ],
+                              Expanded(
+                                child: Slider(
+                                  min: 0,
+                                  max: maxDuration,
+                                  value:
+                                      min(sliderCurrentPosition, maxDuration),
+                                  onChanged: (double value) async {
+                                    seekToPlayer(value.toInt());
+                                  },
+                                  divisions: maxDuration == 0.0
+                                      ? 1
+                                      : maxDuration.toInt(),
+                                ),
+                              ),
+                              Text(
+                                _recorderTxt == '0' ? '00:00' : _recorderTxt,
+                                textAlign: TextAlign.center,
+                              ),
+                              if (!_isRecording && _audioPath != null)
+                                IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () async {
+                                    if (_isPlaying) {
+                                      await playerModule.stop();
+                                    }
+                                    setState(() {
+                                      _isPlaying = false;
+                                      _audioPath = null;
+                                      _recorderTxt = '0';
+                                      sliderCurrentPosition = 0;
+                                    });
+                                  },
+                                ),
+                              const SizedBox(width: 8),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onLongPress: _audioPath != null ? null : _startRecording,
-                      onLongPressUp: _stopRecording,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _audioPath != null
-                              ? Colors.grey
-                              : Theme.of(context).primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.mic,
-                          size: 52,
-                          color: Colors.white,
+                      SizedBox(width: boxSize),
+                      GestureDetector(
+                        onLongPress: (!_isRecording && _audioPath != null)
+                            ? null
+                            : _startRecording,
+                        onLongPressUp: _stopRecording,
+                        child: Container(
+                          padding: EdgeInsets.all(buttonPadding),
+                          decoration: BoxDecoration(
+                            color: (!_isRecording && _audioPath != null)
+                                ? Colors.grey
+                                : Theme.of(context).primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.mic,
+                            size: 52,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
+                      SizedBox(width: boxSize),
+                    ],
+                  ),
                 ),
               if (_pollType == 0) SizedBox(height: 16),
               if (_pollType == 0)

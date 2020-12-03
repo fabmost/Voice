@@ -195,7 +195,7 @@ class _DetailCauseScreenState extends State<DetailCauseScreen> {
     if (_causeModel.resources != null && _causeModel.resources.isNotEmpty) {
       if (_causeModel.resources[0].type == 'V')
         return PollVideo(
-            _causeModel.id, 'CA', _causeModel.resources[0].url, null);
+            _causeModel.id, 'CA', _causeModel.resources[0], null);
       if (_causeModel.resources[0].type == 'I')
         return PollImages([_causeModel.resources[0].url], null);
     }

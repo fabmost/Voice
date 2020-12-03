@@ -39,11 +39,29 @@ class PollVideoThumb extends StatelessWidget {
             break;
         }
         if (mContent == null) return Container();
-        if (mContent.thumbnail == null) {
+        if (mContent.thumbnailUrl == null && mContent.thumbnail == null) {
           _getThumbnail(context);
           return Center(child: CircularProgressIndicator());
         }
-        return Image.memory(mContent.thumbnail);
+        return Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              mContent.thumbnailUrl != null
+                  ? Image.network(mContent.thumbnailUrl)
+                  : Image.memory(mContent.thumbnail),
+              CircleAvatar(
+                backgroundColor: Colors.white,
+                radius: 18,
+                child: Icon(
+                  Icons.play_arrow,
+                  color: Colors.black,
+                  size: 32,
+                ),
+              )
+            ],
+          ),
+        );
       },
     );
   }

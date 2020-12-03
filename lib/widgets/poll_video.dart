@@ -3,17 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import 'poll_video_thumb.dart';
+import '../models/resource_model.dart';
 
 class PollVideo extends StatefulWidget {
   final String id;
   final String type;
-  final String videoUrl;
+  final ResourceModel videoResource;
   final Function _playVideo;
 
   PollVideo(
     this.id,
     this.type,
-    this.videoUrl,
+    this.videoResource,
     this._playVideo,
   );
 
@@ -30,19 +31,6 @@ class _PollVideoState extends State<PollVideo> {
   @override
   void initState() {
     super.initState();
-    _isLoading = true;
-    _controller = VideoPlayerController.network(widget.videoUrl);
-    _controller.initialize().then((value) {
-      setState(() {
-        _isLoading = false;
-      });
-      _chewieController = ChewieController(
-        videoPlayerController: _controller,
-        aspectRatio: _controller.value.aspectRatio,
-        autoPlay: false,
-        looping: false,
-      );
-    });
   }
 
   @override
@@ -53,14 +41,18 @@ class _PollVideoState extends State<PollVideo> {
   }
 
   void _startVideo() {
+    print('Antes: ${widget.videoResource.ratio}');
+
     setState(() {
       _isLoading = true;
       _isPlaying = true;
     });
-    _controller = VideoPlayerController.network(widget.videoUrl)
+    _controller = VideoPlayerController.network(widget.videoResource.url)
       ..initialize().then((_) {
         if (widget._playVideo != null) widget._playVideo(_controller);
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+        print('Despues: ${_controller.value.aspectRatio}');
+
         setState(() {
           _isLoading = false;
           _isPlaying = true;
@@ -79,6 +71,10 @@ class _PollVideoState extends State<PollVideo> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        if (_controller == null) {
+          _startVideo();
+          return;
+        }
         if (!_controller.value.initialized) {
           _startVideo();
         } else {
@@ -93,7 +89,7 @@ class _PollVideoState extends State<PollVideo> {
       },
       child: Container(
         color: Theme.of(context).primaryColor,
-        child: _controller.value.initialized
+        child: _controller != null && _controller.value.initialized
             ? AspectRatio(
                 aspectRatio: _controller.value.aspectRatio < 1
                     ? 1
@@ -127,13 +123,17 @@ class _PollVideoState extends State<PollVideo> {
                 ),
               )
             : AspectRatio(
-                aspectRatio: 16 / 9,
+                aspectRatio: widget.videoResource.ratio == null
+                    ? 1
+                    : widget.videoResource.ratio < 1
+                        ? 1
+                        : widget.videoResource.ratio,
                 child: Stack(
                   children: [
                     PollVideoThumb(
                       id: widget.id,
                       type: widget.type,
-                      videoUrl: widget.videoUrl,
+                      videoUrl: widget.videoResource.url,
                     ),
                     if (_isLoading)
                       Center(

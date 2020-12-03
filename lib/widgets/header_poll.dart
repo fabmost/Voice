@@ -89,7 +89,7 @@ class HeaderPoll extends StatelessWidget with ShareContent {
 
   Widget _handleResources() {
     if (pollModel.resources[0].type == 'V')
-      return PollVideo(pollModel.id, 'P', pollModel.resources[0].url, null);
+      return PollVideo(pollModel.id, 'P', pollModel.resources[0], null);
     List<String> urls = pollModel.resources.map((e) => e.url).toList();
     return PollImages(urls, '');
   }

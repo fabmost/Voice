@@ -176,10 +176,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                         indicatorPadding: EdgeInsets.symmetric(horizontal: 22),
                         tabs: [
                           Tab(
-                            icon: Icon(GalupFont.tips),
-                            text: 'Tips',
-                          ),
-                          Tab(
                             icon: Icon(GalupFont.survey),
                             text: 'Encuestas',
                           ),
@@ -196,6 +192,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 .icono_encuesta_grupal_mesa_de_trabajo_1),
                             text: 'Encuestas\nGrupales',
                           ),
+                          Tab(
+                            icon: Icon(GalupFont.tips),
+                            text: 'Tips',
+                          ),
                         ],
                       ),
                     ),
@@ -205,11 +205,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               },
               body: TabBarView(
                 children: [
-                  TipUserList(_scrollController, _playVideo),
                   PollUserList(_scrollController, _playVideo),
                   PromoPollUserList(_scrollController, _playVideo),
                   SecretPollUserList(_scrollController, _playVideo),
                   PrivatePollUserList(_scrollController, _playVideo),
+                  TipUserList(_scrollController, _playVideo),
                 ],
               ),
             ),

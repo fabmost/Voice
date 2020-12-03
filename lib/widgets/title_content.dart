@@ -34,7 +34,7 @@ class TitleContent extends StatelessWidget {
     return Padding(
       padding: padding ? const EdgeInsets.symmetric(horizontal: 16) : const EdgeInsets.all(0),
       child: ExtendedText(
-        title,
+        title ?? '',
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,

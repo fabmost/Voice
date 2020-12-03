@@ -50,6 +50,7 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   static ScrollController _homeController = ScrollController();
+  static GlobalKey<HomeScreenState> _myKey = GlobalKey();
   bool _triggeredOnboarding = false;
   bool _isOpen = false;
   bool _showBadge = false;
@@ -60,7 +61,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   int _selectedPageIndex = 0;
   List<Widget> _pages = [
     HomeScreen(
-      //key: PageStorageKey('Page1'),
+      _myKey,
       _homeController,
       _playVideo,
     ),
@@ -85,26 +86,6 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     _controller = controller;
   }
 
-  void _selectPage(int index) {
-    setState(() {
-      if (_controller != null) {
-        _controller.pause();
-      }
-      if (_selectedPageIndex == index && index == 0) {
-        _homeController.animateTo(
-          0.0,
-          curve: Curves.easeOut,
-          duration: const Duration(milliseconds: 300),
-        );
-      }
-      _selectedPageIndex = index;
-
-      if (index == 2) {
-        _showBadge = false;
-      }
-    });
-  }
-
   void _bottomBarSelect(index) {
     pageController.jumpToPage(index);
     setState(() {
@@ -112,12 +93,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         _controller.pause();
       }
       if (_selectedPageIndex == index && index == 0) {
+        _myKey.currentState.refreshTimeLine();
         _homeController.animateTo(
           0.0,
           curve: Curves.easeOut,
           duration: const Duration(milliseconds: 300),
         );
       }
+      _selectedPageIndex = index;
     });
   }
 
@@ -688,7 +671,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           children: <Widget>[
             PageView(
               controller: pageController,
-              onPageChanged: _selectPage,
+              //onPageChanged: _selectPage,
               children: _pages,
               physics: NeverScrollableScrollPhysics(), // No sliding
             ),
@@ -735,7 +718,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 '',
                 style: TextStyle(color: Colors.white),
               ),
-              position: BadgePosition(top: -5, right: 0),
+              position: BadgePosition(top: -5, end: 0),
               child: IconButton(
                 icon: Icon(
                   GalupFont.message_select,

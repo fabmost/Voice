@@ -89,7 +89,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (widget.scrollController.position.maxScrollExtent >
+      if (widget.scrollController.position.maxScrollExtent >=
               widget.scrollController.offset &&
           widget.scrollController.position.maxScrollExtent -
                   widget.scrollController.offset <=

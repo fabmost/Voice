@@ -25,14 +25,17 @@ class HomeScreen extends StatefulWidget {
   final ScrollController scrollController;
   final Function videoFunction;
 
-  HomeScreen(this.scrollController, this.videoFunction);
+  HomeScreen(Key key, this.scrollController, this.videoFunction)
+      : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
+class HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<UserModel> mUsers = [];
   List<StoryModel> mStories = [
@@ -367,7 +370,8 @@ class _HomeScreenState extends State<HomeScreen>
     return true;
   }
 
-  Future<void> _refreshTimeLine() async {
+  Future<void> refreshTimeLine() async {
+    _refreshIndicatorKey.currentState?.show();
     currentPageNumber = 0;
     loadMoreStatus = LoadMoreStatus.LOADING;
     final results = await Provider.of<ContentProvider>(context, listen: false)
@@ -566,7 +570,8 @@ class _HomeScreenState extends State<HomeScreen>
     return NotificationListener(
       onNotification: onNotification,
       child: RefreshIndicator(
-        onRefresh: _refreshTimeLine,
+        key: _refreshIndicatorKey,
+        onRefresh: refreshTimeLine,
         child: ListView.builder(
           controller: widget.scrollController,
           itemCount: (mList.length < 6) ? mList.length + 1 : mList.length + 3,

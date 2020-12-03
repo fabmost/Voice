@@ -77,7 +77,7 @@ class _TipListState extends State<TipUserList> {
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
-      if (widget.scrollController.position.maxScrollExtent >
+      if (widget.scrollController.position.maxScrollExtent >=
               widget.scrollController.offset &&
           widget.scrollController.position.maxScrollExtent -
                   widget.scrollController.offset <=

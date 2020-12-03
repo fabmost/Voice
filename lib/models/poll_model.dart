@@ -36,6 +36,7 @@ class PollModel extends ContentModel {
     hasSaved,
     certificate,
     thumbnail,
+    thumbnailUrl,
     this.body,
     this.description,
     this.votes,
@@ -62,6 +63,7 @@ class PollModel extends ContentModel {
           hasSaved: hasSaved,
           certificate: certificate,
           thumbnail: thumbnail,
+          thumbnailUrl: thumbnailUrl,
         );
 
   static PollModel fromJson(Map content) {
@@ -69,21 +71,20 @@ class PollModel extends ContentModel {
         ? null
         : content['user_regalup']['user_name'];
     CertificateModel certificate;
-    //if (regalup == null) {
     certificate = content['certificates'] == null
         ? null
         : content['certificates']['icon'] == null
             ? null
             : CertificateModel.fromJson(content['certificates']);
-    /*
-    } else {
-      certificate = content['certificatesRegalup'] == null
-          ? null
-          : content['certificatesRegalup']['icon'] == null
-              ? null
-              : CertificateModel.fromJson(content['certificatesRegalup']);
+    String thumb;
+    List<ResourceModel> resources =
+        ResourceModel.listFromJson(content['resource']);
+    if (resources != null && resources.isNotEmpty) {
+      if (resources[0].type == 'V') {
+        thumb = resources[0].thumbnail;
+      }
     }
-    */
+
     return PollModel(
       id: content['id'],
       type: content['type'],
@@ -108,7 +109,7 @@ class PollModel extends ContentModel {
       hasRegalup: content['is_regalup'] ?? false,
       hasSaved: content['is_save'],
       answers: PollAnswerModel.listFromJson(content['answer']),
-      resources: ResourceModel.listFromJson(content['resource']),
+      resources: resources,
       terms: content['terms'],
       message: content['message'],
       promoUrl: content['logo'],
@@ -118,6 +119,7 @@ class PollModel extends ContentModel {
       audio: content['audio'] == null
           ? null
           : ResourceModel.objectFromJson(content['audio']),
+      thumbnailUrl: thumb,
     );
   }
 }

@@ -91,7 +91,7 @@ class PollTile extends StatelessWidget with ShareContent {
 
   Widget _handleResources() {
     if (resources[0].type == 'V')
-      return PollVideo(id, 'P', resources[0].url, videoFunction);
+      return PollVideo(id, 'P', resources[0], videoFunction);
     List urls = resources.map((e) => e.url).toList();
     return PollImages(urls, reference);
   }
@@ -144,7 +144,7 @@ class PollTile extends StatelessWidget with ShareContent {
                   ListTile(
                     onTap: () => _toProfile(context),
                     leading: CircleAvatar(
-                      radius: 18,
+                      radius: 20,
                       backgroundColor: Theme.of(context).accentColor,
                       backgroundImage:
                           userImage == null ? null : NetworkImage(userImage),
@@ -153,7 +153,7 @@ class PollTile extends StatelessWidget with ShareContent {
                       children: <Widget>[
                         Flexible(
                           child: Text(
-                            userName,
+                            userName ?? '',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,

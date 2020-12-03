@@ -98,7 +98,7 @@ class TipTile extends StatelessWidget with ShareContent {
 
   Widget _challengeGoal(context) {
     ResourceModel resource = resources[0];
-    if (resource.type == 'V') return PollVideo(id, 'TIP', resource.url, null);
+    if (resource.type == 'V') return PollVideo(id, 'TIP', resource, null);
     if (resource.type == 'I') return PollImages([resource.url], reference);
     return Container();
   }

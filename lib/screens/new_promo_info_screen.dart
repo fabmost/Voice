@@ -14,7 +14,8 @@ class NewPromoInfoScreen extends StatefulWidget {
   final List options;
   final List optionImages;
   final List pollImages;
-  final String videoFile;
+  final Map videoMap;
+  final String videoThumb;
   final int optionsCount;
   final String audio;
   final int duration;
@@ -27,7 +28,8 @@ class NewPromoInfoScreen extends StatefulWidget {
     this.options,
     this.optionImages,
     this.pollImages,
-    this.videoFile,
+    this.videoMap,
+    this.videoThumb,
     this.audio,
     this.duration,
   });
@@ -175,7 +177,8 @@ class _NewPromoInfoScreenState extends State<NewPromoInfoScreen> {
           options: widget.options,
           optionImages: widget.optionImages,
           pollImages: widget.pollImages,
-          videoFile: widget.videoFile,
+          videoMap: widget.videoMap,
+          videoThumb: widget.videoThumb,
           promoImage: _promoImage.path,
           message: _messageController.text,
           terms: _termsController.text,

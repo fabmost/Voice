@@ -147,7 +147,7 @@ class UserChallengeTile extends StatelessWidget with ShareContent {
     if (resources != null && resources.isNotEmpty) {
       ResourceModel resource = resources[0];
 
-      if (resource.type == 'V') return PollVideo(id, 'C', resource.url, null);
+      if (resource.type == 'V') return PollVideo(id, 'C', resource, null);
       if (resource.type == 'I') return PollImages([resource.url], reference);
     }
     return Container();
