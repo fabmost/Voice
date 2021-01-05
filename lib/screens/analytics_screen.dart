@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'view_profile_screen.dart';
 import '../providers/content_provider.dart';
 import '../widgets/vote_card.dart';
+import '../widgets/vote_card_satisfaction.dart';
 import '../models/poll_answer_model.dart';
 import '../models/user_model.dart';
 
@@ -13,8 +14,14 @@ class AnalyticsScreen extends StatefulWidget {
   final String pollId;
   final String title;
   final List<PollAnswerModel> answers;
+  final bool isSatisfaction;
 
-  AnalyticsScreen({this.pollId, this.title, this.answers});
+  AnalyticsScreen({
+    this.pollId,
+    this.title,
+    this.answers,
+    @required this.isSatisfaction,
+  });
 
   @override
   _AnalyticsScreenState createState() => _AnalyticsScreenState();
@@ -28,7 +35,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   int _page;
   List<UserModel> _voters = [];
   Map _answersString = {};
+  Map _caritasString = {};
   bool _hasMore = true;
+
+  final images = [
+    'assets/1.png',
+    'assets/2.png',
+    'assets/3.png',
+    'assets/4.png',
+    'assets/5.png',
+  ];
 
   void _toProfile(userId) async {
     Navigator.of(context)
@@ -109,8 +125,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   @override
   void initState() {
+    int pos = 0;
     widget.answers.forEach((element) {
       _answersString[element.id] = element.answer;
+      _caritasString[element.id] = images[pos];
+      pos++;
     });
     _getAllData();
     super.initState();
@@ -152,13 +171,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   itemCount: widget.answers.length,
                   itemBuilder: (context, i) {
                     PollAnswerModel option = widget.answers[i];
-                    return VoteCard(
-                      widget.pollId,
-                      option.id,
-                      option.answer,
-                      _selection == i,
-                      () => _selectOption(i),
-                    );
+                    return widget.isSatisfaction
+                        ? VoteCardSatisfaction(
+                            widget.pollId,
+                            option.id,
+                            i,
+                            _selection == i,
+                            () => _selectOption(i),
+                          )
+                        : VoteCard(
+                            widget.pollId,
+                            option.id,
+                            option.answer,
+                            _selection == i,
+                            () => _selectOption(i),
+                          );
                   },
                 ),
               );
@@ -176,6 +203,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             if (_isLoading || i == _voters.length + 3) {
               return Center(child: CircularProgressIndicator());
             }
+            if (!_isLoading && _voters.isEmpty) {
+              return Center(child: Text('Nadie ha votado por esta opción'));
+            }
             UserModel user = _voters[i - 3];
             bool isAnon = user.userName.contains('ANONIMO');
             return ListTile(
@@ -185,7 +215,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     user.icon == null ? null : NetworkImage(user.icon),
               ),
               title: isAnon ? Text('Usuario anónimo') : Text(user.userName),
-              subtitle: Text('Votó - ${_answersString[user.idAnswer]}'),
+              subtitle: widget.isSatisfaction
+                  ? Row(
+                      children: [
+                        const Text('Votó'),
+                        const SizedBox(width: 5),
+                        Image.asset(_caritasString[user.idAnswer], width: 16),
+                      ],
+                    )
+                  : Text('Votó - ${_answersString[user.idAnswer]}'),
             );
           },
         ),

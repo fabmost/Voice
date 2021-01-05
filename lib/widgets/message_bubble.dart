@@ -10,12 +10,12 @@ class MessageBubble extends StatelessWidget {
   final String userimage;
   final bool isMe;
 
-  MessageBubble(
+  MessageBubble({
     this.message,
     this.userId,
     this.username,
     this.userimage,
-    this.isMe, {
+    this.isMe,
     this.key,
   });
 

@@ -272,8 +272,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       //showAlert(msg);
       Map data = msg['data'] ?? msg;
       if (data['type'] == 'chat') {
+        //TODO Push de chat
+        /*
         Navigator.of(context).pushNamed(ChatScreen.routeName,
             arguments: {'chatId': data['id'], 'userId': data['sender']});
+            */
       } else {
         Navigator.of(context).pushNamed(NotificationsScreen.routeName);
       }
@@ -282,8 +285,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       //showAlert(msg);
       Map data = msg['data'] ?? msg;
       if (data['type'] == 'chat') {
+        /*
         Navigator.of(context).pushNamed(ChatScreen.routeName,
             arguments: {'chatId': data['id'], 'userId': data['sender']});
+            */
       } else {
         Navigator.of(context).pushNamed(NotificationsScreen.routeName);
       }

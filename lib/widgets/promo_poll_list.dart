@@ -51,6 +51,7 @@ class _PollListState extends State<PromoPollList> {
       promoUrl: content.promoUrl,
       regalupName: content.creator,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

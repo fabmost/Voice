@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:voice_inc/models/user_model.dart';
 
 import 'auth_screen.dart';
-import 'chat_screen.dart';
 
 import '../providers/user_provider.dart';
 import '../widgets/profile_header.dart';
@@ -24,8 +23,8 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
       _anonymousAlert(context);
       return;
     }
-    Navigator.of(context)
-        .pushNamed(ChatScreen.routeName, arguments: {'userId': userId});
+    //Navigator.of(context)
+      //  .pushNamed(ChatScreen.routeName, arguments: {'userId': userId});
   }
 
   void _menu(context, userId, image) {
@@ -39,7 +38,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
                 Translations.of(context).text('button_share_profile'),
                 style: TextStyle(fontSize: 16),
               ),
-              onPressed: () => shareProfile(userId, image),
+              onPressed: () => shareProfile(context, userId, image),
             ),
             SimpleDialogOption(
               child: Text(

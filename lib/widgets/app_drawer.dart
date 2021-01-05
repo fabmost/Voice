@@ -23,7 +23,7 @@ class AppDrawer extends StatelessWidget with ShareContent {
 
   void _shareProfile(context) async {
     final user = Provider.of<UserProvider>(context, listen: false).getUser;
-    shareProfile(user, null);
+    shareProfile(context, user, null);
   }
 
   void _toTerms() async {

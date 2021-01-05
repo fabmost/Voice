@@ -1033,15 +1033,17 @@ class ContentProvider with ChangeNotifier, TextMixin {
     return 0;
   }
 
-  Future<bool> newPoll(
-      {name,
-      category,
-      resources,
-      description,
-      answers,
-      taged,
-      hashtag,
-      audio}) async {
+  Future<bool> newPoll({
+    name,
+    category,
+    resources,
+    description,
+    answers,
+    taged,
+    hashtag,
+    audio,
+    satisfaction,
+  }) async {
     var url = '${API.baseURL}/registerPoll';
     final token = await _getToken();
     Map parameters = {
@@ -1054,6 +1056,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'resources': resources,
       'taged': taged,
       'audio': audio,
+      'isSatisfaction': satisfaction
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1091,6 +1094,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     terms,
     image,
     audio,
+    isSatisfaction,
   }) async {
     var url = '${API.baseURL}/registerPromoPoll';
     final token = await _getToken();
@@ -1107,6 +1111,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'terms': terms,
       'promo_resource': image,
       'audio': audio,
+      'isSatisfaction': isSatisfaction,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1141,6 +1146,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     taged,
     hashtag,
     audio,
+    isSatisfaction,
   }) async {
     var url = '${API.baseURL}/registerPrivatePoll';
     final token = await _getToken();
@@ -1154,6 +1160,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'resources': resources,
       'taged': taged,
       'audio': audio,
+      'isSatisfaction': isSatisfaction,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -1188,6 +1195,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
     taged,
     hashtag,
     audio,
+    satisfaction,
   }) async {
     var url = '${API.baseURL}/registerSecretPoll';
     final token = await _getToken();
@@ -1201,6 +1209,7 @@ class ContentProvider with ChangeNotifier, TextMixin {
       'resources': resources,
       'taged': taged,
       'audio': audio,
+      'isSatisfaction': satisfaction,
     };
     await FlutterUserAgent.init();
     String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
@@ -2213,6 +2222,47 @@ class ContentProvider with ChangeNotifier, TextMixin {
     }
     notifyListeners();
     return;
+  }
+
+  Future<String> getShareLink(image, title, description, urlToShare) async {
+    var url = '${API.baseURL}/url';
+    final token = await _getToken();
+
+    print('URL: $urlToShare');
+
+    Map parameters = {
+      'image': image,
+      'title': title,
+      'description': description,
+      'url': urlToShare,
+    };
+    final body = jsonEncode(parameters);
+
+    await FlutterUserAgent.init();
+    String webViewUserAgent = FlutterUserAgent.webViewUserAgent;
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        HttpHeaders.userAgentHeader: webViewUserAgent,
+        HttpHeaders.authorizationHeader: 'Bearer $token'
+      },
+      body: body,
+    );
+    final dataMap = jsonDecode(response.body) as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    if (dataMap['status'] == 'success') {
+      _saveToken(dataMap['session']['token']);
+      return dataMap['url'];
+    }
+    if (dataMap['alert']['action'] == 4) {
+      await _renewToken();
+      return getShareLink(image, title, description, url);
+    }
+    return null;
   }
 
   Future<String> _getToken() {

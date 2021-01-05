@@ -20,6 +20,7 @@ class PollModel extends ContentModel {
   final String message;
   final List<GroupModel> groups;
   final ResourceModel audio;
+  final bool isSatisfaction;
 
   PollModel({
     id,
@@ -48,6 +49,7 @@ class PollModel extends ContentModel {
     this.message,
     this.groups,
     this.audio,
+    this.isSatisfaction,
   }) : super(
           id: id,
           type: type,
@@ -120,6 +122,7 @@ class PollModel extends ContentModel {
           ? null
           : ResourceModel.objectFromJson(content['audio']),
       thumbnailUrl: thumb,
+      isSatisfaction: content['isSatisfaction'],
     );
   }
 }

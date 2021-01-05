@@ -32,7 +32,7 @@ class _PollUserListState extends State<SecretPollUserList> {
   VideoPlayerController _controller;
 
   void _playVideo(VideoPlayerController controller) {
-    if(_controller != null){
+    if (_controller != null) {
       _controller.pause();
     }
     _controller = controller;
@@ -63,6 +63,7 @@ class _PollUserListState extends State<SecretPollUserList> {
       pos: pos,
       deleteFunction: _deleteContent,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -86,6 +87,7 @@ class _PollUserListState extends State<SecretPollUserList> {
       removeFunction: _removeContent,
       groups: content.groups,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

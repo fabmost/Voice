@@ -19,6 +19,7 @@ class NewPromoInfoScreen extends StatefulWidget {
   final int optionsCount;
   final String audio;
   final int duration;
+  final bool isSatisfaction;
 
   NewPromoInfoScreen({
     this.poll,
@@ -32,6 +33,7 @@ class NewPromoInfoScreen extends StatefulWidget {
     this.videoThumb,
     this.audio,
     this.duration,
+    this.isSatisfaction,
   });
 
   @override
@@ -184,6 +186,7 @@ class _NewPromoInfoScreenState extends State<NewPromoInfoScreen> {
           terms: _termsController.text,
           audio: widget.audio,
           duration: widget.duration,
+          isSatisfaction: widget.isSatisfaction,
         ),
       ),
     );

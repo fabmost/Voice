@@ -1,82 +1,121 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
-import 'chat_screen.dart';
+import '../widgets/chat_tile.dart';
+import '../models/chat_model.dart';
+import '../providers/chat_provider.dart';
 
-import '../translations.dart';
-import '../providers/auth_provider.dart';
+enum LoadMoreStatus { LOADING, STABLE }
 
-class MessagesScreen extends StatelessWidget {
+class MessagesScreen extends StatefulWidget {
   const MessagesScreen({Key key}) : super(key: key);
+
+  @override
+  _MessagesScreenState createState() => _MessagesScreenState();
+}
+
+class _MessagesScreenState extends State<MessagesScreen>
+    with AutomaticKeepAliveClientMixin {
+  LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
+  final ScrollController scrollController = new ScrollController();
+  List<ChatModel> _list = [];
+  int _currentPageNumber = 0;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  bool onNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (scrollController.position.maxScrollExtent > scrollController.offset &&
+          scrollController.position.maxScrollExtent - scrollController.offset <=
+              50) {
+        if (loadMoreStatus != null &&
+            loadMoreStatus == LoadMoreStatus.STABLE &&
+            _hasMore) {
+          _currentPageNumber++;
+          loadMoreStatus = LoadMoreStatus.LOADING;
+          Provider.of<ChatProvider>(context, listen: false)
+              .getChatsList(_currentPageNumber)
+              .then((newObjects) {
+            setState(() {
+              if (newObjects.isEmpty) {
+                _hasMore = false;
+              } else {
+                _list.addAll(newObjects);
+              }
+            });
+            loadMoreStatus = LoadMoreStatus.STABLE;
+          });
+        }
+      }
+    }
+    return true;
+  }
+
+  void _getData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    List results = await Provider.of<ChatProvider>(context, listen: false)
+        .getChatsList(_currentPageNumber);
+    setState(() {
+      if (results.isEmpty) {
+        _hasMore = false;
+      } else {
+        if(results.length < 10){
+          _hasMore = false;
+        }
+        _list = results;
+      }
+      _isLoading = false;
+    });
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    _getData();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Provider.of<AuthProvider>(context, listen: false).getHash(),
-      builder: (ctx, userSnap) {
-        if (userSnap.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (userSnap.data == null) {
-          return Center(
-            child: Text(Translations.of(context).text('empty_messages')),
-          );
-        }
-        return StreamBuilder(
-          stream: Firestore.instance
-              .collection('chats')
-              .where('participant_ids', arrayContains: userSnap.data)
-              .orderBy('updatedAt', descending: true)
-              .snapshots(),
-          builder: (ctx, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final documents = snapshot.data.documents;
-            if (documents.isEmpty) {
-              return Center(
-                child: Text(Translations.of(context).text('empty_messages')),
-              );
-            }
-
-            return ListView.separated(
-              separatorBuilder: (context, index) => Divider(),
-              itemCount: documents.length,
-              itemBuilder: (ctx, i) {
-                List ids = documents[i]['participant_ids'];
-                ids.remove(userSnap.data);
-                Map userMap = documents[i]['participants'][ids[0]];
-                DateTime date = documents[i]['updatedAt'].toDate();
-
-                final now = new DateTime.now();
-                final difference = now.difference(date);
-
-                return ListTile(
-                  onTap: () {
-                    Navigator.of(context)
-                        .pushNamed(ChatScreen.routeName, arguments: {
-                      'chatId': documents[i].documentID,
-                      'userId': ids[0],
-                    });
+    super.build(context);
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : _list.isEmpty
+            ? Center(
+                child: Text('No tienes mensajes'),
+              )
+            : NotificationListener(
+                onNotification: onNotification,
+                child: ListView.separated(
+                  controller: scrollController,
+                  separatorBuilder: (context, index) => Divider(),
+                  itemCount: _hasMore ? _list.length + 1 : _list.length,
+                  itemBuilder: (context, i) {
+                    if (i == _list.length) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    ChatModel mChat = _list[i];
+                    return ChatTile(
+                      userHash: mChat.user.hash,
+                      userName: '${mChat.user.name} ${mChat.user.lastName}',
+                      icon: mChat.user.icon,
+                      message: mChat.lastMessage,
+                      date: mChat.updatedAt,
+                    );
                   },
-                  leading: CircleAvatar(
-                    backgroundImage: userMap['user_image'] == null
-                        ? null
-                        : NetworkImage(userMap['user_image']),
-                  ),
-                  title: Text(userMap['user_name']),
-                  subtitle: Text(
-                    documents[i]['last_message'],
-                    maxLines: 2,
-                  ),
-                  trailing: Text(timeago.format(now.subtract(difference))),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+                ),
+              );
   }
 }

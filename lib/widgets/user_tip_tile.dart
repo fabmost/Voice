@@ -75,14 +75,14 @@ class UserTipTile extends StatelessWidget with ShareContent {
     if (!hasRated) {}
   }
 
-  void _share() {
+  void _share(context) {
     String image;
     if (userImage != null && userImage.isNotEmpty) {
       image = userImage;
     } else if (resources.isNotEmpty) {
       image = resources[0].url;
     }
-    shareTip(id, title, image);
+    shareTip(context, id, title, image);
   }
 
   void _deleteAlert(context) {
@@ -262,7 +262,7 @@ class UserTipTile extends StatelessWidget with ShareContent {
                   ),
                   IconButton(
                     icon: Icon(GalupFont.share),
-                    onPressed: _share,
+                    onPressed: ()=> _share(context),
                   ),
                 ],
               ),

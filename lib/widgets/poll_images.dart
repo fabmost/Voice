@@ -23,7 +23,10 @@ class PollImages extends StatelessWidget {
     );
   }
 
-  Widget _image(size, image, pos) {
+  Widget _image(size, String image, pos) {
+    final newImage = image.contains('firebasestorage')
+        ? image
+        : image.replaceAll('https', 'http');
     Radius topLeft = pos == 0 ? Radius.circular(24) : Radius.zero;
     Radius topRight = ((pos == 0 && images.length == 1) ||
             (pos == 1 && images.length == 2) ||
@@ -36,20 +39,36 @@ class PollImages extends StatelessWidget {
             (pos == 2 && images.length == 3))
         ? Radius.circular(24)
         : Radius.zero;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: topLeft,
-          topRight: topRight,
-          bottomLeft: bottomLeft,
-          bottomRight: bottomRight,
+    return CachedNetworkImage(
+      imageUrl: newImage,
+      imageBuilder: (context, imageProvider) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: topLeft,
+            topRight: topRight,
+            bottomLeft: bottomLeft,
+            bottomRight: bottomRight,
+          ),
+          border: Border.all(color: Colors.black),
+          image: DecorationImage(
+            image: imageProvider,
+            fit: BoxFit.cover,
+          ),
         ),
-        border: Border.all(color: Colors.black),
-        image: DecorationImage(
-          image: CachedNetworkImageProvider(image),
-          fit: BoxFit.cover,
+      ),
+      progressIndicatorBuilder: (context, url, downloadProgress) => Container(
+        height: size,
+        width: size,
+        alignment: Alignment.center,
+        child: CircularProgressIndicator(value: downloadProgress.progress),
+      ),
+      errorWidget: (context, url, error) => Container(
+        height: size,
+        width: size,
+        child: Center(
+          child: Text('Ocurrió un error al cargar la imagen $error'),
         ),
       ),
     );

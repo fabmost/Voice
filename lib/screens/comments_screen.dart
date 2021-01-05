@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../translations.dart';
-import '../widgets/comments_list.dart';
+import '../widgets/comments_sliver_list.dart';
 import '../widgets/likes_list.dart';
 
 class CommentsScreen extends StatelessWidget {
@@ -35,7 +35,7 @@ class CommentsScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: <Widget>[
-            CommentsList(
+            CommentsSliverList(
               id: id,
               type: type,
               owner: owner,

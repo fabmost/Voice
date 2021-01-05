@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'poll_tile.dart';
+import 'poll_promo_tile.dart';
 import 'challenge_tile.dart';
 import 'tip_tile.dart';
 import 'cause_tile.dart';
@@ -55,6 +56,36 @@ class _FilteredContentState extends State<FilteredContent>
       resources: content.resources,
       videoFunction: null,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
+    );
+  }
+
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'list_${widget.category}',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      terms: content.terms,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      regalupName: content.creator,
+      audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -149,6 +180,7 @@ class _FilteredContentState extends State<FilteredContent>
       regalupName: content.creator,
       videoFunction: null,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -262,7 +294,7 @@ class _FilteredContentState extends State<FilteredContent>
       if (results.isEmpty) {
         _hasMore = false;
       } else {
-        if(results.length < 10){
+        if (results.length < 10) {
           _hasMore = false;
         }
         _list = results;
@@ -348,6 +380,8 @@ class _FilteredContentState extends State<FilteredContent>
                           return _repostCauseWidget(doc);
                         case 'regalup_ti':
                           return _repostTipWidget(doc);
+                        case 'promo_p':
+                          return _promoPollWidget(doc);
                         default:
                           return SizedBox();
                       }

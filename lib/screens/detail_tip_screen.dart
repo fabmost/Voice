@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../translations.dart';
 import '../widgets/header_tip.dart';
 import '../widgets/new_comment.dart';
-import '../widgets/comment_tile.dart';
+import '../widgets/comment_list_tile.dart';
 import '../models/tip_model.dart';
 import '../models/comment_model.dart';
 import '../providers/content_provider.dart';
@@ -68,15 +68,55 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
   }
 
   void _setComment(comment) {
-    setState(() {
-      _commentsList.insert(0, comment);
-    });
+    if (_commentsList.isEmpty) {
+      setState(() {
+        _commentsList.insert(0, comment);
+      });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => DetailTipScreen(
+            id: widget.id,
+          ),
+          transitionDuration: Duration(seconds: 0),
+        ),
+      );
+    }
   }
 
-  void _removeContent(id) {
-    setState(() {
-      _commentsList.removeWhere((element) => element.id == id);
-    });
+  List<Widget> _buildSlivers() {
+    List<Widget> slivers = [];
+    if (_tipModel != null) {
+      slivers.add(
+        SliverToBoxAdapter(child: HeaderTip(_tipModel)),
+      );
+      if (_commentsList.isEmpty) {
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: Center(
+                child: Text(Translations.of(context).text('empty_comments')),
+              ),
+            ),
+          ),
+        );
+      } else {
+        _commentsList.forEach((value) {
+          slivers.add(
+            CommentListTile(
+              id: widget.id,
+              type: 'TIP',
+              owner: _tipModel.user.userName,
+              mComment: value,
+            ),
+          );
+        });
+      }
+    }
+    //if (_hasMore) slivers.add(_loadingWidget());
+    return slivers;
   }
 
   @override
@@ -98,7 +138,9 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () => _fetchTipAndComments(),
-                    child: ListView.builder(
+                    child: CustomScrollView(
+                      slivers: _buildSlivers(),
+                      /*
                       itemCount:
                           _commentsList.isEmpty ? 2 : _commentsList.length + 1,
                       itemBuilder: (context, i) {
@@ -134,6 +176,7 @@ class _DetailTipScreenState extends State<DetailTipScreen> {
                           owner: _tipModel.user.userName,
                         );
                       },
+                      */
                     ),
                   ),
                 ),

@@ -78,6 +78,7 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
   File _videoFile;
   File _videoThumb;
   int _pollType = 0;
+  int _answerType = 0;
 
   final double size = 82;
 
@@ -469,18 +470,21 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
   }
 
   void _stopRecording() async {
+    String txt;
     await recorderModule.stopRecorder();
     if (_recorderSubscription != null) {
       _recorderSubscription.cancel();
       _recorderSubscription = null;
     }
     _recordingDuration = await flutterSoundHelper.duration(_audioPath);
-    DateTime date = new DateTime.fromMillisecondsSinceEpoch(
-        _recordingDuration.inMilliseconds,
-        isUtc: true);
-    String txt = DateFormat('mm:ss', 'en_GB').format(date);
+    if (_recordingDuration != null) {
+      DateTime date = new DateTime.fromMillisecondsSinceEpoch(
+          _recordingDuration.inMilliseconds,
+          isUtc: true);
+      txt = DateFormat('mm:ss', 'en_GB').format(date);
+    }
     setState(() {
-      _recorderTxt = txt.substring(0, 5);
+      if (txt != null) _recorderTxt = txt.substring(0, 5);
       _isRecording = false;
       buttonPadding = 8;
       boxSize = 16;
@@ -528,10 +532,14 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
   void _validate() {
     if ((_pollType == 0 && _titleController.text.isNotEmpty ||
             _pollType == 1 && _audioPath != null) &&
-        _firstController.text.isNotEmpty &&
-        _secondController.text.isNotEmpty &&
         category != null) {
+      if (_answerType == 1) {
+        _validationAlert();
+        return;
+      }
       bool pass = true;
+      if (_firstController.text.isEmpty || _secondController.text.isEmpty)
+        pass = false;
       if (moreOptions == 1 && _thirdController.text.isEmpty) pass = false;
       if (moreOptions == 2 && _fourthController.text.isEmpty) pass = false;
       if (moreOptions == 3 && _fifthController.text.isEmpty) pass = false;
@@ -606,10 +614,15 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
             _option5 != null ? _option5.path : null,
           ],
           pollImages: pollImages,
-          videoMap: _pollType == 0 ? _videoMap != null ? _videoMap : null : null,
+          videoMap: _pollType == 0
+              ? _videoMap != null
+                  ? _videoMap
+                  : null
+              : null,
           videoThumb: _videoThumb != null ? _videoThumb.path : null,
           audio: _pollType == 0 ? null : _audioPath,
           duration: _pollType == 0 ? null : _recordingDuration.inMilliseconds,
+          isSatisfaction: _answerType == 1,
         ),
       ),
     );
@@ -880,6 +893,7 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
 
   @override
   Widget build(BuildContext context) {
+    final caritaWidth = (MediaQuery.of(context).size.width - 64) / 5;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -920,7 +934,7 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 52),
+                margin: const EdgeInsets.symmetric(horizontal: 42),
                 child: MaterialSegmentedControl(
                     children: {
                       0: Text('Escribir'),
@@ -987,7 +1001,9 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
                               IconButton(
                                 onPressed: _isRecording && _audioPath == null
                                     ? null
-                                    : _isPlaying ? null : _startPlayer,
+                                    : _isPlaying
+                                        ? null
+                                        : _startPlayer,
                                 icon: Icon(Icons.play_arrow),
                               ),
                               Expanded(
@@ -1012,7 +1028,7 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
                                 IconButton(
                                   icon: Icon(Icons.delete),
                                   onPressed: () async {
-                                    if(_isPlaying){
+                                    if (_isPlaying) {
                                       await playerModule.stop();
                                     }
                                     setState(() {
@@ -1136,25 +1152,66 @@ class _NewPollScreenState extends State<NewPromoPollScreen> with TextMixin {
                         ),
                     ],
                   ),
-              SizedBox(height: 16),
-              _title('Respuestas'),
-              SizedBox(height: 16),
-              _firstOption(),
-              SizedBox(height: 8),
-              _secondOption(),
-              if (moreOptions > 0) SizedBox(height: 8),
-              if (moreOptions > 0) _thirdOption(),
-              if (moreOptions > 1) SizedBox(height: 8),
-              if (moreOptions > 1) _fourthOption(),
-              if (moreOptions > 2) SizedBox(height: 8),
-              if (moreOptions > 2) _fifthOption(),
-              if (moreOptions < 3)
-                FlatButton.icon(
-                  onPressed: () => _addOption(true),
-                  icon: Icon(GalupFont.add),
-                  label: Text('Agregar opción'),
+              const SizedBox(height: 16),
+              _title('¿Qué tipo de respuestas deseas añadir'),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 42),
+                child: MaterialSegmentedControl(
+                    children: {
+                      0: Text('Abiertas'),
+                      1: Text('Satisfacción'),
+                    },
+                    selectionIndex: _answerType,
+                    selectedColor: Theme.of(context).primaryColor,
+                    unselectedColor: Colors.white,
+                    borderColor: Theme.of(context).primaryColor,
+                    onSegmentChosen: (index) {
+                      setState(() {
+                        _answerType = index;
+                      });
+                    }),
+              ),
+              const SizedBox(height: 16),
+              if (_answerType == 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Image.asset('assets/1.png', width: caritaWidth),
+                    Image.asset('assets/2.png', width: caritaWidth),
+                    Image.asset('assets/3.png', width: caritaWidth),
+                    Image.asset('assets/4.png', width: caritaWidth),
+                    Image.asset('assets/5.png', width: caritaWidth),
+                  ],
                 ),
-              SizedBox(height: 16),
+              if (_answerType == 1) const SizedBox(height: 16),
+              if (_answerType == 1)
+                Text(
+                    'Al seleccionar la encuesta de satisfacción estas serán las opciones que se mostrarán.'),
+              if (_answerType == 0) _firstOption(),
+              if (_answerType == 0) const SizedBox(height: 8),
+              if (_answerType == 0) _secondOption(),
+              if (_answerType == 0)
+                if (moreOptions > 0) const SizedBox(height: 8),
+              if (_answerType == 0)
+                if (moreOptions > 0) _thirdOption(),
+              if (_answerType == 0)
+                if (moreOptions > 1) const SizedBox(height: 8),
+              if (_answerType == 0)
+                if (moreOptions > 1) _fourthOption(),
+              if (_answerType == 0)
+                if (moreOptions > 2) const SizedBox(height: 8),
+              if (_answerType == 0)
+                if (moreOptions > 2) _fifthOption(),
+              if (_answerType == 0)
+                if (moreOptions < 3)
+                  FlatButton.icon(
+                    onPressed: () => _addOption(true),
+                    icon: Icon(GalupFont.add),
+                    label: Text('Agregar opción'),
+                  ),
+              const SizedBox(height: 16),
               _title(Translations.of(context).text('hint_category')),
               SizedBox(height: 8),
               InkWell(

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -151,17 +152,32 @@ class InfluencerItem extends StatelessWidget {
             color: color),
         child: Column(
           children: <Widget>[
-            Container(
-              width: double.infinity,
-              height: 125,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(7),
-                  topRight: Radius.circular(7),
+            CachedNetworkImage(
+              imageUrl: image,
+              imageBuilder: (context, imageProvider) => Container(
+                width: double.infinity,
+                height: 125,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(7),
+                    topRight: Radius.circular(7),
+                  ),
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                image: DecorationImage(
-                  image: NetworkImage(image),
-                  fit: BoxFit.cover,
+              ),
+              progressIndicatorBuilder: (context, url, downloadProgress) =>
+                  Center(
+                child:
+                    CircularProgressIndicator(value: downloadProgress.progress),
+              ),
+              errorWidget: (context, url, error) => Container(
+                height: 125,
+                width: double.infinity,
+                child: Center(
+                  child: Text('Ocurrió un error al cargar la imagen $error'),
                 ),
               ),
             ),

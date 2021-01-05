@@ -21,7 +21,6 @@ import 'screens/edit_profile_screen.dart';
 import 'screens/saved_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/view_profile_screen.dart';
-import 'screens/chat_screen.dart';
 import 'screens/detail_poll_screen.dart';
 import 'screens/detail_challenge_screen.dart';
 import 'screens/detail_tip_screen.dart';
@@ -59,6 +58,7 @@ import 'providers/user_provider.dart';
 import 'providers/config_provider.dart';
 import 'providers/preferences_provider.dart';
 import 'providers/content_provider.dart';
+import 'providers/chat_provider.dart';
 
 void main() {
   // Pass all uncaught errors from the framework to Crashlytics.
@@ -115,6 +115,7 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => ConfigurationProvider()),
         ChangeNotifierProvider(create: (ctx) => Preferences()),
         ChangeNotifierProvider(create: (ctx) => ContentProvider()),
+        ChangeNotifierProvider(create: (ctx) => ChatProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (ctx, provider, _) => MaterialApp(
@@ -163,7 +164,6 @@ class App extends StatelessWidget {
             SavedScreen.routeName: (ctx) => SavedScreen(),
             NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             ViewProfileScreen.routeName: (ctx) => ViewProfileScreen(),
-            ChatScreen.routeName: (ctx) => ChatScreen(),
             NewPollScreen.routeName: (ctx) => NewPollScreen(),
             NewPromoPollScreen.routeName: (ctx) => NewPromoPollScreen(),
             NewPrivatePollScreen.routeName: (ctx) => NewPrivatePollScreen(),

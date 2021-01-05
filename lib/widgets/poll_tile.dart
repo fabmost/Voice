@@ -45,6 +45,7 @@ class PollTile extends StatelessWidget with ShareContent {
   final certificate;
   final videoFunction;
   final ResourceModel audio;
+  final bool isSatisfaction;
 
   PollTile({
     @required this.reference,
@@ -68,6 +69,7 @@ class PollTile extends StatelessWidget with ShareContent {
     this.regalupName,
     @required this.videoFunction,
     @required this.audio,
+    @required this.isSatisfaction,
   });
 
   final Color color = Color(0xFFF8F8FF);
@@ -79,14 +81,14 @@ class PollTile extends StatelessWidget with ShareContent {
     }
   }
 
-  void _share() {
+  void _share(context) {
     String image;
     if (userImage != null && userImage.isNotEmpty) {
       image = userImage;
     } else if (resources.isNotEmpty) {
       image = resources[0].url;
     }
-    sharePoll(id, title, image);
+    sharePoll(context, id, title, image);
   }
 
   Widget _handleResources() {
@@ -203,6 +205,7 @@ class PollTile extends StatelessWidget with ShareContent {
               child: PollOptions(
                 id: id,
                 isMine: false,
+                isSatisfaction: isSatisfaction,
               ),
             ),
             Consumer<ContentProvider>(
@@ -249,7 +252,7 @@ class PollTile extends StatelessWidget with ShareContent {
                   ),
                   IconButton(
                     icon: Icon(GalupFont.share),
-                    onPressed: _share,
+                    onPressed: ()=> _share(context),
                   ),
                 ],
               ),

@@ -78,14 +78,14 @@ class HeaderTip extends StatelessWidget with ShareContent {
     });
   }
 
-  void _share() {
+  void _share(context) {
     String image;
     if (tipModel.user.icon != null && tipModel.user.icon.isNotEmpty) {
       image = tipModel.user.icon;
     } else if (tipModel.resources.isNotEmpty) {
       image = tipModel.resources[0].url;
     }
-    shareTip(tipModel.id, tipModel.title, image);
+    shareTip(context, tipModel.id, tipModel.title, image);
   }
 
   Widget _challengeGoal(context) {
@@ -206,7 +206,7 @@ class HeaderTip extends StatelessWidget with ShareContent {
               ),
               IconButton(
                 icon: Icon(GalupFont.share),
-                onPressed: _share,
+                onPressed: ()=> _share(context),
               ),
             ],
           ),

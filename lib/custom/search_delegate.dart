@@ -14,6 +14,7 @@ import '../models/cause_model.dart';
 import '../providers/user_provider.dart';
 import '../providers/content_provider.dart';
 import '../widgets/poll_tile.dart';
+import '../widgets/poll_promo_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
 import '../widgets/cause_tile.dart';
@@ -60,6 +61,36 @@ class CustomSearchDelegate extends SearchDelegate {
       resources: content.resources,
       videoFunction: null,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
+    );
+  }
+
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'search',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      terms: content.terms,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      regalupName: content.creator,
+      audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -227,8 +258,8 @@ class CustomSearchDelegate extends SearchDelegate {
   Widget buildResults(BuildContext context) {
     _getCUrrentUser(context);
     return FutureBuilder(
-      future:
-          Provider.of<ContentProvider>(context, listen: false).search(removeDiacritics(query), 0),
+      future: Provider.of<ContentProvider>(context, listen: false)
+          .search(removeDiacritics(query), 0),
       builder: (ct, snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
@@ -252,6 +283,8 @@ class CustomSearchDelegate extends SearchDelegate {
                 return _causeWidget(result);
               case 'Tips':
                 return _tipWidget(result);
+              case 'promo_p':
+                return _promoPollWidget(result);
               default:
                 return SizedBox();
             }

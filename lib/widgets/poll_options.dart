@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'poll_answers.dart';
+import 'poll_answers_faces.dart';
 import 'alert_promo.dart';
 import '../mixins/alert_mixin.dart';
 import '../providers/content_provider.dart';
@@ -15,6 +16,7 @@ class PollOptions extends StatefulWidget {
   final String message;
   final bool isSecret;
   final Function function;
+  final bool isSatisfaction;
 
   PollOptions({
     @required this.id,
@@ -24,6 +26,7 @@ class PollOptions extends StatefulWidget {
     this.message,
     this.isSecret = false,
     this.function,
+    @required this.isSatisfaction,
   });
 
   @override
@@ -46,7 +49,7 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin {
       idAnswer,
     );
 
-    if(widget.isSecret){
+    if (widget.isSecret) {
       widget.function();
     }
 
@@ -77,10 +80,16 @@ class _PollOptionsState extends State<PollOptions> with AlertMixin {
         ? Center(
             child: CircularProgressIndicator(),
           )
-        : PollAnswers(
-            widget.id,
-            widget.isMine,
-            _setVote,
-          );
+        : widget.isSatisfaction
+            ? PollAnswersFaces(
+                widget.id,
+                widget.isMine,
+                _setVote,
+              )
+            : PollAnswers(
+                widget.id,
+                widget.isMine,
+                _setVote,
+              );
   }
 }

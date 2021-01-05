@@ -57,6 +57,7 @@ class _PollUserListState extends State<PollUserList> {
       resources: content.resources,
       removeFunction: _removeContent,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -83,6 +84,7 @@ class _PollUserListState extends State<PollUserList> {
       regalupName: content.creator,
       videoFunction: _playVideo,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
   

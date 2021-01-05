@@ -35,11 +35,7 @@ class ChatMessages extends StatelessWidget {
               reverse: true,
               itemCount: documents.length,
               itemBuilder: (ctx, i) => MessageBubble(
-                documents[i]['text'],
-                documents[i]['userId'],
-                documents[i]['username'],
-                documents[i]['userimage'] ?? '',
-                documents[i]['userId'] == userSnap.data,
+                
                 key: ValueKey(documents[i].documentID),
               ),
             );

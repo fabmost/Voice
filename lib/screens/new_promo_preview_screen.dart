@@ -24,6 +24,7 @@ class NewPromoPreviewScreen extends StatefulWidget {
   final String terms;
   final String audio;
   final int duration;
+  final bool isSatisfaction;
 
   NewPromoPreviewScreen({
     this.poll,
@@ -40,6 +41,7 @@ class NewPromoPreviewScreen extends StatefulWidget {
     this.terms,
     this.audio,
     this.duration,
+    this.isSatisfaction,
   });
 
   @override
@@ -56,23 +58,33 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
       _isLoading = true;
     });
     var pollAnswers = [];
-    for (int i = 0; i < widget.optionsCount; i++) {
-      if (widget.optionImages[i] != null) {
-        String idResource =
-            await Provider.of<ContentProvider>(context, listen: false)
-                .uploadResource(
-          widget.optionImages[i],
-          'I',
-          'PA',
-        );
+    if (!widget.isSatisfaction) {
+      for (int i = 0; i < widget.optionsCount; i++) {
+        if (widget.optionImages[i] != null) {
+          String idResource =
+              await Provider.of<ContentProvider>(context, listen: false)
+                  .uploadResource(
+            widget.optionImages[i],
+            'I',
+            'PA',
+          );
 
+          pollAnswers.add({
+            'text': serverSafe(widget.options[i]),
+            'image': idResource,
+          });
+        } else {
+          pollAnswers.add({
+            'text': serverSafe(widget.options[i]),
+            'image': null,
+          });
+        }
+      }
+    } else {
+      for (var i = 0; i < 5; i++) {
+        int cant = i + 1;
         pollAnswers.add({
-          'text': serverSafe(widget.options[i]),
-          'image': idResource,
-        });
-      } else {
-        pollAnswers.add({
-          'text': serverSafe(widget.options[i]),
+          'text': '$cant',
           'image': null,
         });
       }
@@ -161,6 +173,7 @@ class _NewPromoPreviewScreenState extends State<NewPromoPreviewScreen>
       terms: widget.terms,
       image: idPromoResource,
       audio: idAudio,
+      isSatisfaction: widget.isSatisfaction,
     );
 
     setState(() {

@@ -21,8 +21,8 @@ class DetailCommentScreen extends StatefulWidget {
 }
 
 class _DetailCommentScreenState extends State<DetailCommentScreen> {
-  ScrollController _scrollController = ScrollController();
-  GlobalKey<NewCommentState> _newState;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey<NewCommentState> _newState = GlobalKey();
   CommentModel commentModel;
   List<CommentModel> _commentsList = [];
   bool _isLoading = false;
@@ -40,10 +40,11 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
     }
     List<CommentModel> newObjects =
         await Provider.of<ContentProvider>(context, listen: false).getReplys(
-            id: widget.id,
-            type: result.parentType,
-            page: 0,
-            idContent: result.parentId);
+      id: widget.id,
+      type: result.parentType,
+      page: 0,
+      idContent: result.parentId,
+    );
     setState(() {
       _isLoading = false;
       commentModel = result;
@@ -79,8 +80,8 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
     });
     Timer(
       Duration(milliseconds: 300),
-      () =>
-          _scrollController.jumpTo(_scrollController.position.maxScrollExtent + 80),
+      () => _scrollController
+          .jumpTo(_scrollController.position.maxScrollExtent + 80),
     );
   }
 
@@ -97,7 +98,6 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
   @override
   void initState() {
     _fetchData();
-    _newState = GlobalKey();
     super.initState();
   }
 
@@ -112,8 +112,9 @@ class _DetailCommentScreenState extends State<DetailCommentScreen> {
           : Column(
               children: <Widget>[
                 Expanded(
-                  child: ListView.builder(
+                  child: ListView.separated(
                     controller: _scrollController,
+                    separatorBuilder: (context, index) => Divider(),
                     itemCount:
                         _commentsList.isEmpty ? 1 : _commentsList.length + 1,
                     itemBuilder: (context, i) {

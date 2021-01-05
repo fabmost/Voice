@@ -115,8 +115,8 @@ class NewCommentState extends State<NewComment> with AlertMixin {
         .getAutocomplete(realQuery);
     return results['users'];
   }
-  
-  void getFocus(String userName){
+
+  void getFocus(String userName) {
     _controller.text = '@[$userName]$userName ';
     _focus.requestFocus();
   }
@@ -146,8 +146,9 @@ class NewCommentState extends State<NewComment> with AlertMixin {
                 maxLines: null,
                 maxLength: 240,
                 decoration: InputDecoration(
-                    counterText: '',
-                    hintText: Translations.of(context).text('hint_comment')),
+                  counterText: '',
+                  hintText: Translations.of(context).text('hint_comment'),
+                ),
                 onChanged: (value) {
                   setState(() {
                     //_enteredMessage = value;
@@ -189,7 +190,9 @@ class NewCommentState extends State<NewComment> with AlertMixin {
             icon: Icon(Icons.send),
             onPressed: _isLoading
                 ? null
-                : _toCheck.trim().isEmpty ? null : _sendComment,
+                : _toCheck.trim().isEmpty
+                    ? null
+                    : _sendComment,
           )
         ],
       ),

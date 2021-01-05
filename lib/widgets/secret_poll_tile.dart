@@ -45,6 +45,7 @@ class SecretPollTile extends StatelessWidget {
   final int pos;
   final Function deleteFunction;
   final ResourceModel audio;
+  final bool isSatisfaction;
 
   SecretPollTile({
     @required this.reference,
@@ -71,6 +72,7 @@ class SecretPollTile extends StatelessWidget {
     @required this.pos,
     @required this.deleteFunction,
     @required this.audio,
+    @required this.isSatisfaction,
   });
 
   final Color color = Color(0xFFFFF5FB);
@@ -236,6 +238,7 @@ class SecretPollTile extends StatelessWidget {
                 isMine: false,
                 isSecret: true,
                 function: _delete,
+                isSatisfaction: isSatisfaction,
               ),
             ),
             Consumer<ContentProvider>(

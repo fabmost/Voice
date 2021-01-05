@@ -7,6 +7,7 @@ import '../models/poll_model.dart';
 import '../models/challenge_model.dart';
 import '../models/tip_model.dart';
 import '../widgets/poll_tile.dart';
+import '../widgets/poll_promo_tile.dart';
 import '../widgets/challenge_tile.dart';
 import '../widgets/tip_tile.dart';
 import '../widgets/cause_tile.dart';
@@ -53,6 +54,36 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       resources: content.resources,
       videoFunction: null,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
+    );
+  }
+
+  Widget _promoPollWidget(PollModel content) {
+    return PollPromoTile(
+      reference: 'search',
+      id: content.id,
+      date: content.createdAt,
+      userName: content.user.userName,
+      userImage: content.user.icon,
+      certificate: content.certificate,
+      title: content.title,
+      description: content.description,
+      votes: content.votes,
+      likes: content.likes,
+      comments: content.comments,
+      regalups: content.regalups,
+      hasVoted: content.hasVoted,
+      hasLiked: content.hasLiked,
+      hasRegalup: content.hasRegalup,
+      hasSaved: content.hasSaved,
+      answers: content.answers,
+      resources: content.resources,
+      terms: content.terms,
+      message: content.message,
+      promoUrl: content.promoUrl,
+      regalupName: content.creator,
+      audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -209,6 +240,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                           return _causeWidget(doc);
                         case 'tip':
                           return _tipWidget(doc);
+                        case 'promo_p':
+                          return _promoPollWidget(doc);
                         default:
                           return SizedBox();
                       }

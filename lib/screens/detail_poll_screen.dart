@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../translations.dart';
 import '../widgets/header_poll.dart';
 import '../widgets/header_private_poll.dart';
-import '../widgets/comment_tile.dart';
+import '../widgets/comment_list_tile.dart';
 import '../widgets/new_comment.dart';
 import '../models/poll_model.dart';
 import '../models/comment_model.dart';
@@ -70,15 +70,59 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
   }
 
   void _setComment(comment) {
-    setState(() {
-      _commentsList.insert(0, comment);
-    });
+    if (_commentsList.isEmpty) {
+      setState(() {
+        _commentsList.insert(0, comment);
+      });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => DetailPollScreen(
+            id: widget.id,
+          ),
+          transitionDuration: Duration(seconds: 0),
+        ),
+      );
+    }
   }
 
-  void _removeContent(id) {
-    setState(() {
-      _commentsList.removeWhere((element) => element.id == id);
-    });
+  List<Widget> _buildSlivers() {
+    List<Widget> slivers = [];
+    if (_pollModel != null) {
+      slivers.add(
+        SliverToBoxAdapter(
+          child: _pollModel.type == 'private_p'
+              ? HeaderPrivatePoll(_pollModel)
+              : HeaderPoll(_pollModel),
+        ),
+      );
+      if (_commentsList.isEmpty) {
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: Center(
+                child: Text(Translations.of(context).text('empty_comments')),
+              ),
+            ),
+          ),
+        );
+      } else {
+        _commentsList.forEach((value) {
+          slivers.add(
+            CommentListTile(
+              id: widget.id,
+              type: 'P',
+              owner: _pollModel.user.userName,
+              mComment: value,
+            ),
+          );
+        });
+      }
+    }
+    //if (_hasMore) slivers.add(_loadingWidget());
+    return slivers;
   }
 
   @override
@@ -100,7 +144,9 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () => _fetchPollAndComments(),
-                    child: ListView.builder(
+                    child: CustomScrollView(
+                      slivers: _buildSlivers(),
+                      /*
                       itemCount:
                           _commentsList.isEmpty ? 2 : _commentsList.length + 1,
                       itemBuilder: (context, i) {
@@ -138,6 +184,7 @@ class _DetailPollScreenState extends State<DetailPollScreen> {
                           owner: _pollModel.user.userName,
                         );
                       },
+                      */
                     ),
                   ),
                 ),

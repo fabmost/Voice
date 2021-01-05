@@ -54,6 +54,7 @@ class _FilteredContentState extends State<TopContent>
       resources: content.resources,
       videoFunction: null,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

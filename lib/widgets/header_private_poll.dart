@@ -191,6 +191,7 @@ class HeaderPrivatePoll extends StatelessWidget {
           child: PollOptions(
             id: pollModel.id,
             isMine: false,
+            isSatisfaction: false,
           ),
         ),
         Consumer<ContentProvider>(

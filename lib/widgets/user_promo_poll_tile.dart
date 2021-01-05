@@ -46,6 +46,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
   final String message;
   final Function removeFunction;
   final ResourceModel audio;
+  final bool isSatisfaction;
 
   UserPromoPollTile({
     @required this.reference,
@@ -72,6 +73,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
     @required this.message,
     @required this.removeFunction,
     @required this.audio,
+    @required this.isSatisfaction,
   });
 
   final Color color = Color(0xFFFDF9F5);
@@ -84,19 +86,20 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
           pollId: id,
           title: title,
           answers: answers,
+          isSatisfaction: isSatisfaction,
         ),
       ),
     );
   }
 
-  void _share() {
+  void _share(context) {
     String image;
     if (userImage != null && userImage.isNotEmpty) {
       image = userImage;
     } else if (resources.isNotEmpty) {
       image = resources[0].url;
     }
-    sharePromoPoll(id, title, image);
+    sharePromoPoll(context, id, title, image);
   }
 
   void _deleteAlert(context) {
@@ -248,6 +251,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
                 terms: terms,
                 message: message,
                 promoUrl: promoUrl,
+                isSatisfaction: isSatisfaction,
               ),
             ),
             PromoButton(id, true),
@@ -295,7 +299,7 @@ class UserPromoPollTile extends StatelessWidget with ShareContent {
                   ),
                   IconButton(
                     icon: Icon(GalupFont.share),
-                    onPressed: _share,
+                    onPressed: ()=> _share(context),
                   ),
                 ],
               ),

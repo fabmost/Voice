@@ -63,6 +63,7 @@ class _SavedListState extends State<SavedList> {
       resources: content.resources,
       videoFunction: _playVideo,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -89,6 +90,7 @@ class _SavedListState extends State<SavedList> {
       videoFunction: _playVideo,
       groups: content.groups,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -117,6 +119,7 @@ class _SavedListState extends State<SavedList> {
       promoUrl: content.promoUrl,
       regalupName: content.creator,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

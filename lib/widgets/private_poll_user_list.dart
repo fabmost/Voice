@@ -61,6 +61,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
       videoFunction: _playVideo,
       groups: content.groups,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -84,6 +85,7 @@ class _PollUserListState extends State<PrivatePollUserList> {
       removeFunction: _removeContent,
       groups: content.groups,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

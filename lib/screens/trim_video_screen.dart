@@ -31,7 +31,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        content: Text('Tu video debe durar menos de 60 segundos'),
+        content: Text('Tu video debe durar menos de 4 minutos'),
         actions: <Widget>[
           FlatButton(
             onPressed: () {
@@ -48,7 +48,7 @@ class _TrimmerViewState extends State<TrimmerView> {
     int duration;
     duration = (_endValue - _startValue).toInt();
 
-    if (duration > 60000) {
+    if (duration > (60000 * 4)) {
       _alertError();
       return null;
     }

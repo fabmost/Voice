@@ -288,9 +288,17 @@ class _UserProfileCoverState extends State<UserProfileCover> {
 
   Widget _story(pos) {
     final ResourceModel res = _histories[pos];
+    final image = res.type == 'V' ? res.thumbnail : res.url;
+    final newImage = image.replaceAll('https', 'http');
     return CachedNetworkImage(
-      imageUrl: res.type == 'V' ? res.thumbnail : res.url,
+      imageUrl: newImage,
       fit: BoxFit.fitHeight,
+      progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+        child: CircularProgressIndicator(value: downloadProgress.progress),
+      ),
+      errorWidget: (context, url, error) => Center(
+        child: Text('Ocurrió un error al cargar la imagen $error'),
+      ),
     );
   }
 
@@ -347,7 +355,9 @@ class _UserProfileCoverState extends State<UserProfileCover> {
                 onTap: () => _isLoading == 0 ? null : _imageOptions(0),
                 child: _isLoading == 0
                     ? _loader()
-                    : _histories.length > 0 ? _story(0) : _placeholder(),
+                    : _histories.length > 0
+                        ? _story(0)
+                        : _placeholder(),
               ),
             ),
           ),
@@ -361,7 +371,9 @@ class _UserProfileCoverState extends State<UserProfileCover> {
                 onTap: () => _isLoading == 1 ? null : _imageOptions(1),
                 child: _isLoading == 1
                     ? _loader()
-                    : _histories.length > 1 ? _story(1) : _placeholder(),
+                    : _histories.length > 1
+                        ? _story(1)
+                        : _placeholder(),
               ),
             ),
           ),
@@ -375,7 +387,9 @@ class _UserProfileCoverState extends State<UserProfileCover> {
                 onTap: () => _isLoading == 2 ? null : _imageOptions(2),
                 child: _isLoading == 2
                     ? _loader()
-                    : _histories.length > 2 ? _story(2) : _placeholder(),
+                    : _histories.length > 2
+                        ? _story(2)
+                        : _placeholder(),
               ),
             ),
           ),

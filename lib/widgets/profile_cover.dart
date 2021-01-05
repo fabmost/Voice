@@ -10,6 +10,8 @@ class ProfileCover extends StatelessWidget {
   ProfileCover(this.histories);
 
   Widget _historyWidget(context, width, ResourceModel history) {
+    final image = history.type == 'V' ? history.thumbnail : history.url;
+    final newImage = image.replaceAll('https', 'http');
     return Container(
       width: width,
       color: Colors.grey,
@@ -25,8 +27,16 @@ class ProfileCover extends StatelessWidget {
             );
           },
           child: CachedNetworkImage(
-            imageUrl: history.type == 'V' ? history.thumbnail : history.url,
+            imageUrl: newImage,
             fit: BoxFit.fitHeight,
+            progressIndicatorBuilder: (context, url, downloadProgress) =>
+                Center(
+              child:
+                  CircularProgressIndicator(value: downloadProgress.progress),
+            ),
+            errorWidget: (context, url, error) => Center(
+              child: Text('Ocurrió un error al cargar la imagen $error'),
+            ),
           ),
         ),
       ),

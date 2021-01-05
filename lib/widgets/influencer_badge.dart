@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/certificate_model.dart';
@@ -27,8 +28,8 @@ class InfluencerBadge extends StatelessWidget {
                 final dynamic tooltip = mKey.currentState;
                 tooltip.ensureTooltipVisible();
               },
-              child: Image.network(
-                certificate.icon,
+              child: CachedNetworkImage(
+                imageUrl: certificate.icon,
                 width: (size + 2),
               ),
             ),

@@ -45,6 +45,7 @@ class PrivatePollTile extends StatelessWidget {
   final videoFunction;
   final List groups;
   final ResourceModel audio;
+  final bool isSatisfaction;
 
   PrivatePollTile({
     @required this.reference,
@@ -69,6 +70,7 @@ class PrivatePollTile extends StatelessWidget {
     @required this.videoFunction,
     @required this.groups,
     @required this.audio,
+    @required this.isSatisfaction,
   });
 
   final Color color = Color(0xFFF0F0F0);
@@ -106,7 +108,7 @@ class PrivatePollTile extends StatelessWidget {
               ),
               for (var item in groups)
                 InkWell(
-                  onTap: ()=> _toGroup(context, item.id, item.title),
+                  onTap: () => _toGroup(context, item.id, item.title),
                   child: Container(
                     padding: const EdgeInsets.all(8.0),
                     width: double.infinity,
@@ -252,6 +254,7 @@ class PrivatePollTile extends StatelessWidget {
               child: PollOptions(
                 id: id,
                 isMine: false,
+                isSatisfaction: isSatisfaction,
               ),
             ),
             Consumer<ContentProvider>(

@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 2.0.1+106
+version: 2.0.4+113
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -70,7 +70,8 @@ dependencies:
   html_character_entities: ^0.1.2+4
   uuid: ^2.2.2
   debounce_throttle: ^1.1.0
-  cached_network_image: ^2.3.2+1
+  cached_network_image: ^2.4.1
+  # flutter_cache_manager: ^2.0.0
   story_view: ^0.12.4
   after_layout: ^1.0.7+2
   material_segmented_control: ^2.1.0
@@ -78,6 +79,8 @@ dependencies:
   flutter_sound_lite: ^6.4.2+1
   flutter_beep: ^0.2.0
   vibration: ^1.7.2
+
+  socket_io_client: ^0.9.12
 
   # Cambiar cuando compilas para producción
   video_compress: ^2.1.1
@@ -120,6 +123,11 @@ flutter:
     - assets/onboarding_3.png
     - assets/onboarding_4.png
     - assets/onboarding_5.png
+    - assets/1.png
+    - assets/2.png
+    - assets/3.png
+    - assets/4.png
+    - assets/5.png
   #   - images/a_dot_ham.jpeg
     - assets/videos/encuesta.mp4
     - assets/videos/tip.mp4

@@ -78,14 +78,14 @@ class HeaderPromoPoll extends StatelessWidget with ShareContent {
     });
   }
 
-  void _share() {
+  void _share(context) {
     String image;
     if (pollModel.user.icon != null && pollModel.user.icon.isNotEmpty) {
       image = pollModel.user.icon;
     } else if (pollModel.resources.isNotEmpty) {
       image = pollModel.resources[0].url;
     }
-    sharePromoPoll(pollModel.id, pollModel.title, image);
+    sharePromoPoll(context, pollModel.id, pollModel.title, image);
   }
 
   Widget _handleResources() {
@@ -164,6 +164,7 @@ class HeaderPromoPoll extends StatelessWidget with ShareContent {
             terms: pollModel.terms,
             message: pollModel.message,
             promoUrl: pollModel.promoUrl,
+            isSatisfaction: pollModel.isSatisfaction,
           ),
         ),
         PromoButton(pollModel.id, false),
@@ -207,7 +208,7 @@ class HeaderPromoPoll extends StatelessWidget with ShareContent {
               ),
               IconButton(
                 icon: Icon(GalupFont.share),
-                onPressed: _share,
+                onPressed: ()=> _share(context),
               ),
             ],
           ),

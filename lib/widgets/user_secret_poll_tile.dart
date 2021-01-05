@@ -38,6 +38,7 @@ class UserSecretPollTile extends StatelessWidget with ShareContent {
   final Function removeFunction;
   final List<GroupModel> groups;
   final ResourceModel audio;
+  final bool isSatisfaction;
 
   final Color color = Color(0xFFFFF5FB);
 
@@ -60,6 +61,7 @@ class UserSecretPollTile extends StatelessWidget with ShareContent {
     @required this.removeFunction,
     @required this.groups,
     @required this.audio,
+    @required this.isSatisfaction,
   });
 
   void _toAnalytics(context) {
@@ -70,6 +72,7 @@ class UserSecretPollTile extends StatelessWidget with ShareContent {
           pollId: id,
           title: title,
           answers: answers,
+          isSatisfaction: isSatisfaction,
         ),
       ),
     );
@@ -257,6 +260,7 @@ class UserSecretPollTile extends StatelessWidget with ShareContent {
               child: PollOptions(
                 id: id,
                 isMine: true,
+                isSatisfaction: isSatisfaction,
               ),
             ),
             Consumer<ContentProvider>(

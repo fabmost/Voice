@@ -12,7 +12,6 @@ import '../widgets/story_tile.dart';
 import '../widgets/user_card.dart';
 import '../providers/content_provider.dart';
 import '../models/user_model.dart';
-import '../models/resource_model.dart';
 import '../models/story_model.dart';
 import '../models/content_model.dart';
 import '../models/poll_model.dart';
@@ -38,31 +37,7 @@ class HomeScreenState extends State<HomeScreen>
       GlobalKey<RefreshIndicatorState>();
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   List<UserModel> mUsers = [];
-  List<StoryModel> mStories = [
-    StoryModel(
-      user: UserModel(
-        userName: 'Usuario Prueba',
-        icon:
-            'https://cactusthemes.com/blog/wp-content/uploads/2018/01/tt_avatar_small.jpg',
-      ),
-      story: ResourceModel(
-        type: 'I',
-        url:
-            'https://i.pinimg.com/originals/80/d8/98/80d89883f4de6fc53712b781dcac0eaf.jpg',
-      ),
-    ),
-    StoryModel(
-      user: UserModel(
-        userName: 'Otro usuario',
-        icon:
-            'https://cactusthemes.com/blog/wp-content/uploads/2018/01/tt_avatar_small.jpg',
-      ),
-      story: ResourceModel(
-        type: 'V',
-        url: 'https://i.vimeocdn.com/video/20963649_1280x720.jpg',
-      ),
-    )
-  ];
+  List<StoryModel> mStories = [];
   List<ContentModel> mList = [];
   int currentPageNumber;
   bool _hasMore = true;
@@ -90,6 +65,7 @@ class HomeScreenState extends State<HomeScreen>
       resources: content.resources,
       videoFunction: widget.videoFunction,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -116,6 +92,7 @@ class HomeScreenState extends State<HomeScreen>
       videoFunction: widget.videoFunction,
       groups: content.groups,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -144,6 +121,7 @@ class HomeScreenState extends State<HomeScreen>
       pos: pos,
       deleteFunction: _deleteContent,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -239,6 +217,7 @@ class HomeScreenState extends State<HomeScreen>
       regalupName: content.creator,
       videoFunction: null,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 
@@ -339,6 +318,7 @@ class HomeScreenState extends State<HomeScreen>
       promoUrl: content.promoUrl,
       regalupName: content.creator,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

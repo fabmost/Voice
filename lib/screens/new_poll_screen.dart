@@ -80,6 +80,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   File _videoFile;
   File _videoThumb;
   int _pollType = 0;
+  int _answerType = 0;
 
   final double size = 82;
 
@@ -466,18 +467,21 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   }
 
   void _stopRecording() async {
+    String txt;
     await recorderModule.stopRecorder();
     if (_recorderSubscription != null) {
       _recorderSubscription.cancel();
       _recorderSubscription = null;
     }
     _recordingDuration = await flutterSoundHelper.duration(_audioPath);
-    DateTime date = new DateTime.fromMillisecondsSinceEpoch(
-        _recordingDuration.inMilliseconds,
-        isUtc: true);
-    String txt = DateFormat('mm:ss', 'en_GB').format(date);
+    if (_recordingDuration != null) {
+      DateTime date = new DateTime.fromMillisecondsSinceEpoch(
+          _recordingDuration.inMilliseconds,
+          isUtc: true);
+      txt = DateFormat('mm:ss', 'en_GB').format(date);
+    }
     setState(() {
-      _recorderTxt = txt.substring(0, 5);
+      if (txt != null) _recorderTxt = txt.substring(0, 5);
       _isRecording = false;
       buttonPadding = 8;
       boxSize = 16;
@@ -525,10 +529,14 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
   void _validate() {
     if ((_pollType == 0 && _titleController.text.isNotEmpty ||
             _pollType == 1 && _audioPath != null) &&
-        _firstController.text.isNotEmpty &&
-        _secondController.text.isNotEmpty &&
         category != null) {
-      if (!moreOptions || (moreOptions && _thirdController.text.isNotEmpty)) {
+      if (_answerType == 1) {
+        _validationAlert();
+        return;
+      } else if (_firstController.text.isNotEmpty &&
+              _secondController.text.isNotEmpty &&
+              !moreOptions ||
+          (moreOptions && _thirdController.text.isNotEmpty)) {
         _validationAlert();
         return;
       }
@@ -654,60 +662,71 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
     setState(() {
       _isLoading = true;
     });
-    var pollAnswers = [];
-    if (_option1 != null) {
-      String idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        _option1.path,
-        'I',
-        'PA',
-      );
 
-      pollAnswers.add({
-        'text': serverSafe(_firstController.text),
-        'image': idResource,
-      });
-    } else {
-      pollAnswers.add({
-        'text': serverSafe(_firstController.text),
-        'image': null,
-      });
-    }
-    if (_option2 != null) {
-      String idResource =
-          await Provider.of<ContentProvider>(context, listen: false)
-              .uploadResource(
-        _option2.path,
-        'I',
-        'PA',
-      );
-      pollAnswers.add({
-        'text': serverSafe(_secondController.text),
-        'image': idResource,
-      });
-    } else {
-      pollAnswers.add({
-        'text': serverSafe(_secondController.text),
-        'image': null,
-      });
-    }
-    if (moreOptions) {
-      if (_option3 != null) {
+    var pollAnswers = [];
+    if (_answerType == 0) {
+      if (_option1 != null) {
         String idResource =
             await Provider.of<ContentProvider>(context, listen: false)
                 .uploadResource(
-          _option3.path,
+          _option1.path,
           'I',
           'PA',
         );
+
         pollAnswers.add({
-          'text': serverSafe(_thirdController.text),
+          'text': serverSafe(_firstController.text),
           'image': idResource,
         });
       } else {
         pollAnswers.add({
-          'text': serverSafe(_thirdController.text),
+          'text': serverSafe(_firstController.text),
+          'image': null,
+        });
+      }
+      if (_option2 != null) {
+        String idResource =
+            await Provider.of<ContentProvider>(context, listen: false)
+                .uploadResource(
+          _option2.path,
+          'I',
+          'PA',
+        );
+        pollAnswers.add({
+          'text': serverSafe(_secondController.text),
+          'image': idResource,
+        });
+      } else {
+        pollAnswers.add({
+          'text': serverSafe(_secondController.text),
+          'image': null,
+        });
+      }
+      if (moreOptions) {
+        if (_option3 != null) {
+          String idResource =
+              await Provider.of<ContentProvider>(context, listen: false)
+                  .uploadResource(
+            _option3.path,
+            'I',
+            'PA',
+          );
+          pollAnswers.add({
+            'text': serverSafe(_thirdController.text),
+            'image': idResource,
+          });
+        } else {
+          pollAnswers.add({
+            'text': serverSafe(_thirdController.text),
+            'image': null,
+          });
+        }
+      }
+    } else {
+      for (var i = 0; i < 5; i++) {
+        int cant = i + 1;
+        pollAnswers.add({
+          'text': '$cant',
           'image': null,
         });
       }
@@ -816,6 +835,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
       hashtag: hashes,
       taged: tags,
       audio: idAudio,
+      satisfaction: _answerType == 1,
     );
 
     setState(() {
@@ -1040,6 +1060,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
 
   @override
   Widget build(BuildContext context) {
+    final caritaWidth = (MediaQuery.of(context).size.width - 64) / 5;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -1080,7 +1101,7 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 52),
+                margin: const EdgeInsets.symmetric(horizontal: 42),
                 child: MaterialSegmentedControl(
                     children: {
                       0: Text('Escribir'),
@@ -1161,7 +1182,9 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
                               IconButton(
                                 onPressed: _isRecording && _audioPath == null
                                     ? null
-                                    : _isPlaying ? null : _startPlayer,
+                                    : _isPlaying
+                                        ? null
+                                        : _startPlayer,
                                 icon: Icon(Icons.play_arrow),
                               ),
                               Expanded(
@@ -1310,23 +1333,60 @@ class _NewPollScreenState extends State<NewPollScreen> with TextMixin {
                         ),
                     ],
                   ),
-              SizedBox(height: 16),
-              _title('Respuestas'),
-              SizedBox(height: 16),
-              _firstOption(),
-              SizedBox(height: 8),
-              _secondOption(),
-              if (moreOptions) SizedBox(height: 8),
-              if (moreOptions) _thirdOption(),
-              if (!moreOptions)
-                FlatButton.icon(
-                  onPressed: _addOption,
-                  icon: Icon(GalupFont.add),
-                  label: Text('Agregar opción'),
+              const SizedBox(height: 16),
+              _title('¿Qué tipo de respuestas deseas añadir'),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 42),
+                child: MaterialSegmentedControl(
+                    children: {
+                      0: Text('Abiertas'),
+                      1: Text('Satisfacción'),
+                    },
+                    selectionIndex: _answerType,
+                    selectedColor: Theme.of(context).primaryColor,
+                    unselectedColor: Colors.white,
+                    borderColor: Theme.of(context).primaryColor,
+                    onSegmentChosen: (index) {
+                      setState(() {
+                        _answerType = index;
+                      });
+                    }),
+              ),
+              const SizedBox(height: 16),
+              if (_answerType == 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Image.asset('assets/1.png', width: caritaWidth),
+                    Image.asset('assets/2.png', width: caritaWidth),
+                    Image.asset('assets/3.png', width: caritaWidth),
+                    Image.asset('assets/4.png', width: caritaWidth),
+                    Image.asset('assets/5.png', width: caritaWidth),
+                  ],
                 ),
-              SizedBox(height: 16),
+              if (_answerType == 1) const SizedBox(height: 16),
+              if (_answerType == 1)
+                Text(
+                    'Al seleccionar la encuesta de satisfacción estas serán las opciones que se mostrarán.'),
+              if (_answerType == 0) _firstOption(),
+              if (_answerType == 0) const SizedBox(height: 8),
+              if (_answerType == 0) _secondOption(),
+              if (_answerType == 0)
+                if (moreOptions) const SizedBox(height: 8),
+              if (_answerType == 0)
+                if (moreOptions) _thirdOption(),
+              if (_answerType == 0)
+                if (!moreOptions)
+                  FlatButton.icon(
+                    onPressed: _addOption,
+                    icon: Icon(GalupFont.add),
+                    label: Text('Agregar opción'),
+                  ),
+              const SizedBox(height: 16),
               _title(Translations.of(context).text('hint_category')),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               InkWell(
                 onTap: _selectCategory,
                 child: Container(

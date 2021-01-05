@@ -124,10 +124,10 @@ class _ProfileScreenState extends State<ProfileScreen>
           }
           bool hasSocialMedia = false;
 
-          double containerHeight = 390;
+          double containerHeight = 375;
           if (provider.getUserModel.biography != null &&
               provider.getUserModel.biography.isNotEmpty) {
-            containerHeight += 10;
+            containerHeight += 48;
           }
           if ((provider.getUserModel.tiktok ?? '').isNotEmpty ||
               (provider.getUserModel.facebook ?? '').isNotEmpty ||
@@ -136,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               (provider.getUserModel.linkedin ?? '').isNotEmpty ||
               (provider.getUserModel.youtube ?? '').isNotEmpty) {
             hasSocialMedia = true;
-            containerHeight += 50;
+            containerHeight += 70;
           }
 
           return DefaultTabController(

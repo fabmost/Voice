@@ -58,6 +58,7 @@ class _PollListState extends State<PrivatePollList> {
       videoFunction: _playVideo,
       groups: content.groups,
       audio: content.audio,
+      isSatisfaction: content.isSatisfaction,
     );
   }
 

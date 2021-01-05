@@ -1,28 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../widgets/chat_messages.dart';
 import '../widgets/new_message.dart';
-import '../providers/auth_provider.dart';
+import '../widgets/message_bubble.dart';
+import '../models/message_model.dart';
+import '../providers/chat_provider.dart';
+import '../providers/user_provider.dart';
 
 class ChatScreen extends StatefulWidget {
-  static const routeName = '/chat';
+  final String userHash;
+
+  ChatScreen(this.userHash);
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  String chatId;
+  List<MessageModel> _list = [];
+  int _currentPageNumber = 0;
   bool hasSearched = false;
+  String userName;
 
-  void _setChatId(value) {
-    setState(() {
-      chatId = value;
-    });
-  }
-
+/*
   void _searchChat(other) async {
     hasSearched = true;
     final user =
@@ -43,9 +43,26 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
   }
+  */
+
+  void _getData() async {
+    userName = Provider.of<UserProvider>(context, listen: false).getUser;
+    List results = await Provider.of<ChatProvider>(context, listen: false)
+        .getMessages(widget.userHash, _currentPageNumber);
+    setState(() {
+      _list = results;
+    });
+  }
+
+  @override
+  void initState() {
+    _getData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    /*
     final map = ModalRoute.of(context).settings.arguments as Map;
     String other;
     if (map != null) {
@@ -57,6 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _searchChat(other);
       }
     }
+    */
     return Scaffold(
       appBar: AppBar(
         title: Text('Chat'),
@@ -65,9 +83,21 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: <Widget>[
             Expanded(
-              child: chatId == null ? Container() : ChatMessages(chatId),
+              child: ListView.builder(
+                  reverse: true,
+                  itemCount: _list.length,
+                  itemBuilder: (ctx, i) {
+                    MessageModel mMessage = _list[i];
+                    return MessageBubble(
+                      key: ValueKey(mMessage.id),
+                      message: mMessage.message,
+                      isMe: userName == mMessage.sender,
+                      userimage: null,
+                      username: mMessage.sender,
+                    );
+                  }),
             ),
-            NewMessage(chatId, other, _setChatId),
+            NewMessage('chatId', 'other', null),
           ],
         ),
       ),

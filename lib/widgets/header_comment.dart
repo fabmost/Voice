@@ -172,7 +172,6 @@ class HeaderComment extends StatelessWidget {
           hasLike: comment.hasLike,
           hasDislike: comment.hasDislike,
         ),
-        Divider(),
       ],
     );
   }

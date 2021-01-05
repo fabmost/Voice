@@ -49,38 +49,38 @@ class CommentOptions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ContentProvider>(builder: (context, value, child) {
       CommentModel _comment = value.getCommentsMap[id];
-      return Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              FlatButton.icon(
-                icon: Icon(
-                  GalupFont.like,
-                  color: _comment.hasLike
-                      ? Theme.of(context).accentColor
-                      : Colors.black,
-                ),
-                label: Text(_comment.likes == 0 ? '' : '${_comment.likes}'),
-                onPressed: () => _setLike(context, 'L'),
-              ),
-              FlatButton.icon(
-                icon: Icon(
-                  GalupFont.dislike,
-                  color: _comment.hasDislike
-                      ? Theme.of(context).accentColor
-                      : Colors.black,
-                ),
-                label:
-                    Text(_comment.dislikes == 0 ? '' : '${_comment.dislikes}'),
-                onPressed: () => _setLike(context, 'D'),
-              ),
-              FlatButton(
-                child: Text('Responder'),
-                onPressed: toComments,
-              ),
-            ],
+      //return Column(
+      //children: [
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FlatButton.icon(
+            icon: Icon(
+              GalupFont.like,
+              color: _comment.hasLike
+                  ? Theme.of(context).accentColor
+                  : Colors.black,
+            ),
+            label: Text(_comment.likes == 0 ? '' : '${_comment.likes}'),
+            onPressed: () => _setLike(context, 'L'),
           ),
+          FlatButton.icon(
+            icon: Icon(
+              GalupFont.dislike,
+              color: _comment.hasDislike
+                  ? Theme.of(context).accentColor
+                  : Colors.black,
+            ),
+            label: Text(_comment.dislikes == 0 ? '' : '${_comment.dislikes}'),
+            onPressed: () => _setLike(context, 'D'),
+          ),
+          FlatButton(
+            child: Text('Responder'),
+            onPressed: toComments,
+          ),
+        ],
+      );
+      /*
           if (_comment.comments > 0)
             Row(
               children: <Widget>[
@@ -98,8 +98,9 @@ class CommentOptions extends StatelessWidget {
               ],
             ),
           if (_comment.comments == 0) Divider(),
-        ],
-      );
+          */
+      //],
+      //);
     });
   }
 }

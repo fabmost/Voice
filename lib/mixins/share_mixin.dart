@@ -1,11 +1,19 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+
+import '../providers/content_provider.dart';
 
 class ShareContent {
   final String _shareImage =
       'https://firebasestorage.googleapis.com/v0/b/voiceinc-e945f.appspot.com/o/galup-preview.png?alt=media&token=5ccd092a-9148-43bf-924a-0bad40c05a8b';
-  
-  void sharePoll(id, title, image) async {
+
+  Future<String> _getLink(context, image, title, description, url) async {
+    return Provider.of<ContentProvider>(context, listen: false).getShareLink(
+        image != null ? image : _shareImage, title, description, url);
+  }
+
+  void sharePoll(context, id, title, image) async {
     String toRemove;
     int start = title.indexOf('[');
     if (start != -1) {
@@ -38,13 +46,21 @@ class ShareContent {
     );
 
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
+    Uri urlToShare = shortLink.shortUrl;
+
+    String url = await _getLink(
+      context,
+      image,
+      sharedText,
+      'En Galup tu opinión cuenta',
+      urlToShare.toString(),
+    );
 
     Share.share(
         'Vota en esta encuesta Galup y sé la diferencia! Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
   }
 
-  void sharePromoPoll(id, title, image) async {
+  void sharePromoPoll(context, id, title, image) async {
     String toRemove;
     int start = title.indexOf('[');
     if (start != -1) {
@@ -77,7 +93,15 @@ class ShareContent {
     );
 
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
+    Uri urlToShare = shortLink.shortUrl;
+
+    String url = await _getLink(
+      context,
+      image,
+      sharedText,
+      'En Galup tu opinión cuenta',
+      urlToShare.toString(),
+    );
 
     Share.share(
         'Vota en esta encuesta Galup y sé la diferencia! Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
@@ -113,7 +137,7 @@ class ShareContent {
         'Ayúdame a cumplir con este challenge Galup. Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
   }
 
-  void shareTip(id, title, image) async {
+  void shareTip(context, id, title, image) async {
     String toRemove;
     int start = title.indexOf('[');
     if (start != -1) {
@@ -146,7 +170,15 @@ class ShareContent {
     );
 
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
+    Uri urlToShare = shortLink.shortUrl;
+
+    String url = await _getLink(
+      context,
+      image,
+      sharedText,
+      'En Galup tu opinión cuenta',
+      urlToShare.toString(),
+    );
 
     Share.share(
         'Tip Galup! Conoce y comparte nuestra sección de valiosos tips. Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
@@ -182,7 +214,7 @@ class ShareContent {
         'Firma y apoya esta causa Galup y conviértete en un agente del cambio. Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
   }
 
-  void shareProfile(id, image) async {
+  void shareProfile(context, id, image) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://galup.page.link',
       link: Uri.parse('https://galup.app/profile/$id'),
@@ -206,7 +238,15 @@ class ShareContent {
     );
 
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
-    Uri url = shortLink.shortUrl;
+    Uri urlToShare = shortLink.shortUrl;
+
+    String url = await _getLink(
+      context,
+      image,
+      'Conoce este perfil',
+      'En Galup tu opinión cuenta',
+      urlToShare.toString(),
+    );
 
     Share.share(
         'Te invito a conocer la opinión de muchos. Descárgate nuestra aplicación y se parte de la comunidad GALUP. $url');
