@@ -26,8 +26,7 @@ class ChatModel {
         hash: element['user']['user_hash'],
       ),
       lastMessage: element['message'],
-      updatedAt:
-          DateFormat('yyyy-MM-DD HH:mm:ss').parse(element['date'], true),
+      updatedAt: DateFormat('yyyy-MM-DD HH:mm:ss').parse(element['date'], true),
     );
   }
 }

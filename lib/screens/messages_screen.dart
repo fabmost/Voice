@@ -11,17 +11,17 @@ class MessagesScreen extends StatefulWidget {
   const MessagesScreen({Key key}) : super(key: key);
 
   @override
-  _MessagesScreenState createState() => _MessagesScreenState();
+  MessagesScreenState createState() => MessagesScreenState();
 }
 
-class _MessagesScreenState extends State<MessagesScreen>
+class MessagesScreenState extends State<MessagesScreen>
     with AutomaticKeepAliveClientMixin {
   LoadMoreStatus loadMoreStatus = LoadMoreStatus.STABLE;
   final ScrollController scrollController = new ScrollController();
-  List<ChatModel> _list = [];
   int _currentPageNumber = 0;
   bool _isLoading = false;
   bool _hasMore = true;
+  bool _isEmpty = false;
 
   bool onNotification(ScrollNotification notification) {
     if (notification is ScrollUpdateNotification) {
@@ -39,8 +39,6 @@ class _MessagesScreenState extends State<MessagesScreen>
             setState(() {
               if (newObjects.isEmpty) {
                 _hasMore = false;
-              } else {
-                _list.addAll(newObjects);
               }
             });
             loadMoreStatus = LoadMoreStatus.STABLE;
@@ -52,6 +50,7 @@ class _MessagesScreenState extends State<MessagesScreen>
   }
 
   void _getData() async {
+    _currentPageNumber = 0;
     setState(() {
       _isLoading = true;
     });
@@ -59,15 +58,46 @@ class _MessagesScreenState extends State<MessagesScreen>
         .getChatsList(_currentPageNumber);
     setState(() {
       if (results.isEmpty) {
+        _isEmpty = true;
         _hasMore = false;
       } else {
-        if(results.length < 10){
+        if (results.length < 10) {
           _hasMore = false;
         }
-        _list = results;
       }
       _isLoading = false;
     });
+  }
+
+  void checkIfUpdateNeeded() {
+    if (Provider.of<ChatProvider>(context, listen: false).needsReload) {
+      _getData();
+    }
+  }
+
+  Widget _mList() {
+    return Consumer<ChatProvider>(
+      builder: (context, value, child) => ListView.separated(
+        controller: scrollController,
+        itemCount: _hasMore ? value.getChats.length + 1 : value.getChats.length,
+        separatorBuilder: (context, index) => Divider(),
+        itemBuilder: (context, i) {
+          if (i == value.getChats.length) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          ChatModel mChat = value.getChats[i];
+          return ChatTile(
+            userHash: mChat.user.hash,
+            userName: '${mChat.user.name} ${mChat.user.lastName}',
+            icon: mChat.user.icon,
+            message: mChat.lastMessage,
+            date: mChat.updatedAt,
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -90,32 +120,13 @@ class _MessagesScreenState extends State<MessagesScreen>
     super.build(context);
     return _isLoading
         ? Center(child: CircularProgressIndicator())
-        : _list.isEmpty
+        : _isEmpty
             ? Center(
                 child: Text('No tienes mensajes'),
               )
             : NotificationListener(
                 onNotification: onNotification,
-                child: ListView.separated(
-                  controller: scrollController,
-                  separatorBuilder: (context, index) => Divider(),
-                  itemCount: _hasMore ? _list.length + 1 : _list.length,
-                  itemBuilder: (context, i) {
-                    if (i == _list.length) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    ChatModel mChat = _list[i];
-                    return ChatTile(
-                      userHash: mChat.user.hash,
-                      userName: '${mChat.user.name} ${mChat.user.lastName}',
-                      icon: mChat.user.icon,
-                      message: mChat.lastMessage,
-                      date: mChat.updatedAt,
-                    );
-                  },
-                ),
+                child: _mList(),
               );
   }
 }

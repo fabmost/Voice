@@ -12,18 +12,20 @@ class ChatTile extends StatelessWidget {
   final DateTime date;
 
   ChatTile({
-    this.userName,
-    this.userHash,
-    this.icon,
-    this.message,
-    this.date,
+    @required this.userName,
+    @required this.userHash,
+    @required this.icon,
+    @required this.message,
+    @required this.date,
   });
 
   void _toChat(context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatScreen(userHash),
+        builder: (context) => ChatScreen(
+          userHash: userHash,
+        ),
       ),
     );
   }
@@ -37,7 +39,7 @@ class ChatTile extends StatelessWidget {
     return ListTile(
       onTap: () => _toChat(context),
       leading: CircleAvatar(
-        backgroundImage: icon == null ? null : NetworkImage(icon),
+        backgroundImage: (icon == null || icon == '') ? null : NetworkImage(icon),
       ),
       title: Text(userName),
       subtitle: Text(

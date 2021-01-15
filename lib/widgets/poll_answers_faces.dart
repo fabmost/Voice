@@ -26,7 +26,7 @@ class PollAnswersFaces extends StatelessWidget {
       onTap: () => setVote(idAnswer, position),
       child: Image.asset(
         images[position],
-        width: width,
+        width: width - 8,
       ),
     );
   }
@@ -41,7 +41,7 @@ class PollAnswersFaces extends StatelessWidget {
       children: [
         Image.asset(
           images[position],
-          width: width,
+          width: width - 8,
         ),
         const SizedBox(height: 5),
         Text(

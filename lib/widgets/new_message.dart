@@ -1,17 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../translations.dart';
-import '../providers/auth_provider.dart';
-import '../providers/user_provider.dart';
 
 class NewMessage extends StatefulWidget {
-  final String chatId;
-  final String other;
-  final Function setId;
+  final Function sendMessage;
 
-  NewMessage(this.chatId, this.other, this.setId);
+  NewMessage(this.sendMessage);
 
   @override
   _NewMessageState createState() => _NewMessageState();
@@ -22,74 +16,8 @@ class _NewMessageState extends State<NewMessage> {
   var _enteredMessage = '';
 
   void _sendComment() async {
-    FocusScope.of(context).unfocus();
-    final user = await Provider.of<AuthProvider>(context, listen: false).getHash();
-    final userData =
-        await Provider.of<UserProvider>(context, listen: false).userProfile();
-    if (widget.chatId == null) {
-      String chatId =
-          Firestore.instance.collection('chats').document().documentID;
-      final otherData = await Provider.of<UserProvider>(context, listen: false).getProfile(widget.other);
-      await Firestore.instance.collection('chats').document(chatId).setData({
-        'participant_ids': [user, widget.other],
-        'participants': {
-          user: {
-            'user_name': userData.userName,
-            'user_image': userData.icon,
-          },
-          otherData.hash: {
-            'user_name': otherData.userName,
-            'user_image': otherData.icon,
-          }
-        },
-        'createdAt': Timestamp.now(),
-        'updatedAt': Timestamp.now(),
-        'last_message': _enteredMessage,
-      });
-
-      WriteBatch batch = Firestore.instance.batch();
-      batch.setData(
-        Firestore.instance
-            .collection('chats')
-            .document(chatId)
-            .collection('messages')
-            .document(),
-        {
-          'text': _enteredMessage,
-          'createdAt': Timestamp.now(),
-          'userId': user,
-          'username': userData.userName,
-          'userimage': userData.icon,
-        },
-      );
-      
-      batch.commit();
-      widget.setId(chatId);
-    } else {
-      WriteBatch batch = Firestore.instance.batch();
-
-      batch.setData(
-        Firestore.instance
-            .collection('chats')
-            .document(widget.chatId)
-            .collection('messages')
-            .document(),
-        {
-          'text': _enteredMessage,
-          'createdAt': Timestamp.now(),
-          'userId': user,
-          'username': userData.userName,
-          'userimage': userData.icon,
-          'receiverId': widget.other,
-        },
-      );
-      batch.updateData(
-          Firestore.instance.collection('chats').document(widget.chatId), {
-        'updatedAt': Timestamp.now(),
-        'last_message': _enteredMessage,
-      });
-      batch.commit();
-    }
+    //FocusScope.of(context).unfocus();
+    widget.sendMessage(_enteredMessage);
     setState(() {
       _enteredMessage = '';
       _controller.clear();

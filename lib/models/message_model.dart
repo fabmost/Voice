@@ -1,8 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-
-import 'user_model.dart';
-
 class MessageModel {
   final String id;
   final String sender;

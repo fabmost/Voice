@@ -13,9 +13,10 @@ import '../models/message_model.dart';
 
 class ChatProvider with ChangeNotifier {
   final _storage = FlutterSecureStorage();
-  Map<String, ChatModel> _chats = {};
+  List<ChatModel> _chats = [];
+  bool needsReload = true;
 
-  Map<String, ChatModel> get getChats => {..._chats};
+  List<ChatModel> get getChats => [..._chats];
 
   Future<List<ChatModel>> getChatsList(page) async {
     var url = '${API.baseURL}/sessionMessage/$page';
@@ -36,6 +37,10 @@ class ChatProvider with ChangeNotifier {
     if (dataMap == null) {
       return [];
     }
+    if (page == 0) {
+      _chats.clear();
+    }
+    needsReload = false;
     if (dataMap['status'] == 'success') {
       await _saveToken(dataMap['session']['token']);
 
@@ -46,7 +51,7 @@ class ChatProvider with ChangeNotifier {
         Map content = element as Map;
         ChatModel chat = ChatModel.objectFromJson(content);
         contentList.add(chat);
-        _chats[chat.id] = chat;
+        _chats.add(chat);
       });
 
       notifyListeners();
@@ -88,6 +93,23 @@ class ChatProvider with ChangeNotifier {
       return getMessages(user, page);
     }
     return [];
+  }
+
+  void updateChat(String userHash, String message, DateTime time) {
+    int index = _chats.indexWhere((element) => element.user.hash == userHash);
+    if (index != -1) {
+      ChatModel oldChat = _chats.removeAt(index);
+      ChatModel newChat = ChatModel(
+        id: oldChat.id,
+        user: oldChat.user,
+        updatedAt: time,
+        lastMessage: message,
+      );
+      _chats.insert(0, newChat);
+    } else {
+      needsReload = true;
+    }
+    notifyListeners();
   }
 
   Future<String> _getToken() {

@@ -7,14 +7,12 @@ class MessageBubble extends StatelessWidget {
   final String message;
   final String userId;
   final String username;
-  final String userimage;
   final bool isMe;
 
   MessageBubble({
     this.message,
     this.userId,
     this.username,
-    this.userimage,
     this.isMe,
     this.key,
   });
@@ -43,7 +41,7 @@ class MessageBubble extends StatelessWidget {
                 horizontal: 16,
               ),
               margin: EdgeInsets.symmetric(
-                vertical: 16,
+                vertical: 4,
                 horizontal: 8,
               ),
               decoration: BoxDecoration(
@@ -62,7 +60,7 @@ class MessageBubble extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      if (!isMe) SizedBox(width: 32),
+                      if (isMe) const SizedBox(width: 16),
                       GestureDetector(
                         onTap: () => _toProfile(context),
                         child: Text(
@@ -78,7 +76,7 @@ class MessageBubble extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (isMe) SizedBox(width: 32),
+                      if (!isMe) const SizedBox(width: 16),
                     ],
                   ),
                   Text(
@@ -95,18 +93,6 @@ class MessageBubble extends StatelessWidget {
             ),
           ],
         ),
-        Positioned(
-          top: 0,
-          left: isMe ? null : 10,
-          right: isMe ? 10 : null,
-          child: GestureDetector(
-            onTap: () => _toProfile(context),
-            child: CircleAvatar(
-              backgroundImage:
-                  userimage == null ? null : NetworkImage(userimage),
-            ),
-          ),
-        )
       ],
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:badges/badges.dart';
@@ -5,6 +6,8 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -19,6 +22,7 @@ import '../widgets/no_appbar.dart';
 import '../providers/preferences_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/chat_provider.dart';
 
 import 'home_screen.dart';
 import 'upgrade_screen.dart';
@@ -51,6 +55,7 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   static ScrollController _homeController = ScrollController();
   static GlobalKey<HomeScreenState> _myKey = GlobalKey();
+  static GlobalKey<MessagesScreenState> _chatKey = GlobalKey();
   bool _triggeredOnboarding = false;
   bool _isOpen = false;
   bool _showBadge = false;
@@ -70,7 +75,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       stopVideo: _playVideo,
     ),
     MessagesScreen(
-      key: PageStorageKey('Page3'),
+      key: _chatKey,
     ),
     ProfileScreen(
       key: PageStorageKey('Page4'),
@@ -99,6 +104,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           curve: Curves.easeOut,
           duration: const Duration(milliseconds: 300),
         );
+      }
+      if (index == 2) {
+        if (_chatKey.currentState != null)
+          _chatKey.currentState.checkIfUpdateNeeded();
       }
       _selectedPageIndex = index;
     });
@@ -205,6 +214,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     this.initDynamicLinks();
+    this.initNotifications();
     _iconAnimationCtrl = AnimationController(
       vsync: this,
       duration: _duration,
@@ -258,10 +268,17 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     fm.configure(onMessage: (msg) {
       print(msg);
       Map data = msg['data'] ?? msg;
-      if (_selectedPageIndex != 2 && data['type'] == 'chat') {
-        setState(() {
-          _showBadge = true;
-        });
+      if (data.containsKey('message')) {
+        Provider.of<ChatProvider>(context, listen: false).updateChat(
+          data['user_hash'],
+          data['message'],
+          DateFormat('yyyy-MM-DD HH:mm:ss').parse(data['dateapp']),
+        );
+        if (_selectedPageIndex != 2) {
+          setState(() {
+            _showBadge = true;
+          });
+        }
       } else {
         setState(() {
           _hasNotifications = true;
@@ -271,12 +288,15 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }, onLaunch: (msg) {
       //showAlert(msg);
       Map data = msg['data'] ?? msg;
-      if (data['type'] == 'chat') {
-        //TODO Push de chat
-        /*
-        Navigator.of(context).pushNamed(ChatScreen.routeName,
-            arguments: {'chatId': data['id'], 'userId': data['sender']});
-            */
+      if (data.containsKey('message')) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(
+              userHash: data['user_hash'],
+            ),
+          ),
+        );
       } else {
         Navigator.of(context).pushNamed(NotificationsScreen.routeName);
       }
@@ -284,11 +304,15 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }, onResume: (msg) {
       //showAlert(msg);
       Map data = msg['data'] ?? msg;
-      if (data['type'] == 'chat') {
-        /*
-        Navigator.of(context).pushNamed(ChatScreen.routeName,
-            arguments: {'chatId': data['id'], 'userId': data['sender']});
-            */
+      if (data.containsKey('message')) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(
+              userHash: data['user_hash'],
+            ),
+          ),
+        );
       } else {
         Navigator.of(context).pushNamed(NotificationsScreen.routeName);
       }
@@ -520,6 +544,55 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       _triggeredOnboarding = true;
       Navigator.of(context).pushNamed(OnboardingScreen.routeName);
     }
+  }
+
+  void initNotifications() async {
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('ic_launcher_foreground');
+
+    /// Note: permissions aren't requested here just to demonstrate that can be
+    /// done later
+    final IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings(
+            requestAlertPermission: false,
+            requestBadgePermission: false,
+            requestSoundPermission: false,
+            onDidReceiveLocalNotification:
+                (int id, String title, String body, String payload) async {
+              final data = jsonDecode(payload) as Map<String, dynamic>;
+              if (data.containsKey('message')) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                      userHash: data['hash_sender'],
+                    ),
+                  ),
+                );
+              }
+            });
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      if (data.containsKey('message')) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(
+              userHash: data['hash_sender'],
+            ),
+          ),
+        );
+      }
+    });
   }
 
   void initDynamicLinks() async {

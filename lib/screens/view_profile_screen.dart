@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:voice_inc/models/user_model.dart';
 
 import 'auth_screen.dart';
-
+import 'chat_screen.dart';
 import '../providers/user_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/promo_poll_list.dart';
@@ -18,13 +18,19 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
   static const routeName = '/profile';
   final ScrollController _scrollController = new ScrollController();
 
-  void _toChat(context, userId) async {
+  void _toChat(context, userHash) async {
     if (Provider.of<UserProvider>(context, listen: false).getUser == null) {
       _anonymousAlert(context);
       return;
     }
-    //Navigator.of(context)
-      //  .pushNamed(ChatScreen.routeName, arguments: {'userId': userId});
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          userHash: userHash,
+        ),
+      ),
+    );
   }
 
   void _menu(context, userId, image) {
