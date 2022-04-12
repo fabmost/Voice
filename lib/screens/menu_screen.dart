@@ -564,9 +564,13 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 (int id, String title, String body, String payload) async {
               final data = jsonDecode(payload) as Map<String, dynamic>;
               if (data.containsKey('message')) {
+                final current = ModalRoute.of(context).settings.name;
+                if (current != null && current == ChatScreen.routeName)
+                  Navigator.of(context).pop();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+                    settings: RouteSettings(name: ChatScreen.routeName),
                     builder: (context) => ChatScreen(
                       userHash: data['hash_sender'],
                     ),
@@ -583,9 +587,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         onSelectNotification: (String payload) async {
       final data = jsonDecode(payload) as Map<String, dynamic>;
       if (data.containsKey('message')) {
+        final settings = ModalRoute.of(context).settings;
+        final current = settings.name;
+        if (current != null && current == ChatScreen.routeName)
+          Navigator.of(context).pop();
         Navigator.push(
           context,
           MaterialPageRoute(
+            settings: RouteSettings(name: ChatScreen.routeName),
             builder: (context) => ChatScreen(
               userHash: data['hash_sender'],
             ),

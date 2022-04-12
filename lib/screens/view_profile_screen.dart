@@ -26,6 +26,7 @@ class ViewProfileScreen extends StatelessWidget with ShareContent {
     Navigator.push(
       context,
       MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName),
         builder: (context) => ChatScreen(
           userHash: userHash,
         ),

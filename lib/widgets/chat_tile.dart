@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -23,6 +24,7 @@ class ChatTile extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName),
         builder: (context) => ChatScreen(
           userHash: userHash,
         ),
@@ -39,7 +41,8 @@ class ChatTile extends StatelessWidget {
     return ListTile(
       onTap: () => _toChat(context),
       leading: CircleAvatar(
-        backgroundImage: (icon == null || icon == '') ? null : NetworkImage(icon),
+        backgroundImage:
+            (icon == null || icon == '') ? null : CachedNetworkImageProvider(icon),
       ),
       title: Text(userName),
       subtitle: Text(

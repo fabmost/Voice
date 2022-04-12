@@ -15,6 +15,7 @@ import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
 
 class ChatScreen extends StatefulWidget {
+  static const routeName = '/chat';
   final String userHash;
 
   ChatScreen({this.userHash});
